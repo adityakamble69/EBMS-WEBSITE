@@ -22,13 +22,20 @@ function showToast(message) {
   if (!toast) {
     toast = document.createElement('div');
     toast.id = 'systemToastNotification';
-    toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; background: #1F2937; border: 1px solid #374151; border-radius: 8px; padding: 12px 20px; font-size: 13.5px; z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.3); color: #F9FAFB; transition: all 0.3s ease; opacity: 0; transform: translateY(100px);';
     document.body.appendChild(toast);
   }
+  toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; left: auto; max-width: calc(100% - 48px); background: rgba(24, 24, 27, 0.6); backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; padding: 14px 22px; font-size: 13.5px; font-family: "Inter", sans-serif; z-index: 9999; box-shadow: 0 16px 40px rgba(0,0,0,0.55); color: #F4F4F5; transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0; transform: translateY(20px);';
+
+  // Trigger layout refresh before applying animation
+  toast.offsetHeight;
+
   toast.textContent = message;
   toast.style.opacity = '1';
   toast.style.transform = 'translateY(0)';
-  setTimeout(function() { toast.style.opacity = '0'; toast.style.transform = 'translateY(100px)'; }, 3200);
+  setTimeout(function() {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(20px)';
+  }, 3200);
 }
 
 function formatTime12Hour(timeValue) {
@@ -54,14 +61,37 @@ async function injectSidebar() {
   if (!document.getElementById('ebms-sidebar-styles')) {
     const styles = document.createElement('style');
     styles.id = 'ebms-sidebar-styles';
-    styles.innerHTML = '.sidebar-overlay-mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999; } .ebms-sidebar-aside { width: 240px; min-height: 100vh; background: #0D1323; border-right: 1px solid rgba(255,255,255,0.04); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 1000; transition: transform 0.25s ease-in-out; } @media (max-width: 768px) { .ebms-sidebar-aside { transform: translateX(-100%); } .ebms-sidebar-aside.mobile-open { transform: translateX(0) !important; } .sidebar-overlay-mask.mobile-open { display: block !important; } }';
+    styles.innerHTML = `
+      .sidebar-overlay-mask {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.65);
+        backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        z-index: 999;
+        transition: opacity 0.25s ease;
+      }
+      .ebms-sidebar-aside {
+        width: 240px; min-height: 100vh;
+        background: linear-gradient(165deg, rgba(30,30,34,0.72) 0%, rgba(10,10,12,0.85) 100%);
+        backdrop-filter: blur(22px) saturate(140%);
+        -webkit-backdrop-filter: blur(22px) saturate(140%);
+        border-right: 1px solid rgba(255,255,255,0.07);
+        display: flex; flex-direction: column;
+        position: fixed; top: 0; left: 0; z-index: 1000;
+        box-shadow: 12px 0 40px rgba(0,0,0,0.45);
+        transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      @media (max-width: 768px) {
+        .ebms-sidebar-aside { transform: translateX(-100%); }
+        .ebms-sidebar-aside.mobile-open { transform: translateX(0) !important; }
+        .sidebar-overlay-mask.mobile-open { display: block !important; }
+      }
+    `;
     document.head.appendChild(styles);
   }
 
   try {
     const res = await fetch('sidebar.html');
     const sidebarHTML = await res.text();
-    // Insert sidebar HTML before the spacer (don't replace it — spacer holds the layout gap)
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = sidebarHTML;
     while (tempDiv.firstChild) {
@@ -70,27 +100,31 @@ async function injectSidebar() {
 
     const user = AppSession.getUser() || { name: 'User', role: 'employee', branch_id: '' };
     const roles = { super_admin: '👑 Super Admin', branch_manager: '🏢 Manager', hr: '👤 HR', employee: '💼 Staff' };
-    
-    document.getElementById('sidebarUserName').textContent = user.name;
-    document.getElementById('sidebarUserRole').textContent = roles[user.role] || user.role;
-    document.getElementById('sidebarUserBranch').textContent = user.branch_id ? 'Branch: ' + user.branch_id : 'All Branches';
+
+    if(document.getElementById('sidebarUserName')) document.getElementById('sidebarUserName').textContent = user.name;
+    if(document.getElementById('sidebarUserRole')) document.getElementById('sidebarUserRole').textContent = roles[user.role] || user.role;
+    if(document.getElementById('sidebarUserBranch')) document.getElementById('sidebarUserBranch').textContent = user.branch_id ? 'Branch: ' + user.branch_id : 'All Branches';
 
     const currentFile = window.location.pathname.split("/").pop();
     document.querySelectorAll('.nav-item').forEach(item => {
       if (item.getAttribute('href') === currentFile) {
-        item.style.cssText = 'background: rgba(59,130,246,0.12); color: #60A5FA; font-weight: 500; border-radius: 8px; display: flex; align-items: center; gap: 10px; padding: 9px 10px; text-decoration: none; font-size: 13.5px;';
+        item.classList.add('active');
       }
     });
-  } catch (err) { console.error('Sidebar asset configuration drop error:', err); }
+  } catch (err) { console.error('Sidebar layout sync failure:', err); }
 }
 
 function openSidebar() {
-  document.getElementById('sidebar').classList.add('mobile-open');
-  document.getElementById('sidebarOverlayMask').classList.add('mobile-open');
+  const sidebar = document.getElementById('sidebar');
+  const mask = document.getElementById('sidebarOverlayMask');
+  if(sidebar) sidebar.classList.add('mobile-open');
+  if(mask) mask.classList.add('mobile-open');
 }
 function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('mobile-open');
-  document.getElementById('sidebarOverlayMask').classList.remove('mobile-open');
+  const sidebar = document.getElementById('sidebar');
+  const mask = document.getElementById('sidebarOverlayMask');
+  if(sidebar) sidebar.classList.remove('mobile-open');
+  if(mask) mask.classList.remove('mobile-open');
 }
 
 document.addEventListener('DOMContentLoaded', injectSidebar);

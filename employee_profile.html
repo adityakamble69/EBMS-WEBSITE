@@ -19,22 +19,28 @@
         }
 
         :root {
-            --brand-dark: #0A0F1E;
-            --brand-accent: #3B82F6;
-            --brand-glow: #60A5FA;
-            --surface: #111827;
-            --surface2: #1F2937;
-            --border: #1F2937;
-            --border2: #374151;
-            --text-primary: #F9FAFB;
-            --text-muted: #9CA3AF;
-            --radius: 12px;
-            --radius-sm: 8px;
+            --bg-base: #0A0A0B;
+            --glass: rgba(255, 255, 255, 0.045);
+            --glass-strong: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.09);
+            --glass-blur: 20px;
+            --text-primary: #F4F4F5;
+            --text-muted: #A1A1AA;
+            --text-dim: #6B7280;
+            --accent: #A8AFC4;
+            --accent-glow: #D4D9E6;
+            --success: #34D399;
+            --radius: 16px;
+            --radius-sm: 10px;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--brand-dark);
+            background: var(--bg-base);
+            background-image:
+                radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+                radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+            background-attachment: fixed;
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
@@ -58,6 +64,33 @@
             flex-direction: column;
         }
 
+        @media (max-width: 600px) {
+            .main-workspace {
+                padding: 16px;
+            }
+        }
+
+        .mobile-nav-bar {
+            display: none;
+            height: 50px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--glass-blur));
+            border-radius: var(--radius-sm);
+            align-items: center;
+            padding: 0 16px;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-nav-bar {
+                display: flex;
+            }
+        }
+
         .profile-maxwidth-container {
             max-width: 800px;
             width: 100%;
@@ -65,8 +98,10 @@
         }
 
         .profile-banner-card {
-            background: linear-gradient(135deg, #111827 0%, #1a2333 100%);
-            border: 1px solid rgba(59, 130, 246, 0.15);
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
             border-radius: var(--radius);
             padding: 24px;
             display: flex;
@@ -77,9 +112,15 @@
             margin-bottom: 24px;
         }
 
+        .profile-banner-card h2 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
         .details-segment-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
             border-radius: var(--radius);
             padding: 24px;
             margin-bottom: 24px;
@@ -91,10 +132,17 @@
             gap: 16px;
         }
 
+        @media (max-width: 540px) {
+            .profile-fields-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .data-node-viewer label {
             font-size: 11px;
-            color: var(--text-muted);
+            color: var(--text-dim);
             text-transform: uppercase;
+            letter-spacing: 0.4px;
             display: block;
             margin-bottom: 4px;
         }
@@ -102,37 +150,69 @@
         .data-node-viewer .value-field {
             font-size: 14.5px;
             font-weight: 500;
+            color: var(--text-primary);
         }
 
         .data-node-viewer .editable-input {
-            background: var(--surface2);
-            border: 1px solid var(--border2);
-            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
             padding: 8px 10px;
             color: #fff;
             font-size: 14px;
             width: 100%;
             display: none;
             outline: none;
+            transition: border-color 0.18s, background 0.18s;
+        }
+
+        .data-node-viewer .editable-input:focus {
+            border-color: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.07);
         }
 
         .btn-secondary {
-            background: var(--surface2);
-            border: 1px solid var(--border2);
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--glass-blur));
             color: #fff;
             padding: 9px 16px;
             border-radius: var(--radius-sm);
             cursor: pointer;
+            font-size: 14px;
+            transition: background 0.18s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--glass-strong);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .btn-primary-save {
-            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            background: linear-gradient(135deg, #34D399 0%, #059669 100%);
             color: #fff;
             border: none;
             padding: 9px 20px;
             border-radius: var(--radius-sm);
             font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
+            transition: transform 0.18s, box-shadow 0.18s;
+        }
+
+        .btn-primary-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(52, 211, 153, 0.25);
+        }
+
+        .save-action-footer-panel {
+            display: none;
+            justify-content: flex-end;
+            gap: 12px;
         }
     </style>
 </head>
@@ -140,14 +220,16 @@
 <body>
     <div class="sidebar-spacer"></div>
     <div class="main-workspace">
+        <div class="mobile-nav-bar" onclick="openSidebar()">☰ <span
+                style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span></div>
         <div class="profile-maxwidth-container">
             <a href="employees.html"
-                style="color:var(--brand-glow); text-decoration:none; font-size:14px; display:block; margin-bottom:16px;">←
+                style="color:var(--accent-glow); text-decoration:none; font-size:14px; display:block; margin-bottom:16px;">←
                 Back to Directory</a>
             <div class="profile-banner-card">
                 <div>
-                    <h2 id="employeeProfileNameDisplay" style="font-family:'Space Grotesk';">Loading Name...</h2>
-                    <p id="employeeProfileIdDisplay" style="color:var(--brand-glow); font-size:14px; margin-top:2px;">
+                    <h2 id="employeeProfileNameDisplay">Loading Name...</h2>
+                    <p id="employeeProfileIdDisplay" style="color:var(--accent-glow); font-size:14px; margin-top:2px;">
                         EMP000</p>
                 </div>
                 <button class="btn-secondary" id="toggleEditBtn" onclick="toggleProfileEditableState(true)">✏️ Edit
@@ -176,8 +258,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="save-action-footer-panel" id="saveFooter"
-                    style="display:none; justify-content:flex-end; gap:12px;">
+                <div class="save-action-footer-panel" id="saveFooter">
                     <button type="button" class="btn-secondary"
                         onclick="toggleProfileEditableState(false)">Cancel</button>
                     <button type="submit" class="btn-primary-save">Save Parameters</button>

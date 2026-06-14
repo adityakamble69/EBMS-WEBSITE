@@ -1,342 +1,387 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Codeline.AI — EBMS Login</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet" />
   <style>
-    /* ── Reset ── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
-      --brand-dark:   #0A0F1E;
-      --brand-blue:   #1E40AF;
-      --brand-accent: #3B82F6;
-      --brand-glow:   #60A5FA;
-      --surface:      #111827;
-      --surface2:     #1F2937;
-      --border:       #374151;
-      --text-primary: #F9FAFB;
-      --text-muted:   #9CA3AF;
-      --success:      #10B981;
-      --error:        #EF4444;
-      --radius:       12px;
+      --bg-base: #0A0A0B;
+      --bg-elevated: #111113;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-border-focus: rgba(255, 255, 255, 0.22);
+      --glass-blur: 22px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #52525B;
+      --success: #34D399;
+      --danger: #F87171;
+      --radius: 18px;
+      --radius-sm: 12px;
     }
 
     body {
       font-family: 'Inter', sans-serif;
-      background: var(--brand-dark);
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(255, 255, 255, 0.025) 0%, transparent 50%);
+      background-attachment: fixed;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-      position: relative;
+      padding: 20px;
+      color: var(--text-primary);
+      overflow-x: hidden;
     }
 
-    /* ── Animated background grid ── */
+    /* Subtle grid overlay */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
       background-image:
-        linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
       background-size: 48px 48px;
       pointer-events: none;
+      z-index: 0;
     }
 
-    /* ── Glow orbs ── */
+    /* Floating ambient orbs */
     .orb {
       position: fixed;
       border-radius: 50%;
-      filter: blur(80px);
+      filter: blur(100px);
       pointer-events: none;
-      animation: float 8s ease-in-out infinite;
-    }
-    .orb-1 {
-      width: 400px; height: 400px;
-      background: radial-gradient(circle, rgba(30,64,175,0.35) 0%, transparent 70%);
-      top: -100px; left: -100px;
-      animation-delay: 0s;
-    }
-    .orb-2 {
-      width: 300px; height: 300px;
-      background: radial-gradient(circle, rgba(59,130,246,0.2) 0%, transparent 70%);
-      bottom: -50px; right: -50px;
-      animation-delay: -4s;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0px) scale(1); }
-      50%       { transform: translateY(-20px) scale(1.05); }
+      z-index: 0;
+      animation: floatOrb 14s ease-in-out infinite;
     }
 
-    /* ── Card ── */
+    .orb-1 {
+      width: 400px;
+      height: 400px;
+      background: rgba(255, 255, 255, 0.03);
+      top: -120px;
+      left: -80px;
+    }
+
+    .orb-2 {
+      width: 350px;
+      height: 350px;
+      background: rgba(255, 255, 255, 0.025);
+      bottom: -100px;
+      right: -60px;
+      animation-delay: -7s;
+    }
+
+    @keyframes floatOrb {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(-20px) scale(1.04);
+      }
+    }
+
+    /* Login card */
     .login-wrapper {
-      position: relative;
-      z-index: 10;
       width: 100%;
-      max-width: 440px;
-      padding: 16px;
+      max-width: 420px;
+      z-index: 10;
+      position: relative;
     }
 
     .login-card {
-      background: rgba(17, 24, 39, 0.85);
-      border: 1px solid rgba(59,130,246,0.18);
-      border-radius: 20px;
-      padding: 44px 40px 40px;
-      backdrop-filter: blur(24px);
-      box-shadow:
-        0 0 0 1px rgba(59,130,246,0.08),
-        0 32px 64px rgba(0,0,0,0.5),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+      background: rgba(18, 18, 20, 0.65);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 36px 32px 32px;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
     }
 
-    /* ── Logo area ── */
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 28px 20px 24px;
+        border-radius: var(--radius-sm);
+      }
+    }
+
+    /* Logo block */
     .logo-area {
       text-align: center;
-      margin-bottom: 36px;
+      margin-bottom: 28px;
     }
+
     .logo-icon {
-      width: 60px; height: 60px;
-      background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
-      border-radius: 16px;
+      width: 52px;
+      height: 52px;
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 16px;
-      box-shadow: 0 8px 24px rgba(59,130,246,0.35);
-      font-size: 26px;
+      font-size: 22px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
     }
+
     .logo-title {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 22px;
       font-weight: 700;
+      letter-spacing: -0.4px;
       color: var(--text-primary);
-      letter-spacing: -0.5px;
-    }
-    .logo-title span {
-      color: var(--brand-accent);
-    }
-    .logo-subtitle {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 4px;
-      letter-spacing: 0.3px;
     }
 
-    /* ── Divider line ── */
+    .logo-title span {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .logo-subtitle {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 3px;
+      letter-spacing: 0.2px;
+    }
+
+    /* Divider */
     .divider {
       height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
-      margin-bottom: 28px;
+      background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+      margin: 0 0 24px;
     }
 
-    /* ── Welcome text ── */
+    /* Welcome text */
     .welcome-text {
-      margin-bottom: 24px;
+      margin-bottom: 18px;
     }
+
     .welcome-text h2 {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
-      color: var(--text-primary);
     }
+
     .welcome-text p {
       font-size: 13px;
       color: var(--text-muted);
-      margin-top: 4px;
+      margin-top: 3px;
     }
 
-    /* ── Form fields ── */
-    .field {
-      margin-bottom: 18px;
-    }
-    .field label {
-      display: block;
-      font-size: 12.5px;
-      font-weight: 500;
-      color: var(--text-muted);
-      margin-bottom: 7px;
-      letter-spacing: 0.3px;
-      text-transform: uppercase;
-    }
-    .input-wrap {
-      position: relative;
-    }
-    .input-icon {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 16px;
-      pointer-events: none;
-      opacity: 0.5;
-    }
-    .field input {
-      width: 100%;
-      background: var(--surface2);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 12px 14px 12px 42px;
-      font-size: 14.5px;
-      color: var(--text-primary);
-      font-family: 'Inter', sans-serif;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      outline: none;
-    }
-    .field input:focus {
-      border-color: var(--brand-accent);
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-    }
-    .field input::placeholder { color: #4B5563; }
-
-    /* Eye toggle for password */
-    .eye-toggle {
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      font-size: 16px;
-      opacity: 0.45;
-      user-select: none;
-      transition: opacity 0.2s;
-    }
-    .eye-toggle:hover { opacity: 0.8; }
-
-    /* ── Role badge selector ── */
+    /* Role selector */
     .role-selector {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-bottom: 22px;
+      gap: 7px;
+      margin-bottom: 20px;
     }
+
     .role-btn {
-      padding: 9px 10px;
-      border: 1.5px solid var(--border);
+      padding: 9px 8px;
+      border: 1px solid var(--glass-border);
       border-radius: 10px;
-      background: var(--surface2);
+      background: var(--glass);
       color: var(--text-muted);
       font-size: 12.5px;
       font-weight: 500;
       cursor: pointer;
-      text-align: center;
-      transition: all 0.18s;
+      transition: all 0.2s ease;
       font-family: 'Inter', sans-serif;
+      backdrop-filter: blur(10px);
     }
+
+    .role-btn:hover {
+      background: var(--glass-strong);
+      color: var(--text-primary);
+    }
+
     .role-btn.active {
-      border-color: var(--brand-accent);
-      background: rgba(59,130,246,0.12);
-      color: var(--brand-glow);
+      border-color: var(--glass-border-focus);
+      background: var(--glass-strong);
+      color: var(--text-primary);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
     }
-    .role-btn span { margin-right: 4px; }
 
-    /* ── Submit btn ── */
-    .btn-login {
-      width: 100%;
-      padding: 13px;
-      background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius);
-      font-size: 15px;
-      font-weight: 600;
-      font-family: 'Space Grotesk', sans-serif;
-      cursor: pointer;
-      letter-spacing: 0.2px;
-      transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(59,130,246,0.35);
-    }
-    .btn-login:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(59,130,246,0.45);
-    }
-    .btn-login:active:not(:disabled) { transform: translateY(0); }
-    .btn-login:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
-    }
-    .btn-login .spinner {
-      display: none;
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-    .btn-login.loading .spinner { display: inline-block; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Alert ── */
+    /* Alert */
     .alert {
       padding: 11px 14px;
       border-radius: 10px;
-      font-size: 13.5px;
-      margin-bottom: 18px;
+      font-size: 13px;
+      margin-bottom: 16px;
       display: none;
       align-items: center;
       gap: 8px;
-    }
-    .alert.show { display: flex; }
-    .alert-error {
-      background: rgba(239,68,68,0.12);
-      border: 1px solid rgba(239,68,68,0.3);
-      color: #FCA5A5;
-    }
-    .alert-success {
-      background: rgba(16,185,129,0.12);
-      border: 1px solid rgba(16,185,129,0.3);
-      color: #6EE7B7;
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
 
-    /* ── Footer ── */
+    .alert.show {
+      display: flex;
+    }
+
+    .alert-error {
+      background: rgba(248, 113, 113, 0.09);
+      color: var(--danger);
+      border-color: rgba(248, 113, 113, 0.18);
+    }
+
+    .alert-success {
+      background: rgba(52, 211, 153, 0.09);
+      color: var(--success);
+      border-color: rgba(52, 211, 153, 0.18);
+    }
+
+    /* Form fields */
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .field input {
+      width: 100%;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 11px 14px 11px 38px;
+      font-size: 14px;
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      backdrop-filter: blur(10px);
+    }
+
+    .field input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .field input:focus {
+      border-color: var(--glass-border-focus);
+      background: var(--glass-strong);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+    }
+
+    .eye-toggle {
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 14px;
+      opacity: 0.35;
+      user-select: none;
+      transition: opacity 0.15s;
+    }
+
+    .eye-toggle:hover {
+      opacity: 0.65;
+    }
+
+    /* Login button */
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: rgba(244, 244, 245, 0.92);
+      color: #0A0A0B;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14.5px;
+      font-weight: 700;
+      font-family: 'Space Grotesk', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 8px;
+      letter-spacing: 0.1px;
+    }
+
+    .btn-login:hover:not(:disabled) {
+      background: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-login:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-login:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* Footer */
     .login-footer {
       text-align: center;
-      margin-top: 24px;
+      margin-top: 22px;
       font-size: 12px;
-      color: #374151;
+      color: var(--text-dim);
     }
+
     .login-footer a {
-      color: var(--brand-accent);
+      color: var(--text-muted);
       text-decoration: none;
+      transition: color 0.15s;
     }
 
-    /* ── Config notice ── */
-    .config-notice {
-      background: rgba(245,158,11,0.08);
-      border: 1px solid rgba(245,158,11,0.25);
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 12.5px;
-      color: #FCD34D;
-      margin-bottom: 18px;
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    /* Responsive */
-    @media (max-width: 480px) {
-      .login-card { padding: 32px 24px 28px; }
+    .login-footer a:hover {
+      color: var(--text-primary);
     }
   </style>
 </head>
-<body>
 
+<body>
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
 
   <div class="login-wrapper">
     <div class="login-card">
 
-      <!-- Logo -->
       <div class="logo-area">
         <div class="logo-icon">⚡</div>
         <div class="logo-title">Codeline<span>.AI</span></div>
@@ -345,46 +390,28 @@
 
       <div class="divider"></div>
 
-      <!-- Welcome -->
       <div class="welcome-text">
         <h2>Welcome back 👋</h2>
         <p>Apna role choose karo aur login karo</p>
       </div>
 
-      <!-- Role selector -->
       <div class="role-selector" id="roleSelector">
-        <button class="role-btn active" data-role="super_admin" onclick="selectRole(this)">
-          <span>👑</span> Super Admin
-        </button>
-        <button class="role-btn" data-role="branch_manager" onclick="selectRole(this)">
-          <span>🏢</span> Branch Manager
-        </button>
-        <button class="role-btn" data-role="hr" onclick="selectRole(this)">
-          <span>👤</span> HR
-        </button>
-        <button class="role-btn" data-role="employee" onclick="selectRole(this)">
-          <span>💼</span> Employee
-        </button>
+        <button class="role-btn active" data-role="super_admin" onclick="selectRole(this)">👑 Super Admin</button>
+        <button class="role-btn" data-role="branch_manager" onclick="selectRole(this)">🏢 Manager</button>
+        <button class="role-btn" data-role="hr" onclick="selectRole(this)">👤 HR</button>
+        <button class="role-btn" data-role="employee" onclick="selectRole(this)">💼 Employee</button>
       </div>
 
-      <!-- Alert -->
       <div class="alert alert-error" id="alertBox">
-        <span>⚠️</span>
-        <span id="alertMsg">Error message</span>
+        <span>⚠️</span><span id="alertMsg">Error message</span>
       </div>
 
-      <!-- Form -->
       <div class="field">
         <label>Email Address</label>
         <div class="input-wrap">
           <span class="input-icon">✉️</span>
-          <input
-            type="email"
-            id="email"
-            placeholder="admin@codelineai.com"
-            autocomplete="email"
-            onkeydown="if(event.key==='Enter')document.getElementById('password').focus()"
-          />
+          <input type="email" id="email" placeholder="admin@codelineai.com" value="admin@codelineai.com"
+            autocomplete="email" />
         </div>
       </div>
 
@@ -392,147 +419,87 @@
         <label>Password</label>
         <div class="input-wrap">
           <span class="input-icon">🔒</span>
-          <input
-            type="password"
-            id="password"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            onkeydown="if(event.key==='Enter')doLogin()"
-          />
+          <input type="password" id="password" placeholder="••••••••" value="Admin@123"
+            autocomplete="current-password" />
           <span class="eye-toggle" onclick="togglePass()" id="eyeBtn">👁️</span>
         </div>
       </div>
 
-      <!-- Login Button -->
-      <button class="btn-login" id="loginBtn" onclick="doLogin()">
-        <span class="spinner"></span>
-        Login to EBMS
-      </button>
+      <button class="btn-login" id="loginBtn" onclick="doLogin()">Login to EBMS</button>
 
       <div class="login-footer">
-        Codeline.AI EBMS v1.0 &nbsp;·&nbsp;
-        <a href="#">Forgot Password?</a>
+        Codeline.AI EBMS v1.0 &nbsp;·&nbsp; <a href="#">Forgot Password?</a>
       </div>
-
     </div>
   </div>
-<script src="app.js"></script>
+
+  <script src="app.js"></script>
   <script>
-
-
-    // Hide config notice if URL is set
-    if (API_URL !== 'YOUR_APPSCRIPT_DEPLOYMENT_URL_HERE') {
-      document.getElementById('configNotice').style.display = 'none';
-    }
-
-    // ── State ──
     let selectedRole = 'super_admin';
 
-    // ── Role select ──
     function selectRole(btn) {
       document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       selectedRole = btn.dataset.role;
-
-      // Auto-fill demo credentials (remove in production)
       if (selectedRole === 'super_admin') {
-        document.getElementById('email').value    = 'admin@codelineai.com';
+        document.getElementById('email').value = 'admin@codelineai.com';
         document.getElementById('password').value = 'Admin@123';
       } else {
-        document.getElementById('email').value    = '';
+        document.getElementById('email').value = '';
         document.getElementById('password').value = '';
       }
     }
 
-    // ── Toggle password ──
     function togglePass() {
       const inp = document.getElementById('password');
       const btn = document.getElementById('eyeBtn');
-      if (inp.type === 'password') {
-        inp.type = 'text';
-        btn.textContent = '🙈';
-      } else {
-        inp.type = 'password';
-        btn.textContent = '👁️';
-      }
+      if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+      else { inp.type = 'password'; btn.textContent = '👁️'; }
     }
 
-    // ── Show / hide alert ──
     function showAlert(msg, type = 'error') {
       const box = document.getElementById('alertBox');
       document.getElementById('alertMsg').textContent = msg;
       box.className = 'alert alert-' + type + ' show';
     }
-    function hideAlert() {
-      document.getElementById('alertBox').classList.remove('show');
-    }
 
-    // ── Set loading state ──
-    function setLoading(on) {
-      const btn = document.getElementById('loginBtn');
-      btn.disabled = on;
-      btn.classList.toggle('loading', on);
-      btn.childNodes[1].nodeValue = on ? ' Logging in...' : ' Login to EBMS';
-    }
-
-    // ── Main login function ──
     async function doLogin() {
-      hideAlert();
-
-      const email    = document.getElementById('email').value.trim();
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      if (!email || !password) { showAlert('Email aur password dono enter karein.'); return; }
 
-      if (!email)    { showAlert('Email address enter karo'); return; }
-      if (!password) { showAlert('Password enter karo'); return; }
-
-      // Check if API URL is configured
-      if (API_URL === 'YOUR_APPSCRIPT_DEPLOYMENT_URL_HERE') {
-        showAlert('AppScript URL configure karo pehle (index.html mein API_URL update karo)');
-        return;
-      }
-
-      setLoading(true);
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true;
+      btn.textContent = 'Logging in...';
 
       try {
         const url = `${API_URL}?action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
-        const res  = await fetch(url);
+        const res = await fetch(url);
         const data = await res.json();
 
         if (data.status === 'success') {
-          // Save session to localStorage
-          localStorage.setItem('ebms_token',    data.data.token);
-          localStorage.setItem('ebms_user',     JSON.stringify(data.data.user));
-          localStorage.setItem('ebms_role',     data.data.user.role);
-          localStorage.setItem('ebms_branch',   data.data.user.branch_id);
-
+          localStorage.setItem('ebms_token', data.data.token);
+          localStorage.setItem('ebms_user', JSON.stringify(data.data.user));
+          localStorage.setItem('ebms_role', data.data.user.role);
           showAlert('Login successful! Dashboard load ho raha hai...', 'success');
-
-          // Redirect based on role
-          setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 800);
-
+          setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
         } else {
-          showAlert(data.message || 'Login failed. Check email/password.');
-          setLoading(false);
+          showAlert(data.message || 'Login fail hua. Dobara try karein.');
+          btn.disabled = false;
+          btn.textContent = 'Login to EBMS';
         }
-
       } catch (err) {
-        showAlert('Network error. AppScript URL check karo.');
-        setLoading(false);
-        console.error('Login error:', err);
+        showAlert('Network error. Connection check karein.');
+        btn.disabled = false;
+        btn.textContent = 'Login to EBMS';
       }
     }
 
-    // ── Check if already logged in ──
-    (function checkExistingSession() {
-      const token = localStorage.getItem('ebms_token');
-      const user  = localStorage.getItem('ebms_user');
-      if (token && user) {
-        // Optionally auto-redirect (comment out if not needed)
-        // window.location.href = 'dashboard.html';
-      }
-    })();
+    /* Allow Enter key to submit */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
   </script>
 </body>
+
 </html>

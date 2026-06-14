@@ -1,265 +1,859 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Salary Slips Hub — Codeline.AI</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salary Slips — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --brand-dark:   #0A0F1E;
-      --brand-accent: #3B82F6;
-      --brand-glow:   #60A5FA;
-      --surface:      #111827;
-      --surface2:     #1F2937;
-      --border:       #1F2937;
-      --border2:      #374151;
-      --text-primary: #F9FAFB;
-      --text-muted:   #9CA3AF;
-      --text-dim:     #6B7280;
-      --radius:       12px;
-      --radius-sm:    8px;
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    body { font-family: 'Inter', sans-serif; background: var(--brand-dark); color: var(--text-primary); min-height: 100vh; display: flex; }
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --danger: #F87171;
+      --warning: #FBBF24;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
 
-    .sidebar-spacer { width: 240px; flex-shrink: 0; }
-    @media (max-width: 768px) { .sidebar-spacer { display: none; } }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
 
-    .main-workspace { flex: 1; display: flex; flex-direction: column; min-height: 100vh; padding: 24px; overflow-x: hidden; }
-    .mobile-nav-bar { display: none; height: 50px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; padding: 0 16px; font-size: 20px; cursor: pointer; color: var(--text-muted); }
-    @media (max-width: 768px) { .mobile-nav-bar { display: flex; } }
+    .sidebar-spacer {
+      width: 240px;
+      flex-shrink: 0;
+    }
 
-    .header-block { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
-    .title-area h1 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; }
+    @media (max-width: 768px) {
+      .sidebar-spacer {
+        display: none;
+      }
+    }
 
-    .table-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; width: 100%; }
-    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 800px; }
-    .data-table th { background: #1E40AF; color: #fff; padding: 14px 16px; font-weight: 600; }
-    .data-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-    .data-table tr:nth-child(even) td { background: rgba(59,130,246,0.02); }
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
 
-    .btn-view-slip { color: var(--brand-glow); cursor: pointer; text-decoration: none; font-weight: 500; }
-    .btn-view-slip:hover { text-decoration: underline; }
+    @media (max-width: 600px) {
+      .main-workspace {
+        padding: 16px;
+      }
+    }
 
-    /* Modal Sheet Structure Overlay framework panel definitions */
-    .invoice-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 16px; }
-    .invoice-card { background: #ffffff; color: #111827; border-radius: var(--radius); max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 40px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
-    
-    /* Control bar to handle print operations outside actual document frame layers */
-    .invoice-control-header { background: var(--surface2); padding: 12px 24px; display: flex; justify-content: flex-end; gap: 12px; border-radius: 6px 6px 0 0; border: 1px solid var(--border2); width: 100%; max-width: 700px; margin-bottom: -10px; z-index: 2001; }
-    .btn-print { background: #1E40AF; color: #fff; border: none; border-radius: 4px; padding: 8px 16px; font-weight: 600; cursor: pointer; font-size: 13px; }
-    .btn-close-inv { background: #374151; color: #fff; border: none; border-radius: 4px; padding: 8px 16px; cursor: pointer; font-size: 13px; }
+    .mobile-nav-bar {
+      display: none;
+      height: 50px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--radius-sm);
+      align-items: center;
+      padding: 0 16px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
 
-    /* Printable document structuring styling blocks definitions rules maps */
-    .slip-brand-section { display: flex; justify-content: space-between; border-bottom: 2px solid #E5E7EB; padding-bottom: 20px; margin-bottom: 20px; }
-    .slip-title-meta { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; color: #1E40AF; text-align: right; }
-    
-    .slip-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; font-size: 13.5px; line-height: 1.5; }
-    .slip-details-grid strong { color: #374151; }
+    @media (max-width: 768px) {
+      .mobile-nav-bar {
+        display: flex;
+      }
+    }
 
-    .slip-calculation-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 30px; font-size: 14px; }
-    .slip-calculation-table th { background: #F3F4F6; color: #1F2937; padding: 10px; text-align: left; font-weight: 600; border: 1px solid #E5E7EB; }
-    .slip-calculation-table td { padding: 10px; border: 1px solid #E5E7EB; }
+    .header-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
 
-    .net-pay-banner { background: #EFF6FF; border: 1px dashed #3B82F6; border-radius: 6px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
-    
+    .title-area h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .title-area p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Stats */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .stat-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* Filter */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-bar select {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      cursor: pointer;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .filter-bar select option {
+      background: #1a1a1e;
+    }
+
+    /* Table */
+    .table-container {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      width: 100%;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+      min-width: 800px;
+    }
+
+    .data-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      padding: 14px 16px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .data-table tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .btn-view {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: var(--accent-glow);
+      border-radius: 7px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-view:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    /* ═══════════════════════════════
+       PAYSLIP OVERLAY — glassmorphism wrapper,
+       white printable card inside
+    ═══════════════════════════════ */
+    .slip-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 24px 16px;
+      overflow-y: auto;
+    }
+
+    /* Control bar above the white slip */
+    .slip-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      align-self: flex-end;
+      max-width: 680px;
+      width: 100%;
+    }
+
+    .btn-print {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .btn-print:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .btn-close-slip {
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.22);
+      color: #F87171;
+      border-radius: var(--radius-sm);
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s;
+    }
+
+    .btn-close-slip:hover {
+      background: rgba(248, 113, 113, 0.18);
+    }
+
+    /* White printable slip card */
+    .slip-card {
+      background: #ffffff;
+      color: #111827;
+      border-radius: var(--radius);
+      max-width: 680px;
+      width: 100%;
+      padding: 40px 44px;
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Slip internals */
+    .slip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #E5E7EB;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .slip-brand-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #111827;
+      letter-spacing: -0.3px;
+    }
+
+    .slip-brand-name span {
+      color: #3B82F6;
+    }
+
+    .slip-brand-sub {
+      font-size: 10.5px;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 3px;
+    }
+
+    .slip-title-block {
+      text-align: right;
+    }
+
+    .slip-title-block .slip-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1E40AF;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .slip-title-block .slip-period {
+      font-size: 12px;
+      color: #6B7280;
+      margin-top: 4px;
+    }
+
+    .slip-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 24px;
+      margin-bottom: 24px;
+      font-size: 13.5px;
+      line-height: 1.7;
+    }
+
+    .slip-meta-grid .meta-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .slip-meta-grid .meta-label {
+      color: #6B7280;
+      min-width: 110px;
+    }
+
+    .slip-meta-grid .meta-val {
+      color: #111827;
+      font-weight: 600;
+    }
+
+    .slip-divider {
+      height: 1px;
+      background: #E5E7EB;
+      margin: 20px 0;
+    }
+
+    .slip-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #9CA3AF;
+      margin-bottom: 12px;
+    }
+
+    .slip-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      margin-bottom: 20px;
+    }
+
+    .slip-table th {
+      background: #F9FAFB;
+      color: #374151;
+      padding: 9px 12px;
+      font-weight: 600;
+      text-align: left;
+      border: 1px solid #E5E7EB;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .slip-table td {
+      padding: 9px 12px;
+      border: 1px solid #E5E7EB;
+      color: #1F2937;
+    }
+
+    .slip-table td:not(:first-child) {
+      text-align: right;
+    }
+
+    .slip-table th:not(:first-child) {
+      text-align: right;
+    }
+
+    .net-pay-box {
+      background: #EFF6FF;
+      border: 1.5px dashed #93C5FD;
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .net-pay-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .net-pay-amount {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #1E40AF;
+    }
+
+    .slip-signatures {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 48px;
+      font-size: 12px;
+      color: #9CA3AF;
+    }
+
+    .sig-line {
+      width: 160px;
+      border-top: 1px solid #D1D5DB;
+      padding-top: 8px;
+      margin-top: 32px;
+    }
+
+    /* Print styles */
     @media print {
-      body * { display: none !important; }
-      .invoice-overlay, .invoice-overlay * { display: block !important; background: #fff !important; color: #000 !important; }
-      .invoice-card { position: absolute; left: 0; top: 0; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
-      .invoice-control-header { display: none !important; }
+      body>*:not(.slip-overlay) {
+        display: none !important;
+      }
+
+      .slip-overlay {
+        display: block !important;
+        position: static !important;
+        background: none !important;
+        padding: 0 !important;
+        backdrop-filter: none !important;
+      }
+
+      .slip-controls {
+        display: none !important;
+      }
+
+      .slip-card {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+        padding: 24px !important;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <div class="sidebar-spacer"></div>
 
   <div class="main-workspace">
-    <div class="mobile-nav-bar" onclick="openSidebar()">☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span></div>
+    <div class="mobile-nav-bar" onclick="openSidebar()">
+      ☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span>
+    </div>
 
     <div class="header-block">
       <div class="title-area">
         <h1>🧾 Salary Slips Archive</h1>
-        <p>Generated statements ledger context, download compliance pay slips invoices</p>
+        <p>Generated payslips dekho, download karo aur print karo</p>
       </div>
     </div>
 
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Slips</div>
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Gross</div>
+        <div class="stat-value" id="statGross" style="color:var(--accent-glow);">—</div>
+        <div class="stat-sub">Cumulative</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Deductions</div>
+        <div class="stat-value" id="statDed" style="color:var(--danger);">—</div>
+        <div class="stat-sub">Cumulative</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Net Disbursed</div>
+        <div class="stat-value" id="statNet" style="color:var(--success);">—</div>
+        <div class="stat-sub">Cumulative</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <select id="filterMonth" onchange="applyFilters()">
+        <option value="">All Months</option>
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+      <select id="filterYear" onchange="applyFilters()">
+        <option value="">All Years</option>
+        <option value="2026" selected>2026</option>
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+      </select>
+    </div>
+
+    <!-- Table -->
     <div class="table-container">
       <table class="data-table">
         <thead>
           <tr>
-            <th>Slip Token ID</th>
-            <th>Employee ID</th>
-            <th>Billing Session Cycle</th>
+            <th>Slip ID</th>
+            <th>Employee</th>
+            <th>Period</th>
             <th>Present Days</th>
-            <th>Absents Logs</th>
-            <th>Gross Salary</th>
-            <th>Deductions</th>
-            <th>Net Payout</th>
+            <th>Absents</th>
+            <th>Gross (₹)</th>
+            <th>Deductions (₹)</th>
+            <th>Net Pay (₹)</th>
             <th>Action</th>
           </tr>
         </thead>
-        <tbody id="salarySlipsMasterRowsContainer">
-          <tr><td colspan="9" style="padding: 32px; text-align: center; color: var(--text-dim);">Historical data rows compiling sequence active...</td></tr>
+        <tbody id="slipsRowsContainer">
+          <tr>
+            <td colspan="9">
+              <div class="empty-state">
+                <div class="empty-icon">🧾</div>
+                <p>Salary slips load ho rahi hain...</p>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <div class="invoice-overlay" id="invoiceLayoutLiveViewerOverlay" style="flex-direction: column;">
-    <div class="invoice-control-header">
-      <button class="btn-print" onclick="window.print()">🖨️ Print / Download PDF</button>
-      <button class="btn-close-inv" onclick="closeInvoiceLiveViewerPopup()">Close Preview</button>
+  <!-- Payslip Viewer Overlay -->
+  <div class="slip-overlay" id="slipOverlay">
+    <div class="slip-controls">
+      <button class="btn-print" onclick="window.print()">🖨️ Print / Save PDF</button>
+      <button class="btn-close-slip" onclick="closeSlip()">✕ Close</button>
     </div>
-    
-    <div class="invoice-card" id="invoicePrintableTargetDocumentCardArea">
-      <div class="slip-brand-section">
+
+    <div class="slip-card" id="slipCard">
+
+      <!-- Slip Header -->
+      <div class="slip-header">
         <div>
-          <div style="font-size: 20px; font-weight:700; color:#111827; letter-spacing:-0.5px;">Codeline<span style="color:#3B82F6;">.AI</span></div>
-          <div style="font-size:11px; color:#6B7280; text-transform:uppercase; margin-top:2px;">Enterprise Business Management System</div>
+          <div class="slip-brand-name">Codeline<span>.AI</span></div>
+          <div class="slip-brand-sub">Enterprise Business Management System</div>
         </div>
-        <div class="slip-title-meta">
-          <div>PAYSLIP STATEMENT</div>
-          <div style="font-size:12px; color:#6B7280; font-weight:500; margin-top:4px;" id="invSlipCycleSession">Month 00 / 2026</div>
+        <div class="slip-title-block">
+          <div class="slip-title">Payslip Statement</div>
+          <div class="slip-period" id="slipPeriod">—</div>
         </div>
       </div>
 
-      <div class="slip-details-grid">
+      <!-- Employee Meta -->
+      <div class="slip-meta-grid">
         <div>
-          <div><strong>Employee ID:</strong> <span id="invEmpId">—</span></div>
-          <div><strong>Employee Name:</strong> <span id="invEmpName">—</span></div>
-          <div><strong>Designation Role:</strong> <span id="invDesignation">—</span></div>
+          <div class="meta-row"><span class="meta-label">Employee ID</span><span class="meta-val"
+              id="slipEmpId">—</span></div>
+          <div class="meta-row"><span class="meta-label">Name</span><span class="meta-val" id="slipEmpName">—</span>
+          </div>
+          <div class="meta-row"><span class="meta-label">Designation</span><span class="meta-val"
+              id="slipDesignation">—</span></div>
         </div>
-        <div style="text-align: right;">
-          <div><strong>Slip Token ID:</strong> <span id="invSlipId">—</span></div>
-          <div><strong>Generated On:</strong> <span id="invGeneratedDate">—</span></div>
-          <div><strong>Employment Nature:</strong> <span id="invEmpType">—</span></div>
+        <div>
+          <div class="meta-row"><span class="meta-label">Slip ID</span><span class="meta-val" id="slipId">—</span></div>
+          <div class="meta-row"><span class="meta-label">Generated On</span><span class="meta-val"
+              id="slipGenDate">—</span></div>
+          <div class="meta-row"><span class="meta-label">Employment</span><span class="meta-val"
+              id="slipEmpType">—</span></div>
         </div>
       </div>
 
-      <table class="slip-calculation-table">
-        <thead>
-          <tr>
-            <th>Attendance Metrics Logs Check</th>
-            <th>Days Counted</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Total Present Working Days Counted</td><td><span id="invPresentDays">0</span> Days</td></tr>
-          <tr><td>Total Documented Absent Deductions Instances</td><td><span id="invAbsentDays">0</span> Days</td></tr>
-        </tbody>
-      </table>
+      <div class="slip-divider"></div>
 
-      <table class="slip-calculation-table">
+      <!-- Attendance -->
+      <div class="slip-section-title">Attendance Summary</div>
+      <table class="slip-table" style="margin-bottom:24px;">
         <thead>
           <tr>
-            <th>Description Breakdown Components</th>
-            <th style="text-align: right;">Earnings (₹)</th>
-            <th style="text-align: right;">Deductions (₹)</th>
+            <th>Description</th>
+            <th>Days</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Base Fixed Structural Monthly Wage</td>
-            <td style="text-align: right;">₹<span id="invGrossSalary">0.00</span></td>
-            <td style="text-align: right;">₹0.00</td>
+            <td>Total Present Days</td>
+            <td id="slipPresent">0</td>
           </tr>
           <tr>
-            <td>Absentee Penalty Reductions Counter Calculations</td>
-            <td style="text-align: right;">--</td>
-            <td style="text-align: right; color:#EF4444;">₹<span id="invDeductions">0.00</span></td>
+            <td>Total Absent Days</td>
+            <td id="slipAbsent">0</td>
           </tr>
         </tbody>
       </table>
 
-      <div class="net-pay-banner">
-        <div style="font-size:14px; font-weight:600; color:#374151;">NET PAYOUT DISBURSED AMOUNT:</div>
-        <div style="font-size:20px; font-weight:700; color:#1E40AF;">₹<span id="invNetSalary">0.00</span></div>
+      <!-- Earnings & Deductions -->
+      <div class="slip-section-title">Earnings &amp; Deductions</div>
+      <table class="slip-table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Earnings (₹)</th>
+            <th>Deductions (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Base Monthly Salary</td>
+            <td id="slipGross">0.00</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Absentee Deductions</td>
+            <td>—</td>
+            <td style="color:#EF4444;" id="slipDed">0.00</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Net Pay -->
+      <div class="net-pay-box">
+        <div class="net-pay-label">Net Pay Disbursed</div>
+        <div class="net-pay-amount">₹<span id="slipNet">0.00</span></div>
       </div>
 
-      <div style="margin-top:60px; display:flex; justify-content:space-between; font-size:12px; color:#6B7280;">
-        <div>Designated Issuer Signature<br/><br/><br/>_______________________<br/>Corporate HR Authority</div>
-        <div style="text-align: right;">Employee Acknowledgement Receipt<br/><br/><br/>_______________________<br/>Signature Sign Off Date</div>
+      <!-- Signatures -->
+      <div class="slip-signatures">
+        <div>
+          <div style="color:#6B7280; font-size:12px;">Authorised Signatory</div>
+          <div class="sig-line">HR Department</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="color:#6B7280; font-size:12px;">Employee Acknowledgement</div>
+          <div class="sig-line" style="margin-left:auto;">Signature &amp; Date</div>
+        </div>
       </div>
+
     </div>
   </div>
 
-<script src="app.js"></script>
-<script>
-  AppSession.protect();
-  const CACHED_TOKEN_SLIPS = AppSession.getToken();
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const USER = AppSession.getUser();
 
-  document.addEventListener('DOMContentLoaded', () => { downloadSalarySlipsHistoryMasterLedger(); });
+    const monthNames = ["", "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"];
 
-  function closeInvoiceLiveViewerPopup() { document.getElementById('invoiceLayoutLiveViewerOverlay').style.display = 'none'; }
+    let allSlips = [];
 
-  async function downloadSalarySlipsHistoryMasterLedger() {
-    try {
-      const res = await fetch(`${API_URL}?action=getSalarySlips&token=${CACHED_TOKEN_SLIPS}`);
-      const payload = await res.json();
-      if(payload.status === 'success') {
-        renderSlipsHistoryDatasetRows(payload.data.data);
-      } else { showToast(payload.message || 'Error executing slips archive data stream.'); }
-    } catch(err) { showToast('Handshake runtime latency sync mismatch.'); }
-  }
+    document.addEventListener('DOMContentLoaded', loadSlips);
 
-  function renderSlipsHistoryDatasetRows(arr) {
-    const container = document.getElementById('salarySlipsMasterRowsContainer');
-    if(!arr || arr.length === 0) {
-      container.innerHTML = `<tr><td colspan="9" style="padding:24px; text-align:center; color:var(--text-dim);">No generated wage statements mapped inside your account views scopes.</td></tr>`;
-      return;
+    /* ── Load slips ── */
+    async function loadSlips() {
+      try {
+        const res = await fetch(`${API_URL}?action=getSalarySlips&token=${TOKEN}`);
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          allSlips = payload.data?.data || payload.data || [];
+          updateStats(allSlips);
+          renderRows(allSlips);
+        } else {
+          showToast(payload.message || 'Slips fetch nahi hui.');
+        }
+      } catch (e) {
+        showToast('Network error.');
+      }
     }
 
-    container.innerHTML = arr.map(s => {
-      const monthNames = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      const sessionString = `${monthNames[s.month]} / ${s.year}`;
-      return `
+    function updateStats(data) {
+      const gross = data.reduce((s, r) => s + (parseFloat(r.gross_salary) || 0), 0);
+      const ded = data.reduce((s, r) => s + (parseFloat(r.deductions) || 0), 0);
+      const net = data.reduce((s, r) => s + (parseFloat(r.net_salary) || 0), 0);
+
+      document.getElementById('statTotal').textContent = data.length || '—';
+      document.getElementById('statGross').textContent = data.length ? '₹' + Math.round(gross).toLocaleString('en-IN') : '—';
+      document.getElementById('statDed').textContent = data.length ? '₹' + Math.round(ded).toLocaleString('en-IN') : '—';
+      document.getElementById('statNet').textContent = data.length ? '₹' + Math.round(net).toLocaleString('en-IN') : '—';
+    }
+
+    /* ── Filters ── */
+    function applyFilters() {
+      const month = document.getElementById('filterMonth').value;
+      const year = document.getElementById('filterYear').value;
+      let filtered = allSlips;
+      if (month) filtered = filtered.filter(s => String(s.month) === month);
+      if (year) filtered = filtered.filter(s => String(s.year) === year);
+      renderRows(filtered);
+    }
+
+    /* ── Render table ── */
+    function renderRows(data) {
+      const tbody = document.getElementById('slipsRowsContainer');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📭</div><p>Koi salary slips nahi mili.</p></div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map((s, i) => {
+        const period = `${monthNames[s.month] || 'M' + s.month} ${s.year}`;
+        const gross = parseFloat(s.gross_salary) || 0;
+        const ded = parseFloat(s.deductions) || 0;
+        const net = parseFloat(s.net_salary) || 0;
+
+        return `
         <tr>
-          <td><code>${s.slip_id}</code></td>
-          <td><strong style="color:var(--brand-glow);">${s.emp_id}</strong></td>
-          <td>📅 ${sessionString}</td>
-          <td>${s.present_days} Days</td>
-          <td style="color:var(--text-dim);">${s.absent_days} Absents</td>
-          <td>₹${s.gross_salary}</td>
-          <td style="color:#FCA5A5;">₹${s.deductions}</td>
-          <td style="color:#6EE7B7; font-weight:600;">₹${s.net_salary}</td>
-          <td><a class="btn-view-slip" onclick="openSingleInvoiceStatementDetailsPopup('${s.slip_id}')">View & Print Statement 🖨️</a></td>
-        </tr>
-      `;
-    }).join('');
-  }
+          <td><code style="font-size:12px; color:var(--text-dim);">${s.slip_id}</code></td>
+          <td><strong style="color:var(--accent-glow);">${s.emp_id}</strong></td>
+          <td style="font-size:13px; color:var(--text-muted);">📅 ${period}</td>
+          <td style="font-weight:600;">${s.present_days ?? '—'} days</td>
+          <td style="color:var(--danger);">${s.absent_days ?? '0'} days</td>
+          <td style="color:var(--text-primary);">₹${gross.toLocaleString('en-IN')}</td>
+          <td style="color:var(--danger);">₹${ded.toLocaleString('en-IN')}</td>
+          <td style="color:var(--success); font-weight:700;">₹${net.toLocaleString('en-IN')}</td>
+          <td>
+            <button class="btn-view" onclick="openSlip('${s.slip_id}')">
+              👁️ View &amp; Print
+            </button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
 
-  async function openSingleInvoiceStatementDetailsPopup(slipId) {
-    try {
-      const res = await fetch(`${API_URL}?action=getSingleSalarySlip&token=${CACHED_TOKEN_SLIPS}&slip_id=${slipId}`);
-      const payload = await res.json();
+    /* ── Open single slip ── */
+    async function openSlip(slipId) {
+      try {
+        const res = await fetch(`${API_URL}?action=getSingleSalarySlip&token=${TOKEN}&slip_id=${slipId}`);
+        const payload = await res.json();
 
-      if(payload.status === 'success') {
-        const bundle = payload.data;
-        const monthNames = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        
-        // Element variable updates binding mapped text components fields nodes elements
-        document.getElementById('invSlipCycleSession').textContent = `Statement Period: ${monthNames[bundle.slip.month]} — ${bundle.slip.year}`;
-        document.getElementById('invEmpId').textContent = bundle.slip.emp_id;
-        document.getElementById('invEmpName').textContent = bundle.employee_name;
-        document.getElementById('invDesignation').textContent = bundle.designation;
-        document.getElementById('invSlipId').textContent = bundle.slip.slip_id;
-        document.getElementById('invGeneratedDate').textContent = new Date(bundle.slip.generated_on).toLocaleDateString('en-IN');
-        document.getElementById('invEmpType').textContent = bundle.employment_type;
-        document.getElementById('invPresentDays').textContent = bundle.slip.present_days;
-        document.getElementById('invAbsentDays').textContent = bundle.slip.absent_days;
-        document.getElementById('invGrossSalary').textContent = bundle.slip.gross_salary;
-        document.getElementById('invDeductions').textContent = bundle.slip.deductions;
-        document.getElementById('invNetSalary').textContent = bundle.slip.net_salary;
+        if (payload.status === 'success') {
+          const b = payload.data;
+          const s = b.slip;
+          const period = `${monthNames[s.month] || 'Month ' + s.month} — ${s.year}`;
 
-        document.getElementById('invoiceLayoutLiveViewerOverlay').style.display = 'flex';
-      } else { showToast(payload.message || 'Error rendering document contents.'); }
-    } catch(e) { showToast('Handshake structural dataset request dropped.'); }
-  }
-</script>
+          document.getElementById('slipPeriod').textContent = `Statement Period: ${period}`;
+          document.getElementById('slipEmpId').textContent = s.emp_id;
+          document.getElementById('slipEmpName').textContent = b.employee_name || '—';
+          document.getElementById('slipDesignation').textContent = b.designation || '—';
+          document.getElementById('slipId').textContent = s.slip_id;
+          document.getElementById('slipGenDate').textContent = s.generated_on
+            ? new Date(s.generated_on).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+            : '—';
+          document.getElementById('slipEmpType').textContent = b.employment_type || '—';
+          document.getElementById('slipPresent').textContent = s.present_days ?? '—';
+          document.getElementById('slipAbsent').textContent = s.absent_days ?? '0';
+          document.getElementById('slipGross').textContent = parseFloat(s.gross_salary || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+          document.getElementById('slipDed').textContent = parseFloat(s.deductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+          document.getElementById('slipNet').textContent = parseFloat(s.net_salary || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+          document.getElementById('slipOverlay').style.display = 'flex';
+          document.getElementById('slipOverlay').scrollTop = 0;
+        } else {
+          showToast(payload.message || 'Slip open nahi ho sakla.');
+        }
+      } catch (e) {
+        showToast('Network error.');
+      }
+    }
+
+    function closeSlip() {
+      document.getElementById('slipOverlay').style.display = 'none';
+    }
+
+    /* Close overlay on backdrop click */
+    document.getElementById('slipOverlay').addEventListener('click', function (e) {
+      if (e.target === this) closeSlip();
+    });
+  </script>
 </body>
+
 </html>

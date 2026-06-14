@@ -5,90 +5,242 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        /* ============================================================
+           Codeline.AI — Shared Gray/Black Glass Theme (Design Tokens)
+           This token block is injected on every page via the sidebar.
+           ============================================================ */
+        :root {
+            --bg-base: #0A0A0B;
+            --bg-elevated: #151518;
+            --glass: rgba(255, 255, 255, 0.045);
+            --glass-strong: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.09);
+            --glass-blur: 20px;
+            --text-primary: #F4F4F5;
+            --text-muted: #A1A1AA;
+            --text-dim: #6B7280;
+            --accent: #A8AFC4;
+            --accent-glow: #D4D9E6;
+            --accent-grad: linear-gradient(135deg, #3F3F46 0%, #6B6F76 100%);
+            --success: #34D399;
+            --warning: #FBBF24;
+            --danger: #F87171;
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+
+        .sidebar-logo {
+            padding: 22px 18px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .logo-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon-sm {
+            width: 38px;
+            height: 38px;
+            background: var(--accent-grad);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        }
+
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+        }
+
+        .logo-text span {
+            color: var(--accent-glow);
+        }
+
+        .logo-tag {
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            margin-top: 1px;
+        }
+
+        .sidebar-user {
+            margin-top: 16px;
+            padding: 13px 14px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 13.5px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-role {
+            font-size: 11.5px;
+            color: var(--accent-glow);
+            margin-top: 2px;
+            text-transform: capitalize;
+        }
+
+        .user-branch {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 3px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 14px 12px;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 6px;
+        }
+
+        .nav-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            padding: 10px 10px 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 10px 12px;
+            margin: 2px 0;
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 500;
+            border: 1px solid transparent;
+            transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+        }
+
+        .nav-item span:first-child {
+            font-size: 15px;
+            width: 18px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--glass-strong);
+            border-color: var(--glass-border);
+            color: var(--text-primary);
+            font-weight: 600;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-footer {
+            padding: 14px 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: auto;
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 10px;
+            background: rgba(248, 113, 113, 0.07);
+            border: 1px solid rgba(248, 113, 113, 0.18);
+            color: #FCA5A5;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            font-size: 13.5px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: background 0.18s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(248, 113, 113, 0.14);
+        }
+
+        /* Larger tap targets + slightly wider panel on small screens */
+        @media (max-width: 768px) {
+            .ebms-sidebar-aside {
+                width: 78vw;
+                max-width: 280px;
+            }
+
+            .nav-item {
+                padding: 12px 12px;
+                font-size: 14.5px;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <div class="sidebar-overlay-mask" id="sidebarOverlayMask" onclick="closeSidebar()"></div>
     <aside class="ebms-sidebar-aside" id="sidebar">
-        <div class="sidebar-logo" style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-            <div class="logo-row" style="display: flex; align-items: center; gap: 10px;">
-                <div class="logo-icon-sm"
-                    style="width: 36px; height: 36px; background: linear-gradient(135deg, #1E40AF, #3B82F6); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px;">
-                    ⚡</div>
+        <div class="sidebar-logo">
+            <div class="logo-row">
+                <div class="logo-icon-sm">⚡</div>
                 <div>
-                    <div class="logo-text"
-                        style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px; color: #F9FAFB;">
-                        Codeline<span style="color: #3B82F6;">.AI</span></div>
-                    <div class="logo-tag"
-                        style="font-size: 10px; color: #6B7280; letter-spacing: 0.5px; text-transform: uppercase;">EBMS
-                        v1.0
-                    </div>
+                    <div class="logo-text">Codeline<span>.AI</span></div>
+                    <div class="logo-tag">EBMS v1.0</div>
                 </div>
             </div>
-            <div class="sidebar-user"
-                style="margin-top: 14px; padding: 14px 16px; background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.12); border-radius: 8px;">
-                <div class="user-name" id="sidebarUserName"
-                    style="font-weight: 600; font-size: 13.5px; color: #F9FAFB;">
-                    Loading...</div>
-                <div class="user-role" id="sidebarUserRole"
-                    style="font-size: 11.5px; color: #60A5FA; margin-top: 2px; text-transform: capitalize;">Loading...
-                </div>
-                <div class="user-branch" id="sidebarUserBranch"
-                    style="font-size: 11px; color: #6B7280; margin-top: 3px;">
-                    Loading...</div>
+            <div class="sidebar-user">
+                <div class="user-name" id="sidebarUserName">Loading...</div>
+                <div class="user-role" id="sidebarUserRole">Loading...</div>
+                <div class="user-branch" id="sidebarUserBranch">Loading...</div>
             </div>
         </div>
 
-        <nav class="sidebar-nav" style="flex: 1; padding: 16px 12px; overflow-y: auto;">
-            <div class="nav-section" style="margin-bottom: 8px;">
-                <div class="nav-section-label"
-                    style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #6B7280; padding: 8px;">
-                    Main
-                </div>
-                <a class="nav-item" href="dashboard.html"
-                    style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; color: #9CA3AF; text-decoration: none; font-size: 13.5px;"><span>📊</span>
-                    Dashboard</a>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-label">Main</div>
+                <a class="nav-item" href="dashboard.html"><span>📊</span> Dashboard</a>
             </div>
-            <div class="nav-section" style="margin-bottom: 8px;">
-                <div class="nav-section-label"
-                    style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #6B7280; padding: 8px;">
-                    Management</div>
-                <a class="nav-item" href="branch.html"
-                    style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; color: #9CA3AF; text-decoration: none; font-size: 13.5px;"><span>🏢</span>
-                    Branches</a>
-                <a class="nav-item" id="nav-employees" href="employees.html"
-                    style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; color: #9CA3AF; text-decoration: none; font-size: 13.5px;"><span>👥</span>
-                    Employees</a>
-                <a class="nav-item" href="attendance.html"
-                    style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; color: #9CA3AF; text-decoration: none; font-size: 13.5px;"><span>✅</span>
-                    Attendance</a>
-                <a class="nav-item" href="leaves.html"
-                    style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; color: #9CA3AF; text-decoration: none; font-size: 13.5px;"><span>📅</span>
-                    Leave Requests</a>
+            <div class="nav-section">
+                <div class="nav-section-label">Management</div>
+                <a class="nav-item" href="branch.html"><span>🏢</span> Branches</a>
+                <a class="nav-item" id="nav-employees" href="employees.html"><span>👥</span> Employees</a>
+                <a class="nav-item" href="attendance.html"><span>✅</span> Attendance</a>
+                <a class="nav-item" href="leaves.html"><span>📅</span> Leave Requests</a>
             </div>
-            <div class="nav-section" style="margin-bottom: 8px;">
-                <div class="nav-section-label"
-                    style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #6B7280; padding: 8px;">
-                    Payroll & Operations</div>
-                <a class="nav-item" href="salary.html"
-                    style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; color: #9CA3AF; text-decoration: none; font-size: 13.5px;"><span>💰</span>
-                    Salary Setup</a>
-                <a class="nav-item" href="salaryslip.html"
-                    style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; color: #9CA3AF; text-decoration: none; font-size: 13.5px;"><span>🧾</span>
-                    Salary Slips</a>
-                <a class="nav-item" href="documents.html"
-                    style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; color: #9CA3AF; text-decoration: none; font-size: 13.5px;"><span>📄</span>
-                    HR Documents</a>
-                <a class="nav-item" href="assets.html"
-                    style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; color: #9CA3AF; text-decoration: none; font-size: 13.5px;"><span>💻</span>
-                    Assets Inventory</a>
+            <div class="nav-section">
+                <div class="nav-section-label">Payroll &amp; Operations</div>
+                <a class="nav-item" href="salary.html"><span>💰</span> Salary Setup</a>
+                <a class="nav-item" href="salaryslip.html"><span>🧾</span> Salary Slips</a>
+                <a class="nav-item" href="documents.html"><span>📄</span> HR Documents</a>
+                <a class="nav-item" href="assets.html"><span>💻</span> Assets Inventory</a>
             </div>
         </nav>
 
-        <div class="sidebar-footer"
-            style="padding: 12px; border-top: 1px solid rgba(255,255,255,0.04); margin-top: auto;">
-            <button onclick="localStorage.clear(); window.location.href='index.html';"
-                style="width: 100%; padding: 9px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #FCA5A5; border-radius: 6px; font-weight: 500; cursor: pointer;">🚪
+        <div class="sidebar-footer">
+            <button class="btn-logout" onclick="localStorage.clear(); window.location.href='index.html';">🚪
                 Logout</button>
         </div>
     </aside>

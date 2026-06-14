@@ -1,143 +1,822 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KPI Tracking — Codeline.AI</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Performance Reviews — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --brand-dark: #0A0F1E; --brand-accent: #3B82F6; --brand-glow: #60A5FA;
-      --surface: #111827; --surface2: #1F2937; --border: #1F2937; --border2: #374151;
-      --text-primary: #F9FAFB; --text-muted: #9CA3AF; --text-dim: #6B7280;
-      --success: #10B981; --radius: 12px; --radius-sm: 8px;
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-    body { font-family: 'Inter', sans-serif; background: var(--brand-dark); color: var(--text-primary); min-height: 100vh; display: flex; }
-    .sidebar-spacer { width: 240px; flex-shrink: 0; }
-    @media (max-width: 768px) { .sidebar-spacer { display: none; } }
-    .main-workspace { flex: 1; display: flex; flex-direction: column; min-height: 100vh; padding: 24px; }
-    .mobile-nav-bar { display: none; height: 50px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; padding: 0 16px; font-size: 20px; color: var(--text-muted); cursor: pointer; }
-    @media (max-width: 768px) { .mobile-nav-bar { display: flex; } }
-    .header-block { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
-    .title-area h1 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; }
-    .btn-action { background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
-    .table-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
-    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 800px; }
-    .data-table th { background: #1E40AF; color: #fff; padding: 14px 16px; font-weight: 600; }
-    .data-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; }
-    .modal-card { background: var(--surface); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--radius); max-width: 500px; width: 100%; }
-    .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .modal-body { padding: 24px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-    .form-group label { font-size: 12.5px; color: var(--text-muted); text-transform: uppercase; }
-    .form-group input, .form-group select { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 12px; color: #fff; font-size: 14px; outline: none; }
+
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --warning: #FBBF24;
+      --danger: #F87171;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar-spacer {
+      width: 240px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar-spacer {
+        display: none;
+      }
+    }
+
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 600px) {
+      .main-workspace {
+        padding: 16px;
+      }
+    }
+
+    /* Mobile nav */
+    .mobile-nav-bar {
+      display: none;
+      height: 50px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--radius-sm);
+      align-items: center;
+      padding: 0 16px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-nav-bar {
+        display: flex;
+      }
+    }
+
+    /* Header */
+    .header-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title-area h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .title-area p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .btn-action {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(var(--glass-blur));
+      transition: background 0.18s, border-color 0.18s, transform 0.18s;
+      white-space: nowrap;
+    }
+
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    /* Stats */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .stat-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-bar select,
+    .filter-bar input {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      cursor: pointer;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .filter-bar select option {
+      background: #1a1a1e;
+    }
+
+    /* Table */
+    .table-container {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      width: 100%;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+      min-width: 700px;
+    }
+
+    .data-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      padding: 14px 16px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .data-table tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    /* Score bar */
+    .score-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 140px;
+    }
+
+    .score-bar-track {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    .score-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      min-width: 40px;
+      text-align: right;
+    }
+
+    /* Grade badge */
+    .grade-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .grade-a {
+      background: rgba(52, 211, 153, 0.15);
+      color: #34D399;
+    }
+
+    .grade-b {
+      background: rgba(96, 165, 250, 0.15);
+      color: #93C5FD;
+    }
+
+    .grade-c {
+      background: rgba(251, 191, 36, 0.15);
+      color: #FBBF24;
+    }
+
+    .grade-d {
+      background: rgba(248, 113, 113, 0.15);
+      color: #F87171;
+    }
+
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background: rgba(18, 18, 20, 0.88);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 460px;
+      width: 100%;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.18s, background 0.18s;
+    }
+
+    .form-group select option {
+      background: #1a1a1e;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    /* Score slider in modal */
+    .score-slider-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .score-slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .score-display {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--success);
+    }
+
+    .score-grade-tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #34D399;
+      cursor: pointer;
+      height: 6px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--glass-strong);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.18s, transform 0.18s;
+      margin-top: 4px;
+    }
+
+    .btn-submit:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
   </style>
 </head>
+
 <body>
+
   <div class="sidebar-spacer"></div>
+
   <div class="main-workspace">
-    <div class="mobile-nav-bar" onclick="openSidebar()">☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span></div>
+    <div class="mobile-nav-bar" onclick="openSidebar()">
+      ☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span>
+    </div>
+
     <div class="header-block">
       <div class="title-area">
         <h1>🎯 Performance Reviews</h1>
-        <p>Employees ke monthly KPI scores, audit evaluation reviews registry matrix logs</p>
+        <p>Employee KPI scores aur monthly performance evaluations track karein</p>
       </div>
-      <button class="btn-action" id="addPerfBtn" style="display:none;" onclick="togglePerfModal(true)">➕ Grade Scorecard</button>
+      <button class="btn-action" id="addPerfBtn" style="display:none;" onclick="togglePerfModal(true)">
+        ➕ Grade Scorecard
+      </button>
     </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Reviews</div>
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-sub">All sessions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg. Score</div>
+        <div class="stat-value" id="statAvg" style="color:var(--accent-glow);">—</div>
+        <div class="stat-sub">Out of 100</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Top Performers</div>
+        <div class="stat-value" id="statTop" style="color:var(--success);">—</div>
+        <div class="stat-sub">Score ≥ 80</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Need Attention</div>
+        <div class="stat-value" id="statLow" style="color:var(--danger);">—</div>
+        <div class="stat-sub">Score &lt; 50</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <select id="filterMonth" onchange="applyFilters()">
+        <option value="">All Months</option>
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+      <select id="filterYear" onchange="applyFilters()">
+        <option value="">All Years</option>
+        <option value="2026" selected>2026</option>
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+      </select>
+      <select id="filterGrade" onchange="applyFilters()">
+        <option value="">All Grades</option>
+        <option value="A">Grade A (80–100)</option>
+        <option value="B">Grade B (60–79)</option>
+        <option value="C">Grade C (40–59)</option>
+        <option value="D">Grade D (0–39)</option>
+      </select>
+    </div>
+
+    <!-- Table -->
     <div class="table-container">
       <table class="data-table">
         <thead>
           <tr>
             <th>Review ID</th>
-            <th>Employee ID</th>
+            <th>Employee</th>
             <th>Session</th>
-            <th>KPI Score</th>
+            <th>Score</th>
+            <th>Grade</th>
             <th>Remarks</th>
             <th>Reviewed By</th>
           </tr>
         </thead>
         <tbody id="perfRowsContainer">
-          <tr><td colspan="6" style="padding:24px; text-align:center; color:var(--text-dim);">KPI metrics computing sync...</td></tr>
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <div class="empty-icon">🎯</div>
+                <p>KPI records load ho rahe hain...</p>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Performance Modal -->
+  <!-- Grade Scorecard Modal -->
   <div class="modal-overlay" id="perfModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 style="font-family:'Space Grotesk';">🎯 Evaluate Performance Score</h3>
-        <button style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer;" onclick="togglePerfModal(false)">×</button>
+        <h3>🎯 Grade Employee Scorecard</h3>
+        <button style="background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;line-height:1;"
+          onclick="togglePerfModal(false)">×</button>
       </div>
       <div class="modal-body">
         <form id="newPerfForm" onsubmit="submitPerfData(event)">
-          <div class="form-group"><label>Employee Code ID *</label><input type="text" id="pEmp" required placeholder="e.g. EMP004"/></div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-            <div class="form-group"><label>Month *</label><input type="number" id="pMonth" min="1" max="12" required value="6"/></div>
-            <div class="form-group"><label>Year *</label><input type="number" id="pYear" required value="2026"/></div>
+          <div class="form-group">
+            <label>Employee ID *</label>
+            <input type="text" id="pEmp" required placeholder="e.g. EMP004" />
           </div>
-          <div class="form-group"><label>Overall Score Evaluation (Max 100) *</label><input type="number" id="pScore" min="0" max="100" required/></div>
-          <div class="form-group"><label>Manager Feedback Remarks</label><input type="text" id="pRemarks"/></div>
-          <button type="submit" class="btn-action" style="width: 100%; justify-content: center;">Submit Review Ledger</button>
+          <div class="two-col">
+            <div class="form-group">
+              <label>Month *</label>
+              <select id="pMonth" required>
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6" selected>June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Year *</label>
+              <input type="number" id="pYear" required value="2026" min="2020" max="2099" />
+            </div>
+          </div>
+
+          <!-- Score slider -->
+          <div class="form-group">
+            <label>Performance Score *</label>
+            <div class="score-slider-wrap">
+              <div class="score-slider-header">
+                <span class="score-display" id="sliderDisplay">75</span>
+                <span class="score-grade-tag" id="sliderGradeTag"></span>
+              </div>
+              <input type="range" id="pScore" min="0" max="100" value="75" oninput="updateSlider()" />
+              <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim);">
+                <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Manager Remarks</label>
+            <input type="text" id="pRemarks" placeholder="e.g. Excellent performance this month" />
+          </div>
+
+          <button type="submit" class="btn-submit" id="perfSubmitBtn">Submit Review</button>
         </form>
       </div>
     </div>
   </div>
 
-<script src="app.js"></script>
-<script>
-  AppSession.protect();
-  const TOKEN = AppSession.getToken();
-  const USER = AppSession.getUser();
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const USER = AppSession.getUser();
 
-  document.addEventListener('DOMContentLoaded', () => {
-    if(USER.role !== 'employee') { document.getElementById('addPerfBtn').style.display = 'block'; }
-    loadPerformance();
-  });
+    let allRecords = [];
 
-  function togglePerfModal(on) { document.getElementById('perfModal').style.display = on ? 'flex' : 'none'; if(!on) document.getElementById('newPerfForm').reset(); }
+    const monthNames = ["", "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"];
 
-  async function loadPerformance() {
-    try {
-      const res = await fetch(`${API_URL}?action=getPerformance&token=${TOKEN}`);
-      const payload = await res.json();
-      if(payload.status === 'success') {
-        const arr = payload.data;
-        if(!arr || arr.length === 0) { document.getElementById('perfRowsContainer').innerHTML = '<tr><td colspan="6" style="text-align:center;">Koi scorecards register nahi hain.</td></tr>'; return; }
-        document.getElementById('perfRowsContainer').innerHTML = arr.map(r => `
-          <tr>
-            <td><code>${r.perf_id}</code></td>
-            <td><strong>${r.emp_id}</strong></td>
-            <td>Month ${r.month} / ${r.year}</td>
-            <td style="color:var(--brand-glow); font-weight:700;">📈 ${r.score} / 100</td>
-            <td>${r.remarks || '—'}</td>
-            <td><code>${r.reviewed_by}</code></td>
-          </tr>
-        `).join('');
+    document.addEventListener('DOMContentLoaded', () => {
+      if (USER.role !== 'employee') {
+        document.getElementById('addPerfBtn').style.display = 'inline-flex';
       }
-    } catch(e) { showToast('Performance index pull error.'); }
-  }
+      updateSlider();
+      loadPerformance();
+    });
 
-  async function submitPerfData(e) {
-    e.preventDefault();
-    const payload = {
-      token: TOKEN, action: 'savePerformance',
-      emp_id: document.getElementById('pEmp').value.trim(),
-      month: document.getElementById('pMonth').value,
-      year: document.getElementById('pYear').value,
-      score: document.getElementById('pScore').value,
-      remarks: document.getElementById('pRemarks').value
-    };
-    try {
-      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-      const out = await res.json();
-      if(out.status === 'success') { showToast('Scorecard added!'); togglePerfModal(false); loadPerformance(); }
-    } catch(err) { showToast('Handshake runtime validation failed.'); }
-  }
-</script>
+    /* ── Slider live update ── */
+    function updateSlider() {
+      const score = parseInt(document.getElementById('pScore').value);
+      const display = document.getElementById('sliderDisplay');
+      const gradeTag = document.getElementById('sliderGradeTag');
+
+      display.textContent = score;
+
+      let grade, color, bg;
+      if (score >= 80) { grade = 'A'; color = '#34D399'; bg = 'rgba(52,211,153,0.15)'; }
+      else if (score >= 60) { grade = 'B'; color = '#93C5FD'; bg = 'rgba(96,165,250,0.15)'; }
+      else if (score >= 40) { grade = 'C'; color = '#FBBF24'; bg = 'rgba(251,191,36,0.15)'; }
+      else { grade = 'D'; color = '#F87171'; bg = 'rgba(248,113,113,0.15)'; }
+
+      display.style.color = color;
+      gradeTag.textContent = 'Grade ' + grade;
+      gradeTag.style.cssText = `color:${color}; background:${bg}; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600;`;
+    }
+
+    /* ── Get grade ── */
+    function getGrade(score) {
+      if (score >= 80) return 'A';
+      if (score >= 60) return 'B';
+      if (score >= 40) return 'C';
+      return 'D';
+    }
+
+    function getScoreColor(score) {
+      if (score >= 80) return '#34D399';
+      if (score >= 60) return '#93C5FD';
+      if (score >= 40) return '#FBBF24';
+      return '#F87171';
+    }
+
+    /* ── Load ── */
+    async function loadPerformance() {
+      try {
+        const res = await fetch(`${API_URL}?action=getPerformance&token=${TOKEN}`);
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          allRecords = payload.data || [];
+          updateStats(allRecords);
+          renderRows(allRecords);
+        } else {
+          showToast(payload.message || 'Performance data fetch nahi hui.');
+        }
+      } catch (e) {
+        showToast('Network error.');
+      }
+    }
+
+    function updateStats(data) {
+      const total = data.length;
+      const avg = total ? Math.round(data.reduce((s, r) => s + (parseFloat(r.score) || 0), 0) / total) : 0;
+      const top = data.filter(r => parseFloat(r.score) >= 80).length;
+      const low = data.filter(r => parseFloat(r.score) < 50).length;
+
+      document.getElementById('statTotal').textContent = total || '—';
+      document.getElementById('statAvg').textContent = total ? avg : '—';
+      document.getElementById('statTop').textContent = total ? top : '—';
+      document.getElementById('statLow').textContent = total ? low : '—';
+    }
+
+    /* ── Filters ── */
+    function applyFilters() {
+      const month = document.getElementById('filterMonth').value;
+      const year = document.getElementById('filterYear').value;
+      const grade = document.getElementById('filterGrade').value;
+
+      let filtered = allRecords;
+      if (month) filtered = filtered.filter(r => String(r.month) === month);
+      if (year) filtered = filtered.filter(r => String(r.year) === year);
+      if (grade) filtered = filtered.filter(r => getGrade(parseFloat(r.score)) === grade);
+      renderRows(filtered);
+    }
+
+    /* ── Render ── */
+    function renderRows(data) {
+      const tbody = document.getElementById('perfRowsContainer');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📭</div><p>Koi performance records nahi mile.</p></div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(r => {
+        const score = parseFloat(r.score) || 0;
+        const grade = getGrade(score);
+        const color = getScoreColor(score);
+        const gradeClass = 'grade-' + grade.toLowerCase();
+        const pct = Math.min(score, 100);
+
+        return `
+        <tr>
+          <td><code style="font-size:12px; color:var(--text-dim);">${r.perf_id}</code></td>
+          <td><strong style="color:var(--accent-glow);">${r.emp_id}</strong></td>
+          <td style="font-size:13px; color:var(--text-muted);">
+            ${monthNames[r.month] || 'M' + r.month} ${r.year}
+          </td>
+          <td>
+            <div class="score-wrap">
+              <div class="score-bar-track">
+                <div class="score-bar-fill" style="width:${pct}%; background:${color};"></div>
+              </div>
+              <span class="score-num" style="color:${color};">${score}</span>
+            </div>
+          </td>
+          <td><span class="grade-badge ${gradeClass}">${grade}</span></td>
+          <td style="font-size:13px; color:var(--text-muted); max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            ${r.remarks || '—'}
+          </td>
+          <td><code style="font-size:12px; color:var(--text-dim);">${r.reviewed_by || '—'}</code></td>
+        </tr>`;
+      }).join('');
+    }
+
+    /* ── Modal ── */
+    function togglePerfModal(on) {
+      document.getElementById('perfModal').style.display = on ? 'flex' : 'none';
+      if (!on) {
+        document.getElementById('newPerfForm').reset();
+        document.getElementById('pScore').value = 75;
+        updateSlider();
+      }
+    }
+
+    /* ── Submit ── */
+    async function submitPerfData(e) {
+      e.preventDefault();
+      const btn = document.getElementById('perfSubmitBtn');
+      btn.disabled = true; btn.textContent = 'Submitting...';
+
+      const payload = {
+        token: TOKEN,
+        action: 'savePerformance',
+        emp_id: document.getElementById('pEmp').value.trim(),
+        month: document.getElementById('pMonth').value,
+        year: document.getElementById('pYear').value,
+        score: document.getElementById('pScore').value,
+        remarks: document.getElementById('pRemarks').value
+      };
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Performance scorecard saved!');
+          togglePerfModal(false);
+          loadPerformance();
+        } else {
+          showToast(out.message || 'Save mein error.');
+        }
+      } catch (err) {
+        showToast('Network error.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Submit Review';
+      }
+    }
+  </script>
 </body>
+
 </html>

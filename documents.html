@@ -1,137 +1,531 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HR Documentation Center — Codeline.AI</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --brand-dark:   #0A0F1E;
-      --brand-accent: #3B82F6;
-      --brand-glow:   #60A5FA;
-      --surface:      #111827;
-      --surface2:     #1F2937;
-      --border:       #1F2937;
-      --border2:      #374151;
-      --text-primary: #F9FAFB;
-      --text-muted:   #9CA3AF;
-      --text-dim:     #6B7280;
-      --info:         #3B82F6;
-      --radius:       12px;
-      --radius-sm:    8px;
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    body { font-family: 'Inter', sans-serif; background: var(--brand-dark); color: var(--text-primary); min-height: 100vh; display: flex; }
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #52525B;
+      --success: #34D399;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
 
-    .sidebar-spacer { width: 240px; flex-shrink: 0; }
-    @media (max-width: 768px) { .sidebar-spacer { display: none; } }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(ellipse at 15% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 100%, rgba(255, 255, 255, 0.025) 0%, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
 
-    .main-workspace { flex: 1; display: flex; flex-direction: column; min-height: 100vh; padding: 24px; overflow-x: hidden; }
-    .mobile-nav-bar { display: none; height: 50px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; padding: 0 16px; font-size: 20px; cursor: pointer; color: var(--text-muted); }
-    @media (max-width: 768px) { .mobile-nav-bar { display: flex; } }
+    .sidebar-spacer {
+      width: 240px;
+      flex-shrink: 0;
+    }
 
-    .header-block { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
-    .title-area h1 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; }
+    @media (max-width: 768px) {
+      .sidebar-spacer {
+        display: none;
+      }
+    }
 
-    /* Modular Split configuration workspaces layout */
-    .docs-panel-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 24px; }
-    @media (max-width: 900px) { .docs-panel-grid { grid-template-columns: 1fr; } }
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
 
-    .generation-box { background: linear-gradient(135deg, #111827 0%, #1a2436 100%); border: 1px solid rgba(59,130,246,0.18); border-radius: var(--radius); padding: 24px; height: max-content; }
-    .btn-submit-engine { width: 100%; background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: #fff; border: none; padding: 12px; border-radius: var(--radius-sm); font-size: 14.5px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    @media (max-width: 600px) {
+      .main-workspace {
+        padding: 14px;
+      }
+    }
 
-    .table-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
-    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 650px; }
-    .data-table th { background: #1E40AF; color: #fff; padding: 14px 16px; font-weight: 600; }
-    .data-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-    .data-table tr:nth-child(even) td { background: rgba(59,130,246,0.02); }
+    /* Mobile nav */
+    .mobile-nav-bar {
+      display: none;
+      height: 48px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--radius-sm);
+      align-items: center;
+      padding: 0 16px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+      gap: 10px;
+    }
 
-    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-    .form-group label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.3px; }
-    .form-group input, .form-group select, .form-group textarea { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 12px; color: #fff; font-size: 14px; outline: none; font-family: 'Inter', sans-serif; }
-    .form-group textarea { resize: none; height: 90px; }
+    @media (max-width: 768px) {
+      .mobile-nav-bar {
+        display: flex;
+      }
+    }
 
-    /* Viewer modal layout structures popup block panels */
-    .viewer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 16px; }
-    .viewer-card { background: #111827; border: 1px solid #374151; border-radius: var(--radius); max-width: 650px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.6); }
-    .viewer-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .viewer-body { padding: 24px; background: #0A0F1E; margin: 20px; border-radius: 6px; border: 1px solid #1F2937; color: #E5E7EB; font-family: monospace; white-space: pre-wrap; font-size: 13.5px; line-height: 1.5; max-height: 60vh; overflow-y: auto; }
+    /* Header */
+    .header-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
 
-    .pagination-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; color: var(--text-muted); font-size: 13.5px; }
-    .btn-nav { background: var(--surface2); color: #fff; border: 1px solid var(--border2); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
-    .btn-nav:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-link-action { color: var(--brand-glow); cursor: pointer; text-decoration: none; font-weight: 500; }
+    .title-area h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .title-area p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    /* Two-column grid */
+    .docs-panel-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .docs-panel-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Generator panel */
+    .generation-box {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 22px;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      height: max-content;
+      position: sticky;
+      top: 24px;
+    }
+
+    @media (max-width: 960px) {
+      .generation-box {
+        position: static;
+      }
+    }
+
+    .gen-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Form elements */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.18s, background 0.18s;
+      backdrop-filter: blur(10px);
+      width: 100%;
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: var(--text-dim);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: rgba(255, 255, 255, 0.22);
+      background: var(--glass-strong);
+    }
+
+    .form-group select option {
+      background: #1a1a1c;
+      color: var(--text-primary);
+    }
+
+    .form-group textarea {
+      resize: none;
+      height: 88px;
+    }
+
+    .btn-generate {
+      width: 100%;
+      background: rgba(244, 244, 245, 0.9);
+      color: #0A0A0B;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 11px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.2s;
+      margin-top: 6px;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-generate:hover:not(:disabled) {
+      background: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Right panel — table + pagination */
+    .archive-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .table-container {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+      min-width: 600px;
+    }
+
+    .data-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      padding: 13px 16px;
+      font-weight: 600;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    /* Doc type badge */
+    .doc-type-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 600;
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+    }
+
+    .btn-preview {
+      background: none;
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+
+    .btn-preview:hover {
+      background: var(--glass-strong);
+      color: var(--text-primary);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Pagination */
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-dim);
+      font-size: 13px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.18s;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-nav:hover:not(:disabled) {
+      background: var(--glass-strong);
+      color: var(--text-primary);
+    }
+
+    .btn-nav:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    /* Document viewer modal */
+    .viewer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .viewer-card {
+      background: rgba(14, 14, 16, 0.85);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 660px;
+      width: 100%;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .viewer-header {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .viewer-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .viewer-body {
+      margin: 16px 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: #D4D4D8;
+      font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+      white-space: pre-wrap;
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .viewer-footer {
+      padding: 14px 22px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .btn-print {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.18s;
+    }
+
+    .btn-print:hover {
+      background: rgba(255, 255, 255, 0.13);
+    }
+
+    code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      border-radius: 5px;
+      padding: 2px 6px;
+      color: var(--text-muted);
+    }
   </style>
 </head>
+
 <body>
 
   <div class="sidebar-spacer"></div>
 
   <div class="main-workspace">
-    <div class="mobile-nav-bar" onclick="openSidebar()">☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span></div>
+    <div class="mobile-nav-bar" onclick="openSidebar()">
+      ☰ <span style="font-size:14px; font-weight:600;">Menu</span>
+    </div>
 
     <div class="header-block">
       <div class="title-area">
-        <h1>📄 HR Documentation Management Center</h1>
-        <p>Generate legal employment contracts framework, map compliance warning letters safely</p>
+        <h1>📄 HR Documentation Center</h1>
+        <p>Employment letters generate karein — Offer, Appointment, aur Warning letters</p>
       </div>
     </div>
 
-    <!-- Layout core splitting workspace maps components -->
     <div class="docs-panel-grid">
-      
-      <!-- Generator Component Controls Panel block -->
+
+      <!-- Generator Panel -->
       <div class="generation-box">
-        <h3 style="font-family:'Space Grotesk'; font-size:16px; color:var(--brand-glow); margin-bottom:16px;">⚡ Automated Document Generator</h3>
+        <div class="gen-title">⚡ Document Generator</div>
         <form id="documentGenerationFormNode" onsubmit="executeDocumentGenerationProcess(event)">
           <div class="form-group">
-            <label>Target Employee Code ID *</label>
-            <input type="text" id="docEmpId" required placeholder="e.g. EMP004"/>
+            <label>Employee ID *</label>
+            <input type="text" id="docEmpId" required placeholder="e.g. EMP004" />
           </div>
           <div class="form-group">
-            <label>Letter Template Classification *</label>
+            <label>Letter Type *</label>
             <select id="docTemplateType" required>
-              <option value="Offer Letter">Offer Letter Template</option>
-              <option value="Appointment Letter">Appointment Letter Template</option>
-              <option value="Warning Letter">Strict Warning Letter</option>
+              <option value="Offer Letter">Offer Letter</option>
+              <option value="Appointment Letter">Appointment Letter</option>
+              <option value="Warning Letter">Warning Letter</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Custom Notes / Incident Context Details</label>
-            <textarea id="docCustomNotes" placeholder="Enter behavioral data, custom structural clauses markers..."></textarea>
+            <label>Custom Notes (Optional)</label>
+            <textarea id="docCustomNotes" placeholder="Additional clauses ya notes likhein..."></textarea>
           </div>
-          <button type="submit" class="btn-submit-engine" id="engineSubmitBtnLabelNode">COMPILE & GENERATE DOC</button>
+          <button type="submit" class="btn-generate" id="engineSubmitBtnLabelNode">
+            ⚡ Generate Document
+          </button>
         </form>
       </div>
 
-      <!-- Historical Archive Registry Canvas block -->
-      <div style="display:flex; flex-direction:column;">
+      <!-- Archive Panel -->
+      <div class="archive-panel">
         <div class="table-container">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Doc Code Token</th>
+                <th>Doc ID</th>
                 <th>Employee</th>
-                <th>Document Template</th>
-                <th>Generated On Date</th>
-                <th>Authorized Issuer</th>
-                <th>Action Controls</th>
+                <th>Type</th>
+                <th>Generated On</th>
+                <th>Issued By</th>
+                <th>Preview</th>
               </tr>
             </thead>
             <tbody id="documentsArchiveRowsContainer">
-              <tr><td colspan="6" style="padding: 32px; text-align: center; color: var(--text-dim);">Historical documents matrix checking sequences...</td></tr>
+              <tr>
+                <td colspan="6" style="padding:32px; text-align:center; color:var(--text-dim);">
+                  Documents load ho rahe hain...
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
 
         <div class="pagination-bar">
-          <div id="paginationInfoTrackerLabel">Showing page 0 of 0 archives</div>
+          <span id="paginationInfoTrackerLabel">Page 0 of 0</span>
           <div style="display:flex; gap:8px;">
-            <button id="btnPrevPage" class="btn-nav" onclick="changeArchivePage(-1)" disabled>Previous</button>
-            <button id="btnNextPage" class="btn-nav" onclick="changeArchivePage(1)" disabled>Next</button>
+            <button id="btnPrevPage" class="btn-nav" onclick="changeArchivePage(-1)" disabled>← Prev</button>
+            <button id="btnNextPage" class="btn-nav" onclick="changeArchivePage(1)" disabled>Next →</button>
           </div>
         </div>
       </div>
@@ -139,131 +533,140 @@
     </div>
   </div>
 
-  <!-- Raw Template Content Text Previewer Modal Overlay Box -->
+  <!-- Document Viewer Modal -->
   <div class="viewer-overlay" id="documentTextContentLiveViewerOverlay">
     <div class="viewer-card">
       <div class="viewer-header">
-        <h3 id="viewerHeaderDocTitle" style="font-family:'Space Grotesk'; font-size:16px; color:var(--brand-glow);">Document Meta Output Code</h3>
-        <button style="background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer;" onclick="closeDocumentLiveViewerPopup()">×</button>
+        <h3 id="viewerHeaderDocTitle">📄 Document Preview</h3>
+        <button
+          style="background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; line-height:1;"
+          onclick="closeDocumentLiveViewerPopup()">×</button>
       </div>
-      <div class="viewer-body" id="viewerContainerTextPlaneBody">Rendering context text arrays nodes...</div>
-      <div style="padding:16px 24px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px;">
-        <button class="btn-nav" style="background:var(--brand-blue);" onclick="executePrintSimulationDocBlock()">🖨️ Print / Download Document</button>
-        <button class="btn-nav" onclick="closeDocumentLiveViewerPopup()">Close Preview</button>
+      <div class="viewer-body" id="viewerContainerTextPlaneBody">Loading...</div>
+      <div class="viewer-footer">
+        <button class="btn-print" onclick="executePrintSimulationDocBlock()">🖨️ Print / Download</button>
+        <button class="btn-nav" onclick="closeDocumentLiveViewerPopup()">Close</button>
       </div>
     </div>
   </div>
 
-<script src="app.js"></script>
-<script>
-  AppSession.protect();
-  const CACHED_TOKEN_DOCS = AppSession.getToken();
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const CACHED_TOKEN_DOCS = AppSession.getToken();
 
-  let CURRENT_PAGE_TRACKER = 1;
-  let TOTAL_PAGES_LIMIT = 1;
-  let LOCAL_CACHED_ARCHIVE_DATA_MATRIX_ARRAY = [];
+    let CURRENT_PAGE_TRACKER = 1;
+    let TOTAL_PAGES_LIMIT = 1;
+    let LOCAL_CACHED_ARCHIVE_DATA_MATRIX_ARRAY = [];
 
-  document.addEventListener('DOMContentLoaded', () => { downloadGeneratedDocumentsArchive(); });
+    document.addEventListener('DOMContentLoaded', () => { downloadGeneratedDocumentsArchive(); });
 
-  function closeDocumentLiveViewerPopup() { document.getElementById('documentTextContentLiveViewerOverlay').style.display = 'none'; }
-
-  async function downloadGeneratedDocumentsArchive() {
-    const REQUEST_ENDPOINT_ARCHIVE = `${API_URL}?action=getDocuments&token=${CACHED_TOKEN_DOCS}&page=${CURRENT_PAGE_TRACKER}&limit=10`;
-    try {
-      const responseStream = await fetch(REQUEST_ENDPOINT_ARCHIVE);
-      const jsonPayload = await responseStream.json();
-
-      if(jsonPayload.status === 'success') {
-        LOCAL_CACHED_ARCHIVE_DATA_MATRIX_ARRAY = jsonPayload.data.data;
-        renderArchiveDatasetRowsGrid(LOCAL_CACHED_ARCHIVE_DATA_MATRIX_ARRAY);
-        updatePaginationDisplayNodes(jsonPayload.data);
-      } else {
-        showToast(jsonPayload.message || 'Error parsing documentary indexes logs.');
-      }
-    } catch(err) { showToast('Handshake documentary interface connection fallback.'); }
-  }
-
-  function renderArchiveDatasetRowsGrid(dataMatrix) {
-    const container = document.getElementById('documentsArchiveRowsContainer');
-    if(!dataMatrix || dataMatrix.length === 0) {
-      container.innerHTML = `<tr><td colspan="6" style="padding:24px; text-align:center; color:var(--text-dim);">No generated corporate letters registered inside systems archives logs.</td></tr>`;
-      return;
+    function closeDocumentLiveViewerPopup() {
+      document.getElementById('documentTextContentLiveViewerOverlay').style.display = 'none';
     }
 
-    container.innerHTML = dataMatrix.map((doc, indexRowIdx) => {
-      const formattedDate = doc.generated_on ? new Date(doc.generated_on).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) : '—';
-      return `
-        <tr>
-          <td><code>${doc.doc_id}</code></td>
-          <td><strong style="color:var(--brand-glow);">${doc.emp_id}</strong></td>
-          <td><span style="font-weight:500;">${doc.doc_type}</span></td>
-          <td style="font-size:13px; color:var(--text-muted);">${formattedDate}</td>
-          <td><code style="color:var(--text-dim);">${doc.generated_by || 'System System'}</code></td>
-          <td>
-            <a class="btn-link-action" onclick="openDocumentLiveTextPlanePreviewer(${indexRowIdx})">Open File Preview 👁️</a>
-          </td>
-        </tr>
-      `;
-    }).join('');
-  }
+    async function downloadGeneratedDocumentsArchive() {
+      try {
+        const res = await fetch(`${API_URL}?action=getDocuments&token=${CACHED_TOKEN_DOCS}&page=${CURRENT_PAGE_TRACKER}&limit=10`);
+        const jsonPayload = await res.json();
 
-  function updatePaginationDisplayNodes(pag) {
-    CURRENT_PAGE_TRACKER = pag.page;
-    TOTAL_PAGES_LIMIT = pag.totalPages;
+        if (jsonPayload.status === 'success') {
+          LOCAL_CACHED_ARCHIVE_DATA_MATRIX_ARRAY = jsonPayload.data.data;
+          renderArchiveDatasetRowsGrid(LOCAL_CACHED_ARCHIVE_DATA_MATRIX_ARRAY);
+          updatePaginationDisplayNodes(jsonPayload.data);
+        } else {
+          showToast(jsonPayload.message || 'Documents load karne mein error.');
+        }
+      } catch (err) { showToast('Network error. Documents fetch nahi ho paye.'); }
+    }
 
-    document.getElementById('paginationInfoTrackerLabel').textContent = `Showing page ${CURRENT_PAGE_TRACKER} of ${TOTAL_PAGES_LIMIT || 1} (${pag.total} files archived)`;
-    document.getElementById('btnPrevPage').disabled = CURRENT_PAGE_TRACKER <= 1;
-    document.getElementById('btnNextPage').disabled = CURRENT_PAGE_TRACKER >= TOTAL_PAGES_LIMIT;
-  }
+    function renderArchiveDatasetRowsGrid(dataMatrix) {
+      const container = document.getElementById('documentsArchiveRowsContainer');
+      if (!dataMatrix || dataMatrix.length === 0) {
+        container.innerHTML = `<tr><td colspan="6" style="padding:28px; text-align:center; color:var(--text-dim);">Koi documents nahi hain abhi.</td></tr>`;
+        return;
+      }
+      container.innerHTML = dataMatrix.map((doc, idx) => {
+        const date = doc.generated_on
+          ? new Date(doc.generated_on).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+          : '—';
+        return `
+          <tr>
+            <td><code>${doc.doc_id}</code></td>
+            <td><strong>${doc.emp_id}</strong></td>
+            <td><span class="doc-type-badge">${doc.doc_type}</span></td>
+            <td style="font-size:13px;">${date}</td>
+            <td><code>${doc.generated_by || 'System'}</code></td>
+            <td>
+              <button class="btn-preview" onclick="openDocumentLiveTextPlanePreviewer(${idx})">
+                👁️ Preview
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
 
-  function changeArchivePage(stepDelta) {
-    CURRENT_PAGE_TRACKER += stepDelta;
-    downloadGeneratedDocumentsArchive();
-  }
+    function updatePaginationDisplayNodes(pag) {
+      CURRENT_PAGE_TRACKER = pag.page;
+      TOTAL_PAGES_LIMIT = pag.totalPages;
+      document.getElementById('paginationInfoTrackerLabel').textContent =
+        `Page ${CURRENT_PAGE_TRACKER} of ${TOTAL_PAGES_LIMIT || 1} (${pag.total} documents)`;
+      document.getElementById('btnPrevPage').disabled = CURRENT_PAGE_TRACKER <= 1;
+      document.getElementById('btnNextPage').disabled = CURRENT_PAGE_TRACKER >= TOTAL_PAGES_LIMIT;
+    }
 
-  async function executeDocumentGenerationProcess(e) {
-    e.preventDefault();
-    const actionButtonNode = document.getElementById('engineSubmitBtnLabelNode');
-    actionButtonNode.disabled = true;
-    actionButtonNode.textContent = 'COMPILING DATA STACK...';
+    function changeArchivePage(delta) {
+      CURRENT_PAGE_TRACKER += delta;
+      downloadGeneratedDocumentsArchive();
+    }
 
-    const payloadRequestData = {
-      token: CACHED_TOKEN_DOCS,
-      action: 'generateDocument',
-      emp_id: document.getElementById('docEmpId').value.trim(),
-      doc_type: document.getElementById('docTemplateType').value,
-      custom_notes: document.getElementById('docCustomNotes').value
-    };
+    async function executeDocumentGenerationProcess(e) {
+      e.preventDefault();
+      const btn = document.getElementById('engineSubmitBtnLabelNode');
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
 
-    try {
-      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadRequestData) });
-      const output = await res.json();
-      if(output.status === 'success') {
-        showToast('HR Letter compiled, registered and stored successfully!');
-        document.getElementById('documentGenerationFormNode').reset();
-        CURRENT_PAGE_TRACKER = 1;
-        downloadGeneratedDocumentsArchive();
-      } else { showToast(output.message || 'Error processing compilation pipeline logic.'); }
-    } catch(err) { showToast('Handshake network generation timeout breakdown.'); }
-    finally { actionButtonNode.disabled = false; actionButtonNode.textContent = 'COMPILE & GENERATE DOC'; }
-  }
+      const payload = {
+        token: CACHED_TOKEN_DOCS,
+        action: 'generateDocument',
+        emp_id: document.getElementById('docEmpId').value.trim(),
+        doc_type: document.getElementById('docTemplateType').value,
+        custom_notes: document.getElementById('docCustomNotes').value
+      };
 
-  function openDocumentLiveTextPlanePreviewer(indexRowIdx) {
-    const targetedDocNodeObject = LOCAL_CACHED_ARCHIVE_DATA_MATRIX_ARRAY[indexRowIdx];
-    if(!targetedDocNodeObject) return;
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const output = await res.json();
+        if (output.status === 'success') {
+          showToast('Document successfully generate ho gaya!');
+          document.getElementById('documentGenerationFormNode').reset();
+          CURRENT_PAGE_TRACKER = 1;
+          downloadGeneratedDocumentsArchive();
+        } else { showToast(output.message || 'Generation mein error.'); }
+      } catch (err) { showToast('Network error.'); }
+      finally {
+        btn.disabled = false;
+        btn.textContent = '⚡ Generate Document';
+      }
+    }
 
-    document.getElementById('viewerHeaderDocTitle').textContent = `📄 Document Archive File View — [${targetedDocNodeObject.doc_id}]`;
-    document.getElementById('viewerContainerTextPlaneBody').textContent = targetedDocNodeObject.content || 'Blank structural text fields node context.';
-    document.getElementById('documentTextContentLiveViewerOverlay').style.display = 'flex';
-  }
+    function openDocumentLiveTextPlanePreviewer(idx) {
+      const doc = LOCAL_CACHED_ARCHIVE_DATA_MATRIX_ARRAY[idx];
+      if (!doc) return;
+      document.getElementById('viewerHeaderDocTitle').textContent = `📄 ${doc.doc_type} — [${doc.doc_id}]`;
+      document.getElementById('viewerContainerTextPlaneBody').textContent = doc.content || 'Content available nahi hai.';
+      document.getElementById('documentTextContentLiveViewerOverlay').style.display = 'flex';
+    }
 
-  function executePrintSimulationDocBlock() {
-    const plainTextPlane = document.getElementById('viewerContainerTextPlaneBody').textContent;
-    const virtualPrintWindowInstanceFrame = window.open('', '_blank');
-    virtualPrintWindowInstanceFrame.document.write(`<html><head><title>Print Document Preview — Codeline AI</title><style>body{font-family:monospace; padding:40px; white-space:pre-wrap; line-height:1.6; color:#000;}</style></head><body>${plainTextPlane}</body></html>`);
-    virtualPrintWindowInstanceFrame.document.close();
-    virtualPrintWindowInstanceFrame.print();
-  }
-</script>
+    function executePrintSimulationDocBlock() {
+      const text = document.getElementById('viewerContainerTextPlaneBody').textContent;
+      const win = window.open('', '_blank');
+      win.document.write(`<html><head><title>Document — Codeline.AI</title><style>body{font-family:monospace;padding:40px;white-space:pre-wrap;line-height:1.7;color:#000;font-size:14px;}</style></head><body>${text}</body></html>`);
+      win.document.close();
+      win.print();
+    }
+  </script>
 </body>
+
 </html>
