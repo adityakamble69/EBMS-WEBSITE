@@ -523,7 +523,7 @@
             <td colspan="9">
               <div class="empty-state">
                 <div class="empty-icon">📅</div>
-                <p>Leave requests load ho rahi hain...</p>
+                <p>Leave requests are loading...</p>
               </div>
             </td>
           </tr>
@@ -608,10 +608,10 @@
           updateStats(allLeaves);
           renderRows(allLeaves);
         } else {
-          showToast(payload.message || 'Leaves fetch karne mein error.');
+          showToast(payload.message || 'Error occurred while fetching leaves.');
         }
       } catch (e) {
-        showToast('Network error — leaves load nahi hui.');
+        showToast('Network error — leaves could not be loaded.');
       }
     }
 
@@ -638,7 +638,7 @@
         <tr><td colspan="9">
           <div class="empty-state">
             <div class="empty-icon">📭</div>
-            <p>Koi leave requests nahi mili.</p>
+            <p>No leave requests found.</p>
           </div>
         </td></tr>`;
         return;
@@ -688,7 +688,7 @@
           showToast(`Leave ${newStatus} successfully!`);
           loadLeaves();
         } else {
-          showToast(out.message || 'Update mein error.');
+          showToast(out.message || 'Error occurred while updating leave status.');
         }
       } catch (e) {
         showToast('Network error.');
