@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile Core Engine — Codeline.AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --brand-dark: #0A0F1E;
+            --brand-accent: #3B82F6;
+            --brand-glow: #60A5FA;
+            --surface: #111827;
+            --surface2: #1F2937;
+            --border: #1F2937;
+            --border2: #374151;
+            --text-primary: #F9FAFB;
+            --text-muted: #9CA3AF;
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--brand-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar-spacer {
+            width: 240px;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-spacer {
+                display: none;
+            }
+        }
+
+        .main-workspace {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-maxwidth-container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .profile-banner-card {
+            background: linear-gradient(135deg, #111827 0%, #1a2333 100%);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: var(--radius);
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .details-segment-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .profile-fields-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .data-node-viewer label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .data-node-viewer .value-field {
+            font-size: 14.5px;
+            font-weight: 500;
+        }
+
+        .data-node-viewer .editable-input {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: #fff;
+            font-size: 14px;
+            width: 100%;
+            display: none;
+            outline: none;
+        }
+
+        .btn-secondary {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            color: #fff;
+            padding: 9px 16px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+        }
+
+        .btn-primary-save {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: #fff;
+            border: none;
+            padding: 9px 20px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar-spacer"></div>
+    <div class="main-workspace">
+        <div class="profile-maxwidth-container">
+            <a href="employees.html"
+                style="color:var(--brand-glow); text-decoration:none; font-size:14px; display:block; margin-bottom:16px;">←
+                Back to Directory</a>
+            <div class="profile-banner-card">
+                <div>
+                    <h2 id="employeeProfileNameDisplay" style="font-family:'Space Grotesk';">Loading Name...</h2>
+                    <p id="employeeProfileIdDisplay" style="color:var(--brand-glow); font-size:14px; margin-top:2px;">
+                        EMP000</p>
+                </div>
+                <button class="btn-secondary" id="toggleEditBtn" onclick="toggleProfileEditableState(true)">✏️ Edit
+                    Details</button>
+            </div>
+            <form id="profileUpdateFormEngine" onsubmit="processProfileMutationUpdate(event)">
+                <div class="details-segment-card">
+                    <div class="profile-fields-grid">
+                        <div class="data-node-viewer"><label>Branch Code</label>
+                            <div class="value-field" id="lblBranch">—</div><input type="text" id="inputBranch"
+                                class="editable-input" required />
+                        </div>
+                        <div class="data-node-viewer"><label>Designation Title</label>
+                            <div class="value-field" id="lblDesignation">—</div><input type="text" id="inputDesignation"
+                                class="editable-input" required />
+                        </div>
+                        <div class="data-node-viewer" style="grid-column:1/-1; margin-top:12px;"><label>Mobile
+                                Coordinate</label>
+                            <div class="value-field" id="lblMobile">—</div><input type="tel" id="inputMobile"
+                                class="editable-input" required />
+                        </div>
+                        <div class="data-node-viewer" style="grid-column:1/-1; margin-top:12px;"><label>Residential
+                                Address</label>
+                            <div class="value-field" id="lblAddress">—</div><input type="text" id="inputAddress"
+                                class="editable-input" />
+                        </div>
+                    </div>
+                </div>
+                <div class="save-action-footer-panel" id="saveFooter"
+                    style="display:none; justify-content:flex-end; gap:12px;">
+                    <button type="button" class="btn-secondary"
+                        onclick="toggleProfileEditableState(false)">Cancel</button>
+                    <button type="submit" class="btn-primary-save">Save Parameters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        AppSession.protect();
+        const args = new URLSearchParams(window.location.search);
+        const empId = args.get('emp_id');
+        let cacheData = null;
+
+        if (!empId) { window.location.href = 'employees.html'; }
+
+        document.addEventListener('DOMContentLoaded', () => { fetchProfile(); });
+
+        async function fetchProfile() {
+            try {
+                const res = await fetch(`${API_URL}?action=getEmployee&token=${AppSession.getToken()}&emp_id=${empId}`);
+                const payload = await res.json();
+                if (payload.status === 'success') {
+                    cacheData = payload.data;
+                    bindFields(cacheData);
+                }
+            } catch (e) { showToast('Handshake sync tracking error.'); }
+        }
+
+        function bindFields(node) {
+            document.getElementById('employeeProfileNameDisplay').textContent = node.name;
+            document.getElementById('employeeProfileIdDisplay').textContent = `Tracking ID: ${node.emp_id}`;
+            document.getElementById('lblBranch').textContent = node.branch_id;
+            document.getElementById('lblDesignation').textContent = node.designation_id || 'Staff Regular';
+            document.getElementById('lblMobile').textContent = node.mobile || '—';
+            document.getElementById('lblAddress').textContent = node.address || '—';
+
+            document.getElementById('inputBranch').value = node.branch_id;
+            document.getElementById('inputDesignation').value = node.designation_id || '';
+            document.getElementById('inputMobile').value = node.mobile || '';
+            document.getElementById('inputAddress').value = node.address || '';
+        }
+
+        function toggleProfileEditableState(on) {
+            document.querySelectorAll('.value-field').forEach(n => n.style.display = on ? 'none' : 'block');
+            document.querySelectorAll('.editable-input').forEach(n => n.style.display = on ? 'block' : 'none');
+            document.getElementById('saveFooter').style.display = on ? 'flex' : 'none';
+            document.getElementById('toggleEditBtn').disabled = on;
+            if (!on && cacheData) bindFields(cacheData);
+        }
+
+        async function processProfileMutationUpdate(e) {
+            e.preventDefault();
+            const payload = {
+                token: AppSession.getToken(), action: 'updateEmployee', emp_id: empId,
+                branch_id: document.getElementById('inputBranch').value,
+                designation_id: document.getElementById('inputDesignation').value,
+                mobile: document.getElementById('inputMobile').value,
+                address: document.getElementById('inputAddress').value
+            };
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const out = await res.json();
+                if (out.status === 'success') { showToast('Saved profile configurations!'); toggleProfileEditableState(false); fetchProfile(); }
+            } catch (err) { showToast('Sync error.'); }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Employees Directory — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --brand-dark:   #0A0F1E;
+      --brand-accent: #3B82F6;
+      --brand-glow:   #60A5FA;
+      --surface:      #111827;
+      --surface2:     #1F2937;
+      --border:       #1F2937;
+      --border2:      #374151;
+      --text-primary: #F9FAFB;
+      --text-muted:   #9CA3AF;
+      --text-dim:     #6B7280;
+      --radius:       12px;
+      --radius-sm:    8px;
+    }
+
+    body { font-family: 'Inter', sans-serif; background: var(--brand-dark); color: var(--text-primary); min-height: 100vh; display: flex; }
+
+    /* Correction margins layouts metrics */
+    .sidebar-spacer { width: 240px; flex-shrink: 0; }
+    @media (max-width: 768px) { .sidebar-spacer { display: none; } }
+
+    .main-workspace { flex: 1; display: flex; flex-direction: column; min-height: 100vh; padding: 24px; overflow-x: hidden; }
+    
+    .mobile-nav-bar { display: none; height: 50px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; padding: 0 16px; font-size: 20px; cursor: pointer; color: var(--text-muted); }
+    @media (max-width: 768px) { .mobile-nav-bar { display: flex; } }
+
+    .header-block { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+    .title-area h1 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; }
+    .title-area p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+    .btn-action { background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(59,130,246,0.25); }
+    
+    .filter-deck { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .search-input-box { background: var(--surface2); border: 1px solid var(--border2); color: #fff; padding: 9px 14px; border-radius: var(--radius-sm); font-size: 13.5px; outline: none; min-width: 240px; flex: 1; }
+    .dropdown-select { background: var(--surface2); border: 1px solid var(--border2); color: #fff; padding: 9px 12px; border-radius: var(--radius-sm); font-size: 13.5px; outline: none; }
+
+    .table-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; width: 100%; }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 800px; }
+    .data-table th { background: #1E40AF; color: #fff; padding: 14px 16px; font-weight: 600; }
+    .data-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .data-table tr:nth-child(even) td { background: rgba(59,130,246,0.02); }
+
+    .identity-badge { display: flex; align-items: center; gap: 12px; }
+    .avatar-placeholder { width: 36px; height: 36px; background: rgba(59,130,246,0.15); border: 1.5px solid var(--brand-glow); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--brand-glow); }
+    
+    .status-pill { padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 500; display: inline-block; }
+    .pill-active { background: rgba(16,185,129,0.12); color: #6EE7B7; border: 1px solid rgba(16,185,129,0.2); }
+    .pill-inactive { background: rgba(239,68,68,0.12); color: #FCA5A5; border: 1px solid rgba(239,68,68,0.2); }
+
+    .link-profile { color: var(--brand-glow); text-decoration: none; font-weight: 500; }
+
+    .pagination-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; color: var(--text-muted); font-size: 13.5px; }
+    .btn-nav { background: var(--surface2); color: #fff; border: 1px solid var(--border2); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+    .btn-nav:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; }
+    .modal-card { background: var(--surface); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--radius); max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 24px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 12.5px; color: var(--text-muted); text-transform: uppercase; }
+    .form-group input, .form-group select { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 12px; color: #fff; font-size: 14px; outline: none; }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span></div>
+    
+    <div class="header-block">
+      <div class="title-area">
+        <h1>👥 Employees Directory</h1>
+        <p>Organization ke sabhi active aur inactive records yahan se manage karein</p>
+      </div>
+      <button class="btn-action" onclick="toggleModal(true)">➕ Add New Employee</button>
+    </div>
+
+    <div class="filter-deck">
+      <input type="text" id="filterSearch" class="search-input-box" placeholder="Name, ID, ya Email se search karein..." oninput="triggerSearch()"/>
+      <select id="filterBranch" class="dropdown-select" onchange="loadEmployeesData()">
+        <option value="">All Branches</option>
+        <option value="BR001">Branch 1 (Nagpur Main)</option>
+        <option value="BR002">Branch 2 (Dharampeth)</option>
+      </select>
+      <select id="filterStatus" class="dropdown-select" onchange="loadEmployeesData()">
+        <option value="active">Active Status</option>
+        <option value="inactive">Inactive Status</option>
+        <option value="">All Status Records</option>
+      </select>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Employee Name</th>
+            <th>ID</th>
+            <th>Branch</th>
+            <th>Designation</th>
+            <th>Mobile</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="employeeRowsContainer">
+          <tr><td colspan="7" style="padding: 32px; text-align: center; color: var(--text-dim);">Directory load ho rahi hai... Wait karein.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+      <div id="paginationInfo">Showing 0-0 of 0 records</div>
+      <div style="display:flex; gap:8px;">
+        <button id="btnPrevPage" class="btn-nav" onclick="changePage(-1)" disabled>Previous</button>
+        <button id="btnNextPage" class="btn-nav" onclick="changePage(1)" disabled>Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="addEmployeeModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-family:'Space Grotesk';">➕ Add New Employee</h3>
+        <button style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer;" onclick="toggleModal(false)">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="newEmployeeForm" onsubmit="submitEmployeeData(event)">
+          <div class="form-grid">
+            <div class="form-group"><label>Full Name *</label><input type="text" id="formName" required/></div>
+            <div class="form-group"><label>Official Email *</label><input type="email" id="formEmail" required/></div>
+            <div class="form-group"><label>Mobile Number *</label><input type="tel" id="formMobile" required/></div>
+            <div class="form-group">
+              <label>Branch Assignment *</label>
+              <select id="formBranch" required>
+                <option value="BR001">BR001 — Nagpur Main</option>
+                <option value="BR002">BR002 — Dharampeth Office</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Department *</label>
+              <select id="formDept" required>
+                <option value="DEPT001">Training Department</option>
+                <option value="DEPT002">Management</option>
+                <option value="DEPT003">Human Resources</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Designation Role *</label>
+              <select id="formDesignation" required>
+                <option value="DES004">Trainer</option>
+                <option value="DES002">Branch Manager</option>
+                <option value="DES003">HR Executive</option>
+                <option value="DES005">Counselor</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Employment Nature</label>
+              <select id="formEmpType">
+                <option value="Full-time">Full-time Regular</option>
+                <option value="Part-time">Part-time Contingent</option>
+                <option value="Internship">Internship Training</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Salary Payment Type</label>
+              <select id="formSalaryType">
+                <option value="fixed">Fixed Structural Monthly</option>
+                <option value="hourly">Hourly Billing Rate</option>
+                <option value="commission">Commission Base Incentive</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Authentication Role</label>
+              <select id="formUserRole">
+                <option value="employee">Standard Employee Portal</option>
+                <option value="hr">HR Executive Console</option>
+                <option value="branch_manager">Branch Manager View</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Password</label><input type="text" id="formPassword" placeholder="Default: Emp@123"/></div>
+            <div class="form-group" style="grid-column: 1 / -1;"><label>Residential Address</label><input type="text" id="formAddress"/></div>
+          </div>
+          <button type="submit" class="btn-action" style="width: 100%; justify-content: center; margin-top:20px;">Save & Provision Account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script src="app.js"></script>
+<script>
+  AppSession.protect();
+  const SESSION_TOKEN_VERIFIER = AppSession.getToken();
+
+  let CURRENT_PAGE_TRACKER = 1;
+  let TOTAL_PAGES_LIMIT = 1;
+  let DEBOUNCE_TIMER_HOOK;
+
+  document.addEventListener('DOMContentLoaded', () => { loadEmployeesData(); });
+
+  function toggleModal(isVisible) {
+    document.getElementById('addEmployeeModal').style.display = isVisible ? 'flex' : 'none';
+    if(!isVisible) document.getElementById('newEmployeeForm').reset();
+  }
+
+  function triggerSearch() {
+    clearTimeout(DEBOUNCE_TIMER_HOOK);
+    DEBOUNCE_TIMER_HOOK = setTimeout(() => { CURRENT_PAGE_TRACKER = 1; loadEmployeesData(); }, 400);
+  }
+
+  async function loadEmployeesData() {
+    const searchVal = encodeURIComponent(document.getElementById('filterSearch').value);
+    const branchVal = document.getElementById('filterBranch').value;
+    const statusVal = document.getElementById('filterStatus').value;
+
+    const TARGET_API_URL_CONSTRUCT = `${API_URL}?action=getEmployees&token=${SESSION_TOKEN_VERIFIER}&page=${CURRENT_PAGE_TRACKER}&limit=10&search=${searchVal}&branch_id=${branchVal}&status=${statusVal}`;
+    
+    try {
+      const res = await fetch(TARGET_API_URL_CONSTRUCT);
+      const payload = await res.json();
+
+      if (payload.status === 'success') {
+        renderDataMatrixRows(payload.data.data);
+        adjustPaginationUINode(payload.data);
+      } else {
+        showToast(payload.message || 'Error executing request dataset.');
+      }
+    } catch (err) {
+      showToast('Critical interface connection fallback.');
+    }
+  }
+
+  function renderDataMatrixRows(recordsArray) {
+    const container = document.getElementById('employeeRowsContainer');
+    if (!recordsArray || recordsArray.length === 0) {
+      container.innerHTML = `<tr><td colspan="7" style="padding: 24px; text-align: center; color: var(--text-dim);">No active matching logs found.</td></tr>`;
+      return;
+    }
+
+    container.innerHTML = recordsArray.map(emp => {
+      const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() : 'EE';
+      return `
+        <tr>
+          <td>
+            <div class="identity-badge">
+              <div class="avatar-placeholder">${initials}</div>
+              <div><div style="font-weight:600;">${emp.name}</div><div style="font-size:12px; color:var(--text-muted);">${emp.email}</div></div>
+            </div>
+          </td>
+          <td><code style="color:var(--brand-glow);">${emp.emp_id}</code></td>
+          <td>${emp.branch_id || '—'}</td>
+          <td>${emp.designation_id || 'Staff Regular'}</td>
+          <td>${emp.mobile || '—'}</td>
+          <td><span class="status-pill ${emp.status === 'active' ? 'pill-active' : 'pill-inactive'}">${emp.status === 'active' ? 'Active' : 'Inactive'}</span></td>
+          <td><a class="link-profile" href="employee_profile.html?emp_id=${emp.emp_id}">View Profile →</a></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function adjustPaginationUINode(pag) {
+    CURRENT_PAGE_TRACKER = pag.page;
+    TOTAL_PAGES_LIMIT = pag.totalPages;
+    document.getElementById('paginationInfo').textContent = `Showing page ${CURRENT_PAGE_TRACKER} of ${TOTAL_PAGES_LIMIT || 1} (${pag.total} total employees)`;
+    document.getElementById('btnPrevPage').disabled = CURRENT_PAGE_TRACKER <= 1;
+    document.getElementById('btnNextPage').disabled = CURRENT_PAGE_TRACKER >= TOTAL_PAGES_LIMIT;
+  }
+
+  function changePage(step) {
+    CURRENT_PAGE_TRACKER += step;
+    loadEmployeesData();
+  }
+
+  async function submitEmployeeData(e) {
+    e.preventDefault();
+    const payload = {
+      token: SESSION_TOKEN_VERIFIER,
+      action: 'addEmployee',
+      name: document.getElementById('formName').value,
+      email: document.getElementById('formEmail').value,
+      mobile: document.getElementById('formMobile').value,
+      branch_id: document.getElementById('formBranch').value,
+      department_id: document.getElementById('formDept').value,
+      designation_id: document.getElementById('formDesignation').value,
+      employment_type: document.getElementById('formEmpType').value,
+      salary_type: document.getElementById('formSalaryType').value,
+      role: document.getElementById('formUserRole').value,
+      password: document.getElementById('formPassword').value || 'Emp@123',
+      address: document.getElementById('formAddress').value
+    };
+
+    try {
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const out = await res.json();
+      if (out.status === 'success') {
+        showToast('Employee added successfully!');
+        toggleModal(false);
+        loadEmployeesData();
+      } else {
+        showToast(out.message || 'Error executing records injection.');
+      }
+    } catch (err) {
+      showToast('Network error updating architecture stream.');
+    }
+  }
+</script>
+</body>
+</html>

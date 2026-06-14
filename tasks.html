@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tasks Tracking — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --brand-dark: #0A0F1E; --brand-accent: #3B82F6; --brand-glow: #60A5FA;
+      --surface: #111827; --surface2: #1F2937; --border: #1F2937; --border2: #374151;
+      --text-primary: #F9FAFB; --text-muted: #9CA3AF; --text-dim: #6B7280;
+      --success: #10B981; --warning: #F59E0B; --radius: 12px; --radius-sm: 8px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--brand-dark); color: var(--text-primary); min-height: 100vh; display: flex; }
+    .sidebar-spacer { width: 240px; flex-shrink: 0; }
+    @media (max-width: 768px) { .sidebar-spacer { display: none; } }
+    .main-workspace { flex: 1; display: flex; flex-direction: column; min-height: 100vh; padding: 24px; }
+    .mobile-nav-bar { display: none; height: 50px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; padding: 0 16px; font-size: 20px; color: var(--text-muted); cursor: pointer; }
+    @media (max-width: 768px) { .mobile-nav-bar { display: flex; } }
+    .header-block { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+    .title-area h1 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; }
+    .btn-action { background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .table-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 800px; }
+    .data-table th { background: #1E40AF; color: #fff; padding: 14px 16px; font-weight: 600; }
+    .data-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .status-badge { padding: 3px 9px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .badge-pending { background: rgba(245,158,11,0.12); color: #FCD34D; }
+    .badge-success { background: rgba(16,185,129,0.12); color: #6EE7B7; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; }
+    .modal-card { background: var(--surface); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--radius); max-width: 500px; width: 100%; }
+    .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 24px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-group label { font-size: 12.5px; color: var(--text-muted); text-transform: uppercase; }
+    .form-group input, .form-group select, .form-group textarea { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 12px; color: #fff; font-size: 14px; outline: none; }
+  </style>
+</head>
+<body>
+  <div class="sidebar-spacer"></div>
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span></div>
+    <div class="header-block">
+      <div class="title-area">
+        <h1>📋 Tasks Tracking Dashboard</h1>
+        <p>Employees ko operations tasks assign karein aur unke completion status ko track karein</p>
+      </div>
+      <button class="btn-action" id="createTaskBtn" style="display:none;" onclick="toggleTaskModal(true)">➕ Assign New Task</button>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Task ID</th>
+            <th>Title</th>
+            <th>Assigned To</th>
+            <th>Due Date</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tasksRowsContainer">
+          <tr><td colspan="7" style="padding:24px; text-align:center; color:var(--text-dim);">Tasks load ho rahe hain...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Task Modal -->
+  <div class="modal-overlay" id="taskModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-family:'Space Grotesk';">📋 Assign New Task</h3>
+        <button style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer;" onclick="toggleTaskModal(false)">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="newTaskForm" onsubmit="submitTaskData(event)">
+          <div class="form-group"><label>Task Title *</label><input type="text" id="tTitle" required/></div>
+          <div class="form-group"><label>Assign To (Employee ID) *</label><input type="text" id="tEmp" required placeholder="e.g. EMP004"/></div>
+          <div class="form-group"><label>Due Date *</label><input type="date" id="tDate" required/></div>
+          <div class="form-group"><label>Priority</label><select id="tPriority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></div>
+          <div class="form-group"><label>Description</label><textarea id="tDesc" rows="3"></textarea></div>
+          <button type="submit" class="btn-action" style="width: 100%; justify-content: center;">Assign Task</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script src="app.js"></script>
+<script>
+  AppSession.protect();
+  const TOKEN = AppSession.getToken();
+  const USER = AppSession.getUser();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if(USER.role !== 'employee') { document.getElementById('createTaskBtn').style.display = 'block'; }
+    loadTasks();
+  });
+
+  function toggleTaskModal(on) { document.getElementById('taskModal').style.display = on ? 'flex' : 'none'; if(!on) document.getElementById('newTaskForm').reset(); }
+
+  async function loadTasks() {
+    try {
+      const res = await fetch(`${API_URL}?action=getTasks&token=${TOKEN}`);
+      const payload = await res.json();
+      if(payload.status === 'success') {
+        const arr = payload.data.data;
+        if(!arr || arr.length === 0) { document.getElementById('tasksRowsContainer').innerHTML = '<tr><td colspan="7" style="text-align:center;">Koi tasks nahi mile.</td></tr>'; return; }
+        document.getElementById('tasksRowsContainer').innerHTML = arr.map(t => `
+          <tr>
+            <td><code>${t.task_id}</code></td>
+            <td><strong>${t.title}</strong></td>
+            <td>${t.assigned_to}</td>
+            <td>${t.due_date ? new Date(t.due_date).toLocaleDateString('en-IN') : '—'}</td>
+            <td><span style="text-transform:uppercase; font-size:11px; font-weight:600;">${t.priority}</span></td>
+            <td><span class="status-badge ${t.status === 'completed' ? 'badge-success' : 'badge-pending'}">${t.status}</span></td>
+            <td>${t.status !== 'completed' && USER.employee_id === t.assigned_to ? `<button class="btn-nav" style="background:#10B981; border:none; padding:4px 8px; border-radius:4px; color:#fff; cursor:pointer;" onclick="completeTask('${t.task_id}')">Done ✓</button>` : '—'}</td>
+          </tr>
+        `).join('');
+      }
+    } catch(e) { showToast('Tasks load nahi ho paye.'); }
+  }
+
+  async function completeTask(id) {
+    try {
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ token: TOKEN, action: 'updateTask', task_id: id, status: 'completed' }) });
+      const out = await res.json();
+      if(out.status === 'success') { showToast('Task completed!'); loadTasks(); }
+    } catch(e) { showToast('Update error.'); }
+  }
+
+  async function submitTaskData(e) {
+    e.preventDefault();
+    const payload = {
+      token: TOKEN, action: 'addTask',
+      title: document.getElementById('tTitle').value,
+      assigned_to: document.getElementById('tEmp').value.trim(),
+      due_date: document.getElementById('tDate').value,
+      priority: document.getElementById('tPriority').value,
+      description: document.getElementById('tDesc').value
+    };
+    try {
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const out = await res.json();
+      if(out.status === 'success') { showToast('Task successfully assign ho gaya!'); toggleTaskModal(false); loadTasks(); }
+    } catch(err) { showToast('Network response error.'); }
+  }
+</script>
+</body>
+</html>

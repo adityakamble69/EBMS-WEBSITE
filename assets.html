@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hardware Inventory — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --brand-dark: #0A0F1E; --brand-accent: #3B82F6; --brand-glow: #60A5FA;
+      --surface: #111827; --surface2: #1F2937; --border: #1F2937; --border2: #374151;
+      --text-primary: #F9FAFB; --text-muted: #9CA3AF; --text-dim: #6B7280;
+      --success: #10B981; --warning: #F59E0B; --radius: 12px; --radius-sm: 8px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--brand-dark); color: var(--text-primary); min-height: 100vh; display: flex; }
+    .sidebar-spacer { width: 240px; flex-shrink: 0; }
+    @media (max-width: 768px) { .sidebar-spacer { display: none; } }
+    .main-workspace { flex: 1; display: flex; flex-direction: column; min-height: 100vh; padding: 24px; }
+    .mobile-nav-bar { display: none; height: 50px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; padding: 0 16px; font-size: 20px; color: var(--text-muted); cursor: pointer; }
+    @media (max-width: 768px) { .mobile-nav-bar { display: flex; } }
+    .header-block { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+    .title-area h1 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; }
+    .btn-action { background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .table-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 800px; }
+    .data-table th { background: #1E40AF; color: #fff; padding: 14px 16px; font-weight: 600; }
+    .data-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .status-badge { padding: 3px 9px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .badge-assigned { background: rgba(245,158,11,0.12); color: #FCD34D; }
+    .badge-available { background: rgba(16,185,129,0.12); color: #6EE7B7; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; }
+    .modal-card { background: var(--surface); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--radius); max-width: 500px; width: 100%; }
+    .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 24px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-group label { font-size: 12.5px; color: var(--text-muted); text-transform: uppercase; }
+    .form-group input, .form-group select { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 12px; color: #fff; font-size: 14px; outline: none; }
+  </style>
+</head>
+<body>
+  <div class="sidebar-spacer"></div>
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span></div>
+    <div class="header-block">
+      <div class="title-area">
+        <h1>💻 Company Assets Inventory</h1>
+        <p>Organization ke hardware devices (Laptops, Desktops) aur allocations ko manage karein</p>
+      </div>
+      <button class="btn-action" id="addAssetBtn" style="display:none;" onclick="toggleAssetModal(true)">➕ Register Asset</button>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Asset ID</th>
+            <th>Device Name</th>
+            <th>Type</th>
+            <th>Serial Number</th>
+            <th>Assigned To</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="assetsRowsContainer">
+          <tr><td colspan="6" style="padding:24px; text-align:center; color:var(--text-dim);">Inventory logs sync ho rahe hain...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Asset Modal -->
+  <div class="modal-overlay" id="assetModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-family:'Space Grotesk';">💻 Register Hardware Asset</h3>
+        <button style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer;" onclick="toggleAssetModal(false)">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="newAssetForm" onsubmit="submitAssetData(event)">
+          <div class="form-group"><label>Device Name *</label><input type="text" id="aName" required placeholder="e.g. Dell Laptop i5"/></div>
+          <div class="form-group"><label>Asset Type *</label><select id="aType"><option value="Laptop">Laptop</option><option value="Desktop">Desktop</option><option value="Projector">Projector</option></select></div>
+          <div class="form-group"><label>Serial Number *</label><input type="text" id="aSerial" required/></div>
+          <div class="form-group"><label>Branch Code ID *</label><input type="text" id="aBranch" required placeholder="BR001"/></div>
+          <div class="form-group"><label>Assign to Employee (Optional)</label><input type="text" id="aEmp" placeholder="e.g. EMP002"/></div>
+          <button type="submit" class="btn-action" style="width: 100%; justify-content: center;">Register Unit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script src="app.js"></script>
+<script>
+  AppSession.protect();
+  const TOKEN = AppSession.getToken();
+  const USER = AppSession.getUser();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if(USER.role === 'super_admin' || USER.role === 'hr') { document.getElementById('addAssetBtn').style.display = 'block'; }
+    loadAssets();
+  });
+
+  function toggleAssetModal(on) { document.getElementById('assetModal').style.display = on ? 'flex' : 'none'; if(!on) document.getElementById('newAssetForm').reset(); }
+
+  async function loadAssets() {
+    try {
+      const res = await fetch(`${API_URL}?action=getAssets&token=${TOKEN}`);
+      const payload = await res.json();
+      if(payload.status === 'success') {
+        const arr = payload.data.data;
+        if(!arr || arr.length === 0) { document.getElementById('assetsRowsContainer').innerHTML = '<tr><td colspan="6" style="text-align:center;">Koi inventory logs nahi hain.</td></tr>'; return; }
+        document.getElementById('assetsRowsContainer').innerHTML = arr.map(a => `
+          <tr>
+            <td><code>${a.asset_id}</code></td>
+            <td><strong>${a.asset_name}</strong></td>
+            <td>${a.asset_type}</td>
+            <td><code>${a.serial_no}</code></td>
+            <td>${a.assigned_to || '<span style="color:var(--text-dim);">Pool Available</span>'}</td>
+            <td><span class="status-badge ${a.status === 'assigned' ? 'badge-assigned' : 'badge-available'}">${a.status}</span></td>
+          </tr>
+        `).join('');
+      }
+    } catch(e) { showToast('Assets fetch operation failure.'); }
+  }
+
+  async function submitAssetData(e) {
+    e.preventDefault();
+    const payload = {
+      token: TOKEN, action: 'addAsset',
+      asset_name: document.getElementById('aName').value,
+      asset_type: document.getElementById('aType').value,
+      serial_no: document.getElementById('aSerial').value,
+      branch_id: document.getElementById('aBranch').value.trim(),
+      assigned_to: document.getElementById('aEmp').value.trim()
+    };
+    try {
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const out = await res.json();
+      if(out.status === 'success') { showToast('Asset registered successfully!'); toggleAssetModal(false); loadAssets(); }
+    } catch(err) { showToast('Network pipeline error.'); }
+  }
+</script>
+</body>
+</html>

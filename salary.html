@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payroll & Salaries Ledger — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --brand-dark:   #0A0F1E;
+      --brand-accent: #3B82F6;
+      --brand-glow:   #60A5FA;
+      --surface:      #111827;
+      --surface2:     #1F2937;
+      --border:       #1F2937;
+      --border2: #374151;
+      --text-primary: #F9FAFB;
+      --text-muted:   #9CA3AF;
+      --text-dim:     #6B7280;
+      --success:      #10B981;
+      --radius:       12px;
+      --radius-sm:    8px;
+    }
+
+    body { font-family: 'Inter', sans-serif; background: var(--brand-dark); color: var(--text-primary); min-height: 100vh; display: flex; }
+
+    .sidebar-spacer { width: 240px; flex-shrink: 0; }
+    @media (max-width: 768px) { .sidebar-spacer { display: none; } }
+
+    .main-workspace { flex: 1; display: flex; flex-direction: column; min-height: 100vh; padding: 24px; overflow-x: hidden; }
+    .mobile-nav-bar { display: none; height: 50px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; padding: 0 16px; font-size: 20px; cursor: pointer; color: var(--text-muted); }
+    @media (max-width: 768px) { .mobile-nav-bar { display: flex; } }
+
+    .header-block { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+    .title-area h1 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; }
+
+    .tabs-deck { display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 14.5px; font-weight: 500; cursor: pointer; padding: 6px 12px; }
+    .tab-btn.active { color: var(--brand-glow); border-bottom: 2px solid var(--brand-accent); font-weight: 600; }
+
+    .btn-action { background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 18px; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+
+    .table-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; width: 100%; }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 850px; }
+    .data-table th { background: #1E40AF; color: #fff; padding: 14px 16px; font-weight: 600; }
+    .data-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .data-table tr:nth-child(even) td { background: rgba(59,130,246,0.02); }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; }
+    .modal-card { background: var(--surface); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--radius); max-width: 500px; width: 100%; }
+    .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 24px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-group label { font-size: 12.5px; color: var(--text-muted); text-transform: uppercase; }
+    .form-group input, .form-group select { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 12px; color: #fff; font-size: 14px; outline: none; }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span></div>
+
+    <div class="header-block">
+      <div class="title-area">
+        <h1>💰 Payroll & Salaries Panel</h1>
+        <p>Manage employee structural wages increments, process slip metrics automatic counters</p>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-action" style="background:linear-gradient(135deg, #065F46 0%, #10B981 100%);" onclick="toggleSlipModal(true)">🧾 Generate Monthly Slip</button>
+        <button class="btn-action" onclick="toggleSalaryModal(true)">⚙️ Setup Base Salary</button>
+      </div>
+    </div>
+
+    <div class="tabs-deck">
+      <button class="tab-btn active" id="tabSalaries" onclick="switchPayrollTab('salaries')">Base Wage Configurations</button>
+      <button class="tab-btn" id="tabSlips" onclick="switchPayrollTab('slips')">Generated Salary Slips Ledger</button>
+    </div>
+
+    <div class="table-container" id="salariesContainerTableBlock">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Config ID</th>
+            <th>Employee ID</th>
+            <th>Wages Model Type</th>
+            <th>Fixed structural wage</th>
+            <th>Hourly Rate</th>
+            <th>Commission Rate</th>
+            <th>Effective Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="salariesRowsContainer">
+          <tr><td colspan="8" style="padding: 32px; text-align: center; color: var(--text-dim);">Loading compensation logs arrays...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-container" id="slipsContainerTableBlock" style="display:none;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Slip Token</th>
+            <th>Employee ID</th>
+            <th>Billing Month</th>
+            <th>Duty Days</th>
+            <th>Absents Logs</th>
+            <th>Gross Salary</th>
+            <th>Deductions</th>
+            <th>Net payout wage</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="slipsRowsContainer">
+          <tr><td colspan="9" style="padding: 32px; text-align: center; color: var(--text-dim);">Select tab timeline indexes...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="setupSalaryModalOverlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-family:'Space Grotesk';">⚙️ Setup Base Wages Parameters</h3>
+        <button style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer;" onclick="toggleSalaryModal(false)">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="salaryFormNode" onsubmit="submitBaseSalaryData(event)">
+          <div class="form-group">
+            <label>Employee Code identifier *</label>
+            <input type="text" id="formEmpId" required placeholder="e.g. EMP004"/>
+          </div>
+          <div class="form-group">
+            <label>Compensation Wages Model *</label>
+            <select id="formSalaryType" required>
+              <option value="fixed">Fixed Structural Monthly</option>
+              <option value="hourly">Hourly Billing Rate</option>
+              <option value="commission">Commission Base Incentive</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fixed Payout Amount (Monthly)</label>
+            <input type="number" id="formFixedAmount" value="0"/>
+          </div>
+          <div class="form-group">
+            <label>Hourly Wage Rate</label>
+            <input type="number" id="formHourlyRate" value="0"/>
+          </div>
+          <div class="form-group">
+            <label>Effective Date Constraint</label>
+            <input type="date" id="formEffectiveFrom"/>
+          </div>
+          <button type="submit" class="btn-action" style="width: 100%; justify-content: center; margin-top:10px;">Save Wages Structure</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="generateSlipModalOverlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-family:'Space Grotesk';">🧾 Calculate & Generate Monthly Slip</h3>
+        <button style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer;" onclick="toggleSlipModal(false)">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="slipFormNode" onsubmit="submitGenerateSlipProcess(event)">
+          <div class="form-group">
+            <label>Employee ID Code *</label>
+            <input type="text" id="slipEmpId" required placeholder="e.g. EMP002"/>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label>Target Month *</label>
+              <select id="slipMonth" required>
+                <option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Target Year *</label>
+              <select id="slipYear" required>
+                <option value="2026">2026</option><option value="2025">2025</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-action" style="width: 100%; justify-content: center; margin-top:10px; background:linear-gradient(135deg, #065F46 0%, #10B981 100%);">Run Payroll Engine Calculations</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script src="app.js"></script>
+<script>
+  AppSession.protect();
+  const CACHED_TOKEN_PAYROLL = AppSession.getToken();
+  let ACTIVE_PAYROLL_TAB_TRACKER = 'salaries';
+
+  document.addEventListener('DOMContentLoaded', () => { loadSalariesConfigurationData(); });
+
+  function toggleSalaryModal(on) { document.getElementById('setupSalaryModalOverlay').style.display = on ? 'flex' : 'none'; if(!on) document.getElementById('salaryFormNode').reset(); }
+  function toggleSlipModal(on) { document.getElementById('generateSlipModalOverlay').style.display = on ? 'flex' : 'none'; if(!on) document.getElementById('slipFormNode').reset(); }
+
+  function switchPayrollTab(tabName) {
+    ACTIVE_PAYROLL_TAB_TRACKER = tabName;
+    document.getElementById('tabSalaries').classList.toggle('active', tabName === 'salaries');
+    document.getElementById('tabSlips').classList.toggle('active', tabName === 'slips');
+    
+    document.getElementById('salariesContainerTableBlock').style.display = tabName === 'salaries' ? 'block' : 'none';
+    document.getElementById('slipsContainerTableBlock').style.display = tabName === 'slips' ? 'block' : 'none';
+
+    if(tabName === 'salaries') loadSalariesConfigurationData();
+    else loadSalarySlipsLedgerData();
+  }
+
+  async function loadSalariesConfigurationData() {
+    try {
+      const res = await fetch(`${API_URL}?action=getSalaries&token=${CACHED_TOKEN_PAYROLL}`);
+      const payload = await res.json();
+      if(payload.status === 'success') {
+        renderSalariesRowsGrid(payload.data.data);
+      }
+    } catch(e) { showToast('Wages synchronization breakdown.'); }
+  }
+
+  function renderSalariesRowsGrid(arr) {
+    const container = document.getElementById('salariesRowsContainer');
+    if(!arr || arr.length === 0) { container.innerHTML = '<tr><td colspan="8" style="padding:20px; text-align:center;">No compensation maps recorded.</td></tr>'; return; }
+    container.innerHTML = arr.map(s => `
+      <tr>
+        <td><code>${s.sal_id}</code></td>
+        <td><strong style="color:var(--brand-glow);">${s.emp_id}</strong></td>
+        <td><span style="text-transform:uppercase; font-size:12px; font-weight:600;">${s.salary_type}</span></td>
+        <td>₹${s.fixed_amount || 0}</td>
+        <td>₹${s.hourly_rate || 0}</td>
+        <td>${s.commission_rate || 0}%</td>
+        <td>${s.effective_from ? new Date(s.effective_from).toLocaleDateString('en-IN') : '—'}</td>
+        <td><span style="color:var(--success); font-weight:600;">${s.status}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  async function loadSalarySlipsLedgerData() {
+    try {
+      const res = await fetch(`${API_URL}?action=getSalarySlips&token=${CACHED_TOKEN_PAYROLL}`);
+      const payload = await res.json();
+      if(payload.status === 'success') {
+        renderSlipsRowsGrid(payload.data.data);
+      }
+    } catch(e) { showToast('Slips index breakdown.'); }
+  }
+
+  function renderSlipsRowsGrid(arr) {
+    const container = document.getElementById('slipsRowsContainer');
+    if(!arr || arr.length === 0) { container.innerHTML = '<tr><td colspan="9" style="padding:20px; text-align:center;">No historical slips processed inside target session limits.</td></tr>'; return; }
+    container.innerHTML = arr.map(s => `
+      <tr>
+        <td><code style="color:var(--brand-glow);">${s.slip_id}</code></td>
+        <td><strong>${s.emp_id}</strong></td>
+        <td>Month ${s.month} / ${s.year}</td>
+        <td>${s.present_days} Days</td>
+        <td style="color:var(--text-dim);">${s.absent_days} Absents</td>
+        <td>₹${s.gross_salary}</td>
+        <td style="color:#FCA5A5;">₹${s.deductions}</td>
+        <td style="color:#6EE7B7; font-weight:600;">₹${s.net_salary}</td>
+        <td><span style="padding:2px 8px; background:rgba(16,185,129,0.15); color:#6EE7B7; border-radius:4px; font-size:12px;">${s.status}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  async function submitBaseSalaryData(e) {
+    e.preventDefault();
+    const payload = {
+      token: CACHED_TOKEN_PAYROLL, action: 'setSalary',
+      emp_id: document.getElementById('formEmpId').value.trim(),
+      salary_type: document.getElementById('formSalaryType').value,
+      fixed_amount: document.getElementById('formFixedAmount').value,
+      hourly_rate: document.getElementById('formHourlyRate').value,
+      effective_from: document.getElementById('formEffectiveFrom').value
+    };
+    try {
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const out = await res.json();
+      if(out.status === 'success') { showToast('Wages configured!'); toggleSalaryModal(false); loadSalariesConfigurationData(); }
+      else showToast(out.message);
+    } catch(err) { showToast('Sync error.'); }
+  }
+
+  async function submitGenerateSlipProcess(e) {
+    e.preventDefault();
+    const payload = {
+      token: CACHED_TOKEN_PAYROLL, action: 'generateSlip',
+      emp_id: document.getElementById('slipEmpId').value.trim(),
+      month: document.getElementById('slipMonth').value,
+      year: document.getElementById('slipYear').value
+    };
+    try {
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const out = await res.json();
+      if(out.status === 'success') { showToast('Payroll slip calculated and added!'); toggleSlipModal(false); switchPayrollTab('slips'); }
+      else showToast(out.message);
+    } catch(err) { showToast('Engine processing failure.'); }
+  }
+</script>
+</body>
+</html>
