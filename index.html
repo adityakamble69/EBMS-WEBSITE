@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Codeline.AI — EBMS Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand-dark:   #0A0F1E;
+      --brand-blue:   #1E40AF;
+      --brand-accent: #3B82F6;
+      --brand-glow:   #60A5FA;
+      --surface:      #111827;
+      --surface2:     #1F2937;
+      --border:       #374151;
+      --text-primary: #F9FAFB;
+      --text-muted:   #9CA3AF;
+      --success:      #10B981;
+      --error:        #EF4444;
+      --radius:       12px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--brand-dark);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── Animated background grid ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    /* ── Glow orbs ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      animation: float 8s ease-in-out infinite;
+    }
+    .orb-1 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(30,64,175,0.35) 0%, transparent 70%);
+      top: -100px; left: -100px;
+      animation-delay: 0s;
+    }
+    .orb-2 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(59,130,246,0.2) 0%, transparent 70%);
+      bottom: -50px; right: -50px;
+      animation-delay: -4s;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50%       { transform: translateY(-20px) scale(1.05); }
+    }
+
+    /* ── Card ── */
+    .login-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 440px;
+      padding: 16px;
+    }
+
+    .login-card {
+      background: rgba(17, 24, 39, 0.85);
+      border: 1px solid rgba(59,130,246,0.18);
+      border-radius: 20px;
+      padding: 44px 40px 40px;
+      backdrop-filter: blur(24px);
+      box-shadow:
+        0 0 0 1px rgba(59,130,246,0.08),
+        0 32px 64px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    /* ── Logo area ── */
+    .logo-area {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .logo-icon {
+      width: 60px; height: 60px;
+      background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 24px rgba(59,130,246,0.35);
+      font-size: 26px;
+    }
+    .logo-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+    .logo-title span {
+      color: var(--brand-accent);
+    }
+    .logo-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Divider line ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin-bottom: 28px;
+    }
+
+    /* ── Welcome text ── */
+    .welcome-text {
+      margin-bottom: 24px;
+    }
+    .welcome-text h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .welcome-text p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ── Form fields ── */
+    .field {
+      margin-bottom: 18px;
+    }
+    .field label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .field input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px 12px 42px;
+      font-size: 14.5px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    .field input:focus {
+      border-color: var(--brand-accent);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+    .field input::placeholder { color: #4B5563; }
+
+    /* Eye toggle for password */
+    .eye-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 16px;
+      opacity: 0.45;
+      user-select: none;
+      transition: opacity 0.2s;
+    }
+    .eye-toggle:hover { opacity: 0.8; }
+
+    /* ── Role badge selector ── */
+    .role-selector {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+    .role-btn {
+      padding: 9px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface2);
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.18s;
+      font-family: 'Inter', sans-serif;
+    }
+    .role-btn.active {
+      border-color: var(--brand-accent);
+      background: rgba(59,130,246,0.12);
+      color: var(--brand-glow);
+    }
+    .role-btn span { margin-right: 4px; }
+
+    /* ── Submit btn ── */
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Space Grotesk', sans-serif;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(59,130,246,0.35);
+    }
+    .btn-login:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(59,130,246,0.45);
+    }
+    .btn-login:active:not(:disabled) { transform: translateY(0); }
+    .btn-login:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+    .btn-login .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .btn-login.loading .spinner { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Alert ── */
+    .alert {
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      margin-bottom: 18px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .alert.show { display: flex; }
+    .alert-error {
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #FCA5A5;
+    }
+    .alert-success {
+      background: rgba(16,185,129,0.12);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #6EE7B7;
+    }
+
+    /* ── Footer ── */
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 12px;
+      color: #374151;
+    }
+    .login-footer a {
+      color: var(--brand-accent);
+      text-decoration: none;
+    }
+
+    /* ── Config notice ── */
+    .config-notice {
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12.5px;
+      color: #FCD34D;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .login-card { padding: 32px 24px 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="login-wrapper">
+    <div class="login-card">
+
+      <!-- Logo -->
+      <div class="logo-area">
+        <div class="logo-icon">⚡</div>
+        <div class="logo-title">Codeline<span>.AI</span></div>
+        <div class="logo-subtitle">Employee & Branch Management System</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Welcome -->
+      <div class="welcome-text">
+        <h2>Welcome back 👋</h2>
+        <p>Apna role choose karo aur login karo</p>
+      </div>
+
+      <!-- Role selector -->
+      <div class="role-selector" id="roleSelector">
+        <button class="role-btn active" data-role="super_admin" onclick="selectRole(this)">
+          <span>👑</span> Super Admin
+        </button>
+        <button class="role-btn" data-role="branch_manager" onclick="selectRole(this)">
+          <span>🏢</span> Branch Manager
+        </button>
+        <button class="role-btn" data-role="hr" onclick="selectRole(this)">
+          <span>👤</span> HR
+        </button>
+        <button class="role-btn" data-role="employee" onclick="selectRole(this)">
+          <span>💼</span> Employee
+        </button>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert alert-error" id="alertBox">
+        <span>⚠️</span>
+        <span id="alertMsg">Error message</span>
+      </div>
+
+      <!-- Form -->
+      <div class="field">
+        <label>Email Address</label>
+        <div class="input-wrap">
+          <span class="input-icon">✉️</span>
+          <input
+            type="email"
+            id="email"
+            placeholder="admin@codelineai.com"
+            autocomplete="email"
+            onkeydown="if(event.key==='Enter')document.getElementById('password').focus()"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input
+            type="password"
+            id="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            onkeydown="if(event.key==='Enter')doLogin()"
+          />
+          <span class="eye-toggle" onclick="togglePass()" id="eyeBtn">👁️</span>
+        </div>
+      </div>
+
+      <!-- Login Button -->
+      <button class="btn-login" id="loginBtn" onclick="doLogin()">
+        <span class="spinner"></span>
+        Login to EBMS
+      </button>
+
+      <div class="login-footer">
+        Codeline.AI EBMS v1.0 &nbsp;·&nbsp;
+        <a href="#">Forgot Password?</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // CONFIGURATION — AppScript URL yahan paste karo
+    // ============================================================
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw8NY1rDyI47qjA6S-gxCWCkuIerqUL-lqkw0EienUt4t1l8nx8aWI5jNdw6Kk8SE05rA/exec';
+
+    // Hide config notice if URL is set
+    if (API_URL !== 'YOUR_APPSCRIPT_DEPLOYMENT_URL_HERE') {
+      document.getElementById('configNotice').style.display = 'none';
+    }
+
+    // ── State ──
+    let selectedRole = 'super_admin';
+
+    // ── Role select ──
+    function selectRole(btn) {
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedRole = btn.dataset.role;
+
+      // Auto-fill demo credentials (remove in production)
+      if (selectedRole === 'super_admin') {
+        document.getElementById('email').value    = 'admin@codelineai.com';
+        document.getElementById('password').value = 'Admin@123';
+      } else {
+        document.getElementById('email').value    = '';
+        document.getElementById('password').value = '';
+      }
+    }
+
+    // ── Toggle password ──
+    function togglePass() {
+      const inp = document.getElementById('password');
+      const btn = document.getElementById('eyeBtn');
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        inp.type = 'password';
+        btn.textContent = '👁️';
+      }
+    }
+
+    // ── Show / hide alert ──
+    function showAlert(msg, type = 'error') {
+      const box = document.getElementById('alertBox');
+      document.getElementById('alertMsg').textContent = msg;
+      box.className = 'alert alert-' + type + ' show';
+    }
+    function hideAlert() {
+      document.getElementById('alertBox').classList.remove('show');
+    }
+
+    // ── Set loading state ──
+    function setLoading(on) {
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = on;
+      btn.classList.toggle('loading', on);
+      btn.childNodes[1].nodeValue = on ? ' Logging in...' : ' Login to EBMS';
+    }
+
+    // ── Main login function ──
+    async function doLogin() {
+      hideAlert();
+
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!email)    { showAlert('Email address enter karo'); return; }
+      if (!password) { showAlert('Password enter karo'); return; }
+
+      // Check if API URL is configured
+      if (API_URL === 'YOUR_APPSCRIPT_DEPLOYMENT_URL_HERE') {
+        showAlert('AppScript URL configure karo pehle (index.html mein API_URL update karo)');
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const url = `${API_URL}?action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+        const res  = await fetch(url);
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          // Save session to localStorage
+          localStorage.setItem('ebms_token',    data.data.token);
+          localStorage.setItem('ebms_user',     JSON.stringify(data.data.user));
+          localStorage.setItem('ebms_role',     data.data.user.role);
+          localStorage.setItem('ebms_branch',   data.data.user.branch_id);
+
+          showAlert('Login successful! Dashboard load ho raha hai...', 'success');
+
+          // Redirect based on role
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 800);
+
+        } else {
+          showAlert(data.message || 'Login failed. Check email/password.');
+          setLoading(false);
+        }
+
+      } catch (err) {
+        showAlert('Network error. AppScript URL check karo.');
+        setLoading(false);
+        console.error('Login error:', err);
+      }
+    }
+
+    // ── Check if already logged in ──
+    (function checkExistingSession() {
+      const token = localStorage.getItem('ebms_token');
+      const user  = localStorage.getItem('ebms_user');
+      if (token && user) {
+        // Optionally auto-redirect (comment out if not needed)
+        // window.location.href = 'dashboard.html';
+      }
+    })();
+  </script>
+</body>
+</html>
