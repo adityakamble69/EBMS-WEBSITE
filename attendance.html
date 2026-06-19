@@ -241,6 +241,14 @@
       }
     }
 
+    @media (max-width: 900px) {
+      .input-date-picker,
+      .dropdown-select,
+      .input-text-box {
+        font-size: 16px;
+      }
+    }
+
     .table-container {
       background: var(--glass);
       border: 1px solid var(--glass-border);
@@ -334,6 +342,23 @@
       opacity: 0.4;
       cursor: not-allowed;
     }
+
+    @keyframes scanAnim {
+      0%   { top: 8px; opacity: 1; }
+      45%  { top: calc(100% - 10px); opacity: 1; }
+      50%  { top: calc(100% - 10px); opacity: 0; }
+      55%  { top: 8px; opacity: 0; }
+      60%  { top: 8px; opacity: 1; }
+      100% { top: 8px; opacity: 1; }
+    }
+
+    /* Punch success flash */
+    @keyframes punchFlash {
+      0%   { box-shadow: 0 0 0 0 rgba(52,211,153,0.5); }
+      70%  { box-shadow: 0 0 0 20px rgba(52,211,153,0); }
+      100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+    }
+    .punch-success-flash { animation: punchFlash 0.6s ease-out; }
   </style>
 </head>
 
@@ -354,15 +379,34 @@
 
     <div class="punch-card-wrapper">
       <div class="punch-engine-box">
-        <h3 style="font-family:'Space Grotesk'; font-size:16px; color:var(--text-muted);">LIVE TRACKING CLOCK</h3>
+        <h3 style="font-family:'Space Grotesk'; font-size:16px; color:var(--text-muted);">QR PUNCH SCANNER</h3>
         <div class="live-clock" id="livePortalTimeClock">00:00:00 AM</div>
         <div style="font-size:12.5px; color:var(--text-dim);" id="livePortalDateDisplay">Loading Date...</div>
 
-        <button class="btn-punch" onclick="triggerAttendancePunchLog()">
-          <span style="font-size:24px;">🎯</span>
-          <span id="punchButtonActionLabel">PUNCH LOG</span>
+        <!-- QR Video Preview -->
+        <div id="qrScannerBox" style="display:none; flex-direction:column; align-items:center; gap:10px; margin:14px 0; width:100%;">
+          <div style="position:relative; width:220px; height:220px; border-radius:14px; overflow:hidden; border:2px solid rgba(255,255,255,0.12); box-shadow:0 0 30px rgba(52,211,153,0.15);">
+            <video id="qrVideo" style="width:100%; height:100%; object-fit:cover;" playsinline autoplay muted></video>
+            <!-- Scanner overlay corners -->
+            <div style="position:absolute;inset:0;pointer-events:none;">
+              <div style="position:absolute;top:12px;left:12px;width:28px;height:28px;border-top:3px solid #34D399;border-left:3px solid #34D399;border-radius:4px 0 0 0;"></div>
+              <div style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-top:3px solid #34D399;border-right:3px solid #34D399;border-radius:0 4px 0 0;"></div>
+              <div style="position:absolute;bottom:12px;left:12px;width:28px;height:28px;border-bottom:3px solid #34D399;border-left:3px solid #34D399;border-radius:0 0 0 4px;"></div>
+              <div style="position:absolute;bottom:12px;right:12px;width:28px;height:28px;border-bottom:3px solid #34D399;border-right:3px solid #34D399;border-radius:0 0 4px 0;"></div>
+              <div id="scanLine" style="position:absolute;top:0;left:8px;right:8px;height:2px;background:linear-gradient(90deg,transparent,#34D399,transparent);animation:scanAnim 2s linear infinite;"></div>
+            </div>
+          </div>
+          <p id="scannerStatusMsg" style="font-size:12.5px; color:var(--text-muted); text-align:center; line-height:1.5;">Employee ka QR code camera ke saamne rakho...</p>
+          <button onclick="stopQrScanner()" style="background:rgba(248,113,113,0.10); border:1px solid rgba(248,113,113,0.22); color:#FC9999; padding:9px 20px; border-radius:8px; cursor:pointer; font-size:13px; font-family:'Inter',sans-serif;">❌ Scan Band Karo</button>
+        </div>
+
+        <!-- Start Scan Button -->
+        <button class="btn-punch" id="startScanBtn" onclick="startQrScanner()">
+          <span style="font-size:28px;">📷</span>
+          <span id="punchButtonActionLabel" style="font-size:13px;">SCAN QR</span>
         </button>
-        <p style="font-size:12px; color:var(--text-muted); line-height:1.4;">A single click will register a punch-in, while a second click will register a punch-out.</p>
+
+        <p style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-top:6px;">Employee ka unique QR scan karo — system automatically Punch In ya Punch Out register karega.</p>
       </div>
 
       <div style="display:flex; flex-direction:column; justify-content: space-between;">
@@ -424,6 +468,8 @@
     </div>
   </div>
 
+  <!-- jsQR library for QR decoding from camera -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
   <script src="app.js"></script>
   <script>
     AppSession.protect();
@@ -433,82 +479,180 @@
     let TOTAL_PAGES_LIMIT = 1;
     let DEBOUNCE_TIMER_HOOK;
 
+    // QR Scanner state
+    let qrVideoStream = null;
+    let qrAnimFrame = null;
+    let qrCanvas = null;
+    let qrCanvasCtx = null;
+    let lastScannedCode = null;
+    let scanCooldown = false;
+
     document.addEventListener('DOMContentLoaded', () => {
       initializeRuntimeClock();
       loadAttendanceMasterLogs();
+      // Prepare off-screen canvas for QR decoding
+      qrCanvas = document.createElement('canvas');
+      qrCanvasCtx = qrCanvas.getContext('2d');
     });
 
     function initializeRuntimeClock() {
       setInterval(() => {
-        const dateInstance = new Date();
-        document.getElementById('livePortalTimeClock').textContent = dateInstance.toLocaleTimeString('en-US', { hour12: true });
-        document.getElementById('livePortalDateDisplay').textContent = dateInstance.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const d = new Date();
+        document.getElementById('livePortalTimeClock').textContent = d.toLocaleTimeString('en-US', { hour12: true });
+        document.getElementById('livePortalDateDisplay').textContent = d.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       }, 1000);
     }
 
+    // ── QR Scanner ──────────────────────────────────────────────
+    async function startQrScanner() {
+      const scanBox = document.getElementById('qrScannerBox');
+      const startBtn = document.getElementById('startScanBtn');
+      const video    = document.getElementById('qrVideo');
+
+      try {
+        qrVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        video.srcObject = qrVideoStream;
+        await video.play();
+        scanBox.style.display = 'flex';
+        startBtn.style.display = 'none';
+        document.getElementById('scannerStatusMsg').textContent = 'Camera ready — QR code scan karo...';
+        lastScannedCode = null;
+        scanCooldown = false;
+        requestAnimationFrame(tickScanLoop);
+      } catch (err) {
+        showToast('Camera access denied ya available nahi hai.');
+      }
+    }
+
+    function stopQrScanner() {
+      if (qrVideoStream) { qrVideoStream.getTracks().forEach(t => t.stop()); qrVideoStream = null; }
+      if (qrAnimFrame)   { cancelAnimationFrame(qrAnimFrame); qrAnimFrame = null; }
+      document.getElementById('qrScannerBox').style.display = 'none';
+      document.getElementById('startScanBtn').style.display = 'flex';
+      document.getElementById('punchButtonActionLabel').textContent = 'SCAN QR';
+    }
+
+    function tickScanLoop() {
+      const video = document.getElementById('qrVideo');
+      if (!qrVideoStream || video.readyState !== video.HAVE_ENOUGH_DATA) {
+        qrAnimFrame = requestAnimationFrame(tickScanLoop);
+        return;
+      }
+
+      qrCanvas.width  = video.videoWidth;
+      qrCanvas.height = video.videoHeight;
+      qrCanvasCtx.drawImage(video, 0, 0, qrCanvas.width, qrCanvas.height);
+      const imageData = qrCanvasCtx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+      const decoded   = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+
+      if (decoded && decoded.data && !scanCooldown) {
+        const qrData = decoded.data.trim();
+        // QR data format: EBMS:EMP001:EMP_NAME
+        if (qrData.startsWith('EBMS:')) {
+          const parts = qrData.split(':');
+          const empId = parts[1];
+          if (empId && empId !== lastScannedCode) {
+            lastScannedCode = empId;
+            scanCooldown = true;
+            document.getElementById('scannerStatusMsg').textContent = `✅ QR detected: ${parts[2] || empId} — Processing...`;
+            processPunchFromQR(empId);
+            // Allow re-scan after 5 seconds
+            setTimeout(() => {
+              scanCooldown = false;
+              lastScannedCode = null;
+              if (qrVideoStream) document.getElementById('scannerStatusMsg').textContent = 'Next QR scan kar sakte ho...';
+            }, 5000);
+          }
+        } else {
+          document.getElementById('scannerStatusMsg').textContent = '⚠️ Invalid QR — EBMS QR code use karo';
+        }
+      }
+
+      qrAnimFrame = requestAnimationFrame(tickScanLoop);
+    }
+
+    async function processPunchFromQR(empId) {
+      const postPayload = {
+        token:   AUTHENTICATED_SESSION_TOKEN,
+        action:  'markAttendance',
+        emp_id:  empId
+      };
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(postPayload) });
+        const out = await res.json();
+
+        if (out.status === 'success') {
+          const msg = out.message || `Punch logged for ${empId}!`;
+          showToast('✅ ' + msg);
+          document.getElementById('scannerStatusMsg').textContent = '✅ ' + msg;
+          // Flash animation on scanner box
+          const video = document.getElementById('qrVideo');
+          video.style.borderColor = 'rgba(52,211,153,0.8)';
+          setTimeout(() => { video.style.borderColor = ''; }, 1200);
+          loadAttendanceMasterLogs();
+        } else {
+          showToast('❌ ' + (out.message || 'Punch error aaya.'));
+          document.getElementById('scannerStatusMsg').textContent = '❌ ' + (out.message || 'Error. Dobara try karo.');
+        }
+      } catch (err) {
+        showToast('Network error — punch register nahi hua.');
+        document.getElementById('scannerStatusMsg').textContent = '⚠️ Network error. Retry karo.';
+      }
+    }
+
+    // ── Attendance Logs ──────────────────────────────────────────
     function triggerLogSearch() {
       clearTimeout(DEBOUNCE_TIMER_HOOK);
       DEBOUNCE_TIMER_HOOK = setTimeout(() => { CURRENT_PAGE_TRACKER = 1; loadAttendanceMasterLogs(); }, 400);
     }
 
     async function loadAttendanceMasterLogs() {
-      const empVal = encodeURIComponent(document.getElementById('filterEmpId').value.trim());
-      const dateVal = document.getElementById('filterDate').value;
+      const empVal    = encodeURIComponent(document.getElementById('filterEmpId').value.trim());
+      const dateVal   = document.getElementById('filterDate').value;
       const branchVal = document.getElementById('filterBranch').value;
-
-      const STREAM_ROUTING_ENDPOINT = `${API_URL}?action=getAttendance&token=${AUTHENTICATED_SESSION_TOKEN}&page=${CURRENT_PAGE_TRACKER}&limit=12&emp_id=${empVal}&date=${dateVal}&branch_id=${branchVal}`;
+      const ENDPOINT  = `${API_URL}?action=getAttendance&token=${AUTHENTICATED_SESSION_TOKEN}&page=${CURRENT_PAGE_TRACKER}&limit=12&emp_id=${empVal}&date=${dateVal}&branch_id=${branchVal}`;
 
       try {
-        const responseStream = await fetch(STREAM_ROUTING_ENDPOINT);
-        const jsonPayload = await responseStream.json();
-
-        if (jsonPayload.status === 'success') {
-          renderAttendanceRowsMatrix(jsonPayload.data.data);
-          updatePaginationNodeUI(jsonPayload.data);
+        const res  = await fetch(ENDPOINT);
+        const data = await res.json();
+        if (data.status === 'success') {
+          renderAttendanceRowsMatrix(data.data.data);
+          updatePaginationNodeUI(data.data);
         } else {
-          showToast(jsonPayload.message || 'Error pulling attendance sequence log arrays.');
+          showToast(data.message || 'Attendance logs fetch error.');
         }
-      } catch (err) {
-        showToast('Critical handshake sync latency breakdown on query blocks.');
-      }
+      } catch (err) { showToast('Network error loading attendance.'); }
     }
 
     function renderAttendanceRowsMatrix(logsArray) {
       const container = document.getElementById('attendanceLogsContainer');
       if (!logsArray || logsArray.length === 0) {
-        container.innerHTML = `<tr><td colspan="9" style="padding: 24px; text-align: center; color: var(--text-dim);">No operational logs mapped matching target parameter sets.</td></tr>`;
+        container.innerHTML = `<tr><td colspan="9" style="padding:24px; text-align:center; color:var(--text-dim);">Koi logs nahi mile is filter ke liye.</td></tr>`;
         return;
       }
-
       container.innerHTML = logsArray.map(log => {
         const formattedDate = log.date ? new Date(log.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-        const statusClass = log.status === 'present' ? 'badge-present' : 'badge-absent';
-
-        // Dynamic time format parsing logic (Fixes the 1899 ISO formatting error)
-        const formattedInTime = formatTime12Hour(log.in_time);
-        const formattedOutTime = formatTime12Hour(log.out_time);
-
+        const statusClass   = log.status === 'present' ? 'badge-present' : 'badge-absent';
         return `
         <tr>
           <td><code style="color:var(--text-dim);">${log.att_id}</code></td>
           <td><strong style="color:var(--accent-glow);">${log.emp_id}</strong></td>
           <td>${log.branch_id || '—'}</td>
           <td>${formattedDate}</td>
-          <td style="color:#6EE7B7; font-weight:500;">⏱️ ${formattedInTime}</td>
-          <td style="color:#FCA5A5; font-weight:500;">⏱️ ${formattedOutTime}</td>
+          <td style="color:#6EE7B7; font-weight:500;">⏱️ ${formatTime12Hour(log.in_time)}</td>
+          <td style="color:#FCA5A5; font-weight:500;">⏱️ ${formatTime12Hour(log.out_time)}</td>
           <td><span style="color:${log.late_minutes > 0 ? 'var(--warning)' : 'var(--text-dim)'};">${log.late_minutes || 0} mins</span></td>
           <td><span class="status-badge ${statusClass}">${log.status}</span></td>
           <td style="font-size:13px; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${log.remarks || ''}">${log.remarks || '—'}</td>
-        </tr>
-      `;
+        </tr>`;
       }).join('');
     }
 
-    function updatePaginationNodeUI(paginationContext) {
-      CURRENT_PAGE_TRACKER = paginationContext.page;
-      TOTAL_PAGES_LIMIT = paginationContext.totalPages;
-
-      document.getElementById('paginationInfoDisplay').textContent = `Showing page ${CURRENT_PAGE_TRACKER} of ${TOTAL_PAGES_LIMIT || 1} (${paginationContext.total} logs tracked)`;
+    function updatePaginationNodeUI(ctx) {
+      CURRENT_PAGE_TRACKER = ctx.page;
+      TOTAL_PAGES_LIMIT    = ctx.totalPages;
+      document.getElementById('paginationInfoDisplay').textContent = `Showing page ${CURRENT_PAGE_TRACKER} of ${TOTAL_PAGES_LIMIT || 1} (${ctx.total} logs tracked)`;
       document.getElementById('btnPrevPage').disabled = CURRENT_PAGE_TRACKER <= 1;
       document.getElementById('btnNextPage').disabled = CURRENT_PAGE_TRACKER >= TOTAL_PAGES_LIMIT;
     }
@@ -516,35 +660,6 @@
     function changePage(deltaStep) {
       CURRENT_PAGE_TRACKER += deltaStep;
       loadAttendanceMasterLogs();
-    }
-
-    async function triggerAttendancePunchLog() {
-      const actionLabelNode = document.getElementById('punchButtonActionLabel');
-      actionLabelNode.textContent = 'PROCESSING...';
-
-      const postPayload = {
-        token: AUTHENTICATED_SESSION_TOKEN,
-        action: 'markAttendance'
-      };
-
-      try {
-        const networkResponse = await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify(postPayload)
-        });
-        const outputStream = await networkResponse.json();
-
-        if (outputStream.status === 'success') {
-          showToast(outputStream.message || 'Punch logged successfully!');
-          loadAttendanceMasterLogs();
-        } else {
-          showToast(outputStream.message || 'Punch registration error occurred.');
-        }
-      } catch (err) {
-        showToast('Handshake pipeline terminal processing interface dropped.');
-      } finally {
-        actionLabelNode.textContent = 'PUNCH LOG';
-      }
     }
   </script>
 </body>

@@ -190,6 +190,13 @@
             }
         }
 
+        @media (max-width: 900px) {
+            .search-input-box,
+            .dropdown-select {
+                font-size: 16px;
+            }
+        }
+
         .table-container {
             background: var(--glass);
             border: 1px solid var(--glass-border);
@@ -399,6 +406,13 @@
             background: #18181B;
             color: #fff;
         }
+
+        @media (max-width: 900px) {
+            .form-group input,
+            .form-group select {
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 
@@ -468,7 +482,7 @@
         <div class="modal-card">
             <div class="modal-header">
                 <h3>➕ Add New Employee</h3>
-                <button style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer;"
+                <button style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer; padding:10px; margin:-10px; border-radius:8px; line-height:1;"
                     onclick="toggleModal(false)">×</button>
             </div>
             <div class="modal-body">
@@ -540,8 +554,94 @@
         </div>
     </div>
 
+    <!-- QR Code Modal -->
+    <div class="modal-overlay" id="qrModal" style="display:none; z-index:1100;">
+        <div class="modal-card" style="max-width:380px; text-align:center;">
+            <div class="modal-header" style="justify-content:space-between;">
+                <h3>🔲 Employee QR Card</h3>
+                <button style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:10px;margin:-10px;border-radius:8px;line-height:1;" onclick="closeQrModal()">×</button>
+            </div>
+            <div style="padding:28px 24px;">
+                <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;" id="qrEmpName">—</div>
+                <div style="font-size:11.5px; color:var(--text-dim); margin-bottom:20px;" id="qrEmpMeta">—</div>
+                <!-- QR Code rendered here -->
+                <div id="qrCodeCanvas" style="display:flex; justify-content:center; margin-bottom:20px;">
+                    <canvas id="qrActualCanvas" style="border-radius:12px; background:#fff; padding:12px;"></canvas>
+                </div>
+                <div style="font-size:11px; color:var(--text-dim); margin-bottom:16px; line-height:1.6;">
+                    Yeh QR Attendance Console pe scan karo<br/>Punch In / Punch Out automatically register hoga
+                </div>
+                <button onclick="downloadQrCard()" style="background:rgba(255,255,255,0.09);border:1px solid var(--glass-border);color:#fff;padding:9px 22px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:600;font-family:'Inter',sans-serif;width:100%;transition:background 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.09)'">
+                    ⬇️ QR Download Karo
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="app.js"></script>
     <script>
+        // ── QR Modal Logic ──────────────────────────────────
+        let currentQrEmpId = '';
+        let currentQrEmpName = '';
+
+        function showQrModal(empId, empName, branchId) {
+            currentQrEmpId = empId;
+            currentQrEmpName = empName;
+            document.getElementById('qrEmpName').textContent = empName;
+            document.getElementById('qrEmpMeta').textContent = empId + (branchId ? ' · ' + branchId : '');
+            document.getElementById('qrModal').style.display = 'flex';
+
+            const container = document.getElementById('qrCodeCanvas');
+            container.innerHTML = '';
+
+            new QRCode(container, {
+                text: `EBMS:${empId}:${empName}`,
+                width: 200, height: 200,
+                colorDark: '#000000', colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function closeQrModal() {
+            document.getElementById('qrModal').style.display = 'none';
+        }
+
+        function downloadQrCard() {
+            const container = document.getElementById('qrCodeCanvas');
+            const img = container.querySelector('img') || container.querySelector('canvas');
+            if (!img) { showToast('QR generate ho raha hai, thoda wait karo.'); return; }
+
+            const dlCanvas = document.createElement('canvas');
+            dlCanvas.width = 300; dlCanvas.height = 360;
+            const ctx = dlCanvas.getContext('2d');
+
+            ctx.fillStyle = '#111113';
+            ctx.fillRect(0, 0, 300, 360);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(50, 40, 200, 200);
+
+            const drawQR = () => {
+                ctx.drawImage(img, 50, 40, 200, 200);
+                ctx.fillStyle = '#F4F4F5';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(currentQrEmpName, 150, 278);
+                ctx.fillStyle = '#A1A1AA';
+                ctx.font = '13px sans-serif';
+                ctx.fillText(currentQrEmpId, 150, 300);
+                ctx.fillStyle = '#52525B';
+                ctx.font = '11px sans-serif';
+                ctx.fillText('Codeline.AI EBMS · Attendance QR', 150, 340);
+                const link = document.createElement('a');
+                link.download = `QR_${currentQrEmpId}.png`;
+                link.href = dlCanvas.toDataURL('image/png');
+                link.click();
+            };
+
+            if (img.tagName === 'IMG' && !img.complete) { img.onload = drawQR; } else { drawQR(); }
+        }
+
+        // ── Main App ─────────────────────────────────────────
         AppSession.protect();
         const SESSION_TOKEN_VERIFIER = AppSession.getToken();
 
@@ -605,7 +705,10 @@
           <td>${emp.designation_id || 'Staff Regular'}</td>
           <td>${emp.mobile || '—'}</td>
           <td><span class="status-pill ${emp.status === 'active' ? 'pill-active' : 'pill-inactive'}">${emp.status === 'active' ? 'Active' : 'Inactive'}</span></td>
-          <td><a class="link-profile" href="employee_profile.html?emp_id=${emp.emp_id}">View Profile →</a></td>
+          <td><a class="link-profile" href="employee_profile.html?emp_id=${emp.emp_id}">View Profile →</a>
+            &nbsp;
+            <button onclick="showQrModal('${emp.emp_id}','${emp.name.replace(/'/g,"\\'")}','${emp.branch_id||''}')" style="background:rgba(52,211,153,0.10);border:1px solid rgba(52,211,153,0.22);color:#6EE7B7;padding:6px 12px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;white-space:nowrap;">🔲 QR</button>
+          </td>
         </tr>
       `;
             }).join('');

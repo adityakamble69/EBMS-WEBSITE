@@ -200,6 +200,12 @@
       background: #1a1a1e;
     }
 
+    @media (max-width: 900px) {
+      .filter-bar select {
+        font-size: 16px;
+      }
+    }
+
     .table-container {
       background: var(--glass);
       border: 1px solid var(--glass-border);
@@ -286,7 +292,7 @@
       border: 1px solid rgba(52, 211, 153, 0.25);
       color: #34D399;
       border-radius: 6px;
-      padding: 5px 10px;
+      padding: 6px 12px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
@@ -302,7 +308,7 @@
       border: 1px solid rgba(248, 113, 113, 0.25);
       color: #F87171;
       border-radius: 6px;
-      padding: 5px 10px;
+      padding: 6px 12px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
@@ -405,6 +411,20 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
+    }
+
+    @media (max-width: 380px) {
+      .date-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        font-size: 16px;
+      }
     }
 
     .btn-submit {
@@ -538,7 +558,7 @@
       <div class="modal-header">
         <h3>📅 Apply for Leave</h3>
         <button
-          style="background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer; line-height:1;"
+          style="background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer; line-height:1; padding:10px; margin:-10px; border-radius:8px;"
           onclick="toggleLeaveModal(false)">×</button>
       </div>
       <div class="modal-body">
