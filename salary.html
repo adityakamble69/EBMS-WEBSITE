@@ -248,6 +248,13 @@
       background: rgba(255, 255, 255, 0.07);
     }
 
+    @media (max-width: 900px) {
+      .form-group input,
+      .form-group select {
+        font-size: 16px;
+      }
+    }
+
     /* Salary preview box */
     .salary-preview {
       background: rgba(255, 255, 255, 0.025);
@@ -381,7 +388,7 @@
       border: 1px solid var(--glass-border);
       color: var(--text-muted);
       border-radius: 6px;
-      padding: 5px 10px;
+      padding: 6px 12px;
       font-size: 12px;
       font-weight: 500;
       cursor: pointer;
@@ -399,7 +406,7 @@
       border: 1px solid rgba(52, 211, 153, 0.25);
       color: #34D399;
       border-radius: 6px;
-      padding: 5px 10px;
+      padding: 6px 12px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
@@ -467,6 +474,12 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
+    }
+
+    @media (max-width: 360px) {
+      .month-year-row {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -619,7 +632,7 @@
     <div class="modal-card">
       <div class="modal-header">
         <h3>🧾 Generate Salary Slip</h3>
-        <button style="background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;line-height:1;"
+        <button style="background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;line-height:1;padding:10px;margin:-10px;border-radius:8px;"
           onclick="toggleGenModal(false)">×</button>
       </div>
       <div class="modal-body">

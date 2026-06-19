@@ -177,6 +177,12 @@
       background: #1a1a1e;
     }
 
+    @media (max-width: 900px) {
+      .filter-bar select {
+        font-size: 16px;
+      }
+    }
+
     /* Table */
     .table-container {
       background: var(--glass);
@@ -488,7 +494,8 @@
     }
 
     .sig-line {
-      width: 160px;
+      width: 100%;
+      max-width: 160px;
       border-top: 1px solid #D1D5DB;
       padding-top: 8px;
       margin-top: 32px;
@@ -518,6 +525,20 @@
         max-width: 100% !important;
         padding: 24px !important;
       }
+    }
+
+    /* Small phones: printable card needs tighter, single-column spacing on screen
+       (print styles above are untouched, this only affects on-screen viewing) */
+    @media screen and (max-width: 480px) {
+      .slip-overlay { padding: 16px 10px; }
+      .slip-card { padding: 28px 20px; }
+      .slip-meta-grid { grid-template-columns: 1fr; }
+      .slip-title-block { text-align: left; }
+    }
+
+    @media screen and (max-width: 360px) {
+      .slip-card { padding: 22px 14px; }
+      .slip-table th, .slip-table td { padding: 7px 8px; font-size: 12.5px; }
     }
   </style>
 </head>
