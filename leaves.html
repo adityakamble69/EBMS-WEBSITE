@@ -620,11 +620,13 @@
 
     async function loadLeaves() {
       try {
-        const res = await fetch(`${API_URL}?action=getLeaves&token=${TOKEN}`);
+        const res = await fetch(`${API_URL}?action=getLeaves&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
         const payload = await res.json();
 
         if (payload.status === 'success') {
-          allLeaves = payload.data || [];
+          // Backend sends a paginated wrapper: { data: { data: [...], total, page, ... } }
+          // so the actual leave records are nested one level deeper.
+          allLeaves = (payload.data && payload.data.data) || [];
           updateStats(allLeaves);
           renderRows(allLeaves);
         } else {
@@ -698,10 +700,11 @@
     }
 
     async function updateLeaveStatus(leaveId, newStatus) {
+      const action = newStatus === 'approved' ? 'approveLeave' : 'rejectLeave';
       try {
         const res = await fetch(API_URL, {
           method: 'POST',
-          body: JSON.stringify({ token: TOKEN, action: 'updateLeave', leave_id: leaveId, status: newStatus })
+          body: JSON.stringify({ token: TOKEN, action: action, leave_id: leaveId })
         });
         const out = await res.json();
         if (out.status === 'success') {
@@ -715,6 +718,14 @@
       }
     }
 
+    function calculateLeaveDays(fromStr, toStr) {
+      if (!fromStr || !toStr) return 1;
+      const from = new Date(fromStr);
+      const to = new Date(toStr);
+      const diffDays = Math.round((to - from) / (1000 * 60 * 60 * 24)) + 1;
+      return diffDays > 0 ? diffDays : 1;
+    }
+
     async function submitLeaveRequest(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('leaveSubmitBtn');
@@ -725,13 +736,18 @@
         ? USER.emp_id
         : (document.getElementById('lEmpId').value.trim());
 
+      const fromDateVal = document.getElementById('lFrom').value;
+      const toDateVal = document.getElementById('lTo').value;
+      const daysCount = calculateLeaveDays(fromDateVal, toDateVal);
+
       const payload = {
         token: TOKEN,
         action: 'applyLeave',
         emp_id: empId,
         leave_type: document.getElementById('lType').value,
-        from_date: document.getElementById('lFrom').value,
-        to_date: document.getElementById('lTo').value,
+        from_date: fromDateVal,
+        to_date: toDateVal,
+        days: daysCount,
         reason: document.getElementById('lReason').value
       };
 

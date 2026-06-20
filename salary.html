@@ -711,7 +711,8 @@
         const res = await fetch(`${API_URL}?action=getSalaries&token=${TOKEN}`);
         const payload = await res.json();
         if (payload.status === 'success') {
-          const data = payload.data || [];
+          // Backend sends a paginated wrapper: { data: { data: [...], total, page, ... } }
+          const data = (payload.data && payload.data.data) || [];
           updateStats(data);
           renderRows(data);
         } else {
@@ -840,7 +841,7 @@
 
       const payload = {
         token: TOKEN,
-        action: 'generateSalarySlip',
+        action: 'generateSlip',
         emp_id: currentGenEmpId,
         month: document.getElementById('genMonth').value,
         year: document.getElementById('genYear').value

@@ -5,6 +5,24 @@
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbw8NY1rDyI47qjA6S-gxCWCkuIerqUL-lqkw0EienUt4t1l8nx8aWI5jNdw6Kk8SE05rA/exec';
 
+// ============================================================
+// QR Attendance — shared checksum util
+// IMPORTANT: This exact secret + function must also exist in your
+// Apps Script backend (appscript_attendance.gs) so it can verify
+// scanned QR codes. Keep both sides in sync if you ever change it.
+// ============================================================
+const QR_SECRET_KEY = 'CDLN-EBMS-2025-SECURE';
+
+function generateQrChecksum(empId, secretKey) {
+  const str = String(empId) + '::' + secretKey;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0; // force 32-bit int
+  }
+  return Math.abs(hash).toString(16).toUpperCase().padStart(8, '0').slice(0, 8);
+}
+
 const AppSession = {
   getToken: function() { return localStorage.getItem('ebms_token'); },
   getUser: function() {
