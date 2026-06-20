@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notifications — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --warning: #FBBF24;
+      --danger: #F87171;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar-spacer { width: 240px; flex-shrink: 0; }
+    @media (max-width: 768px) { .sidebar-spacer { display: none; } }
+
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+    @media (max-width: 600px) { .main-workspace { padding: 16px; } }
+
+    .mobile-nav-bar {
+      display: none;
+      height: 50px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--radius-sm);
+      align-items: center;
+      padding: 0 16px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 768px) { .mobile-nav-bar { display: flex; } }
+
+    .header-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title-area h1 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; }
+    .title-area p { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .btn-action {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(var(--glass-blur));
+      transition: background 0.18s, border-color 0.18s, transform 0.18s;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+    }
+    .btn-ghost:hover { color: var(--text-primary); background: var(--glass); }
+
+    /* Stats */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+    .stat-card .stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px; }
+    .stat-card .stat-value { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; margin-top: 4px; }
+    .stat-card .stat-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-bar select {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      cursor: pointer;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+    .filter-bar select option { background: #1a1a1e; }
+    @media (max-width: 900px) { .filter-bar select { font-size: 16px; } }
+
+    /* Notification feed */
+    .feed-container {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      overflow: hidden;
+    }
+
+    .notif-item {
+      display: flex;
+      gap: 14px;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:hover { background: rgba(255, 255, 255, 0.025); }
+    .notif-item.unread { background: rgba(255, 255, 255, 0.025); }
+    .notif-item.unread::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--accent-glow);
+    }
+
+    .notif-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--glass-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .notif-body { flex: 1; min-width: 0; }
+    .notif-title-row { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+    .notif-title { font-weight: 600; font-size: 14px; color: var(--text-primary); }
+    .notif-time { font-size: 11.5px; color: var(--text-dim); white-space: nowrap; }
+    .notif-message { font-size: 13px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+
+    .unread-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent-glow);
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+
+    .empty-state { padding: 56px 24px; text-align: center; color: var(--text-dim); }
+    .empty-state .empty-icon { font-size: 38px; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .modal-card {
+      background: rgba(18, 18, 20, 0.85);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 480px; width: 100%;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    }
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-header h3 { font-family: 'Space Grotesk', sans-serif; font-size: 16px; }
+    .modal-body { padding: 24px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-group label { font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+    .form-group input, .form-group select, .form-group textarea {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.18s, background 0.18s;
+      width: 100%;
+    }
+    .form-group select option { background: #1a1a1e; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.07);
+    }
+    .form-group textarea { resize: none; height: 90px; }
+    @media (max-width: 900px) {
+      .form-group input, .form-group select, .form-group textarea { font-size: 16px; }
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--glass-strong);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.18s, transform 0.18s;
+      margin-top: 4px;
+    }
+    .btn-submit:hover { background: rgba(255, 255, 255, 0.12); transform: translateY(-1px); }
+  </style>
+</head>
+
+<body>
+  <div class="sidebar-spacer"></div>
+
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">
+      ☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span>
+    </div>
+
+    <div class="header-block">
+      <div class="title-area">
+        <h1>🔔 Notifications Center</h1>
+        <p>Leave updates, birthdays, work anniversaries — sab ek jagah</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-action btn-ghost" id="markAllBtn" onclick="markAllRead()">✓ Mark all read</button>
+        <button class="btn-action" id="announceBtn" style="display:none;" onclick="toggleAnnounceModal(true)">📢 Send Announcement</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total</div>
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-sub">All notifications</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Unread</div>
+        <div class="stat-value" id="statUnread" style="color:var(--warning);">—</div>
+        <div class="stat-sub">Needs review</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Today</div>
+        <div class="stat-value" id="statToday" style="color:var(--success);">—</div>
+        <div class="stat-sub">New today</div>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-bar">
+      <select id="filterType" onchange="applyFilters()">
+        <option value="">All Types</option>
+        <option value="leave_approved">✅ Leave Approved</option>
+        <option value="leave_rejected">❌ Leave Rejected</option>
+        <option value="anniversary">🎉 Work Anniversaries</option>
+        <option value="announcement">📢 Announcements</option>
+        <option value="general">🔔 General</option>
+      </select>
+      <select id="filterRead" onchange="applyFilters()">
+        <option value="">All</option>
+        <option value="unread">Unread only</option>
+        <option value="read">Read only</option>
+      </select>
+    </div>
+
+    <!-- Feed -->
+    <div class="feed-container" id="feedContainer">
+      <div class="empty-state">
+        <div class="empty-icon">🔔</div>
+        <p>Notifications load ho rahi hain...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Send Announcement Modal -->
+  <div class="modal-overlay" id="announceModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📢 Send Announcement</h3>
+        <button style="background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; line-height:1; padding:10px; margin:-10px; border-radius:8px;"
+          onclick="toggleAnnounceModal(false)">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="announceForm" onsubmit="submitAnnouncement(event)">
+          <div class="form-group">
+            <label>Title *</label>
+            <input type="text" id="anTitle" required placeholder="e.g. Office closed on Monday" />
+          </div>
+          <div class="form-group">
+            <label>Message *</label>
+            <textarea id="anMessage" required placeholder="Announcement details..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Audience</label>
+            <select id="anBranch">
+              <option value="">All Branches</option>
+              <option value="__current__">My Branch Only</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-submit" id="announceSubmitBtn">Send to All</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const USER  = AppSession.getUser();
+
+    let allNotifications = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (USER.role === 'super_admin' || USER.role === 'hr' || USER.role === 'branch_manager') {
+        document.getElementById('announceBtn').style.display = 'inline-flex';
+      }
+      if (USER.branch_id) {
+        document.getElementById('anBranch').querySelector('option[value="__current__"]').textContent = `My Branch Only (${USER.branch_id})`;
+      }
+      if (USER.role === 'branch_manager') {
+        // Branch manager sirf apni branch ko hi announce kar sakta hai (backend bhi enforce karta hai)
+        const allOpt = document.getElementById('anBranch').querySelector('option[value=""]');
+        if (allOpt) allOpt.remove();
+        document.getElementById('anBranch').value = '__current__';
+      }
+      loadNotifications();
+    });
+
+    function toggleAnnounceModal(on) {
+      document.getElementById('announceModal').style.display = on ? 'flex' : 'none';
+      if (!on) document.getElementById('announceForm').reset();
+    }
+
+    function timeAgo(dateStr) {
+      if (!dateStr) return '—';
+      const d = new Date(dateStr);
+      const diffMs = Date.now() - d.getTime();
+      const mins = Math.floor(diffMs / 60000);
+      if (mins < 1) return 'Just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs}h ago`;
+      const days = Math.floor(hrs / 24);
+      if (days < 7) return `${days}d ago`;
+      return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function isToday(dateStr) {
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      const now = new Date();
+      return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }
+
+    const TYPE_ICONS = {
+      general: '🔔', leave_approved: '✅', leave_rejected: '❌',
+      birthday: '🎂', anniversary: '🎉', announcement: '📢', task: '📋'
+    };
+
+    // is_read sheet mein string 'true'/'false' ke roop mein store hota hai —
+    // isliye truthy check nahi, exact string compare use karo.
+    function isUnread(n) { return String(n.is_read) !== 'true'; }
+
+    async function loadNotifications() {
+      try {
+        const res = await fetch(`${API_URL}?action=getNotifications&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          allNotifications = (payload.data && payload.data.data) || payload.data || [];
+          updateStats(allNotifications);
+          renderFeed(allNotifications);
+        } else {
+          showToast(payload.message || 'Notifications fetch nahi ho payin.');
+          renderFeed([]);
+        }
+      } catch (e) {
+        showToast('Network error — notifications load nahi hui.');
+        renderFeed([]);
+      }
+    }
+
+    function updateStats(data) {
+      document.getElementById('statTotal').textContent = data.length;
+      document.getElementById('statUnread').textContent = data.filter(isUnread).length;
+      document.getElementById('statToday').textContent = data.filter(n => isToday(n.created_at)).length;
+    }
+
+    function applyFilters() {
+      const type = document.getElementById('filterType').value;
+      const readState = document.getElementById('filterRead').value;
+      let filtered = allNotifications;
+      if (type) filtered = filtered.filter(n => n.type === type);
+      if (readState === 'unread') filtered = filtered.filter(isUnread);
+      if (readState === 'read') filtered = filtered.filter(n => !isUnread(n));
+      renderFeed(filtered);
+    }
+
+    function renderFeed(data) {
+      const container = document.getElementById('feedContainer');
+      if (!data || data.length === 0) {
+        container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <p>Koi notification nahi hai.</p>
+        </div>`;
+        return;
+      }
+
+      const sorted = [...data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      container.innerHTML = sorted.map(n => `
+        <div class="notif-item ${isUnread(n) ? 'unread' : ''}" onclick="handleNotifClick('${n.notif_id}', ${!isUnread(n)})">
+          <div class="notif-icon">${TYPE_ICONS[n.type] || '🔔'}</div>
+          <div class="notif-body">
+            <div class="notif-title-row">
+              <div class="notif-title">${n.title || 'Notification'}</div>
+              <div class="notif-time">${timeAgo(n.created_at)}</div>
+            </div>
+            <div class="notif-message">${n.message || ''}</div>
+          </div>
+          ${isUnread(n) ? '<div class="unread-dot"></div>' : ''}
+        </div>
+      `).join('');
+    }
+
+    function handleNotifClick(notifId, alreadyRead) {
+      if (alreadyRead) return;
+      markNotificationRead(notifId);
+    }
+
+    async function markNotificationRead(notifId) {
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'markNotificationRead', notification_id: notifId })
+        });
+        const out = await res.json();
+        if (out.status === 'success') loadNotifications();
+      } catch (e) { showToast('Network error.'); }
+    }
+
+    async function markAllRead() {
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'markAllNotificationsRead' })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Sab notifications read mark ho gayi!');
+          loadNotifications();
+        }
+      } catch (e) { showToast('Network error.'); }
+    }
+
+    async function submitAnnouncement(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('announceSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending...';
+
+      const branchVal = document.getElementById('anBranch').value;
+      const payload = {
+        token: TOKEN,
+        action: 'sendAnnouncement',
+        title: document.getElementById('anTitle').value,
+        message: document.getElementById('anMessage').value,
+        branch_id: branchVal === '__current__' ? (USER.branch_id || '') : ''
+      };
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Announcement bhej diya gaya!');
+          toggleAnnounceModal(false);
+          loadNotifications();
+        } else {
+          showToast(out.message || 'Error aaya.');
+        }
+      } catch (err) {
+        showToast('Network error.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send to All';
+      }
+    }
+  </script>
+</body>
+
+</html>

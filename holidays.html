@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Holidays — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --warning: #FBBF24;
+      --danger: #F87171;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar-spacer {
+      width: 240px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar-spacer {
+        display: none;
+      }
+    }
+
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 600px) {
+      .main-workspace {
+        padding: 16px;
+      }
+    }
+
+    .mobile-nav-bar {
+      display: none;
+      height: 50px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--radius-sm);
+      align-items: center;
+      padding: 0 16px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-nav-bar {
+        display: flex;
+      }
+    }
+
+    .header-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title-area h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .title-area p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .btn-action {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(var(--glass-blur));
+      transition: background 0.18s, border-color 0.18s, transform 0.18s;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .stat-card .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .stat-card .stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .stat-card .stat-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-bar select {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      cursor: pointer;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .filter-bar select option {
+      background: #1a1a1e;
+    }
+
+    @media (max-width: 900px) {
+      .filter-bar select {
+        font-size: 16px;
+      }
+    }
+
+    .table-container {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      width: 100%;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+      min-width: 700px;
+    }
+
+    .data-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      padding: 14px 16px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .data-table tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    /* Date chip */
+    .date-chip {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 46px;
+      height: 46px;
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      line-height: 1.1;
+    }
+
+    .date-chip .chip-day {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .date-chip .chip-month {
+      font-size: 9.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .date-chip.is-past {
+      opacity: 0.45;
+    }
+
+    .row-content {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* Type pills */
+    .type-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--glass-border);
+    }
+
+    .type-national {
+      background: rgba(96, 165, 250, 0.12);
+      color: #93C5FD;
+    }
+
+    .type-company {
+      background: rgba(167, 139, 250, 0.12);
+      color: #C4B5FD;
+    }
+
+    .recurring-tag {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-delete {
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+      color: #F87171;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-delete:hover {
+      background: rgba(248, 113, 113, 0.2);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background: rgba(18, 18, 20, 0.85);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 460px;
+      width: 100%;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.18s, background 0.18s;
+      width: 100%;
+    }
+
+    .form-group select option {
+      background: #1a1a1e;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .checkbox-row input {
+      width: auto;
+    }
+
+    .checkbox-row label {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 500;
+    }
+
+    @media (max-width: 900px) {
+
+      .form-group input,
+      .form-group select {
+        font-size: 16px;
+      }
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--glass-strong);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.18s, transform 0.18s;
+      margin-top: 4px;
+    }
+
+    .btn-submit:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">
+      ☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span>
+    </div>
+
+    <div class="header-block">
+      <div class="title-area">
+        <h1>🎉 Holidays</h1>
+        <p>Company-wide holiday calendar — national aur company-specific dono.</p>
+      </div>
+      <button class="btn-action" id="addHolidayBtn" style="display:none;" onclick="toggleHolidayModal(true)">➕ Add
+        Holiday</button>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="stat-label">Total Holidays</div>
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-sub">This year</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Upcoming</div>
+        <div class="stat-value" id="statUpcoming" style="color:var(--success);">—</div>
+        <div class="stat-sub">From today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">National</div>
+        <div class="stat-value" id="statNational" style="color:#93C5FD;">—</div>
+        <div class="stat-sub">Govt holidays</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Company</div>
+        <div class="stat-value" id="statCompany" style="color:#C4B5FD;">—</div>
+        <div class="stat-sub">Internal days off</div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <select id="filterYear" onchange="loadHolidays()">
+        <!-- populated dynamically -->
+      </select>
+      <select id="filterType" onchange="applyFilters()">
+        <option value="">All Types</option>
+        <option value="national">National</option>
+        <option value="company">Company</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Holiday</th>
+            <th>Type</th>
+            <th>Recurring</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="holidaysRowsContainer">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <div class="empty-icon">🎉</div>
+                <p>Holidays are loading...</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Holiday Modal -->
+  <div class="modal-overlay" id="holidayModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🎉 Add New Holiday</h3>
+        <button
+          style="background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer; line-height:1; padding:10px; margin:-10px; border-radius:8px;"
+          onclick="toggleHolidayModal(false)">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="newHolidayForm" onsubmit="submitHolidayData(event)">
+          <div class="form-group">
+            <label>Holiday Name *</label>
+            <input type="text" id="hName" required placeholder="e.g. Diwali" />
+          </div>
+          <div class="form-group">
+            <label>Date *</label>
+            <input type="date" id="hDate" required />
+          </div>
+          <div class="form-group">
+            <label>Type *</label>
+            <select id="hType">
+              <option value="national">🇮🇳 National</option>
+              <option value="company">🏢 Company</option>
+            </select>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="hRecurring" />
+            <label for="hRecurring">Recurring every year</label>
+          </div>
+          <button type="submit" class="btn-submit" id="holidaySubmitBtn">Save Holiday</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const USER = AppSession.getUser();
+
+    let allHolidays = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (USER.role === 'super_admin') {
+        document.getElementById('addHolidayBtn').style.display = 'inline-flex';
+      }
+      populateYearFilter();
+      loadHolidays();
+    });
+
+    function populateYearFilter() {
+      const sel = document.getElementById('filterYear');
+      const currentYear = new Date().getFullYear();
+      let opts = '';
+      for (let y = currentYear - 1; y <= currentYear + 1; y++) {
+        opts += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`;
+      }
+      sel.innerHTML = opts;
+    }
+
+    function toggleHolidayModal(on) {
+      document.getElementById('holidayModal').style.display = on ? 'flex' : 'none';
+      if (!on) document.getElementById('newHolidayForm').reset();
+    }
+
+    async function loadHolidays() {
+      const year = document.getElementById('filterYear').value;
+      try {
+        const res = await fetch(`${API_URL}?action=getHolidays&token=${TOKEN}&year=${year}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+
+        if (payload.status === 'success') {
+          allHolidays = payload.data || [];
+          updateStats(allHolidays);
+          applyFilters();
+        } else {
+          showToast(payload.message || 'Error occurred while fetching holidays.');
+        }
+      } catch (e) {
+        showToast('Network error — holidays could not be loaded.');
+      }
+    }
+
+    function updateStats(data) {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      document.getElementById('statTotal').textContent = data.length;
+      document.getElementById('statUpcoming').textContent = data.filter(h => new Date(h.date) >= now).length;
+      document.getElementById('statNational').textContent = data.filter(h => h.type === 'national').length;
+      document.getElementById('statCompany').textContent = data.filter(h => h.type === 'company').length;
+    }
+
+    function applyFilters() {
+      const type = document.getElementById('filterType').value;
+      let filtered = allHolidays;
+      if (type) filtered = filtered.filter(h => h.type === type);
+      renderRows(filtered);
+    }
+
+    function renderRows(data) {
+      const tbody = document.getElementById('holidaysRowsContainer');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `
+        <tr><td colspan="5">
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>No holidays found.</p>
+          </div>
+        </td></tr>`;
+        return;
+      }
+
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const isSuperAdmin = USER.role === 'super_admin';
+
+      tbody.innerHTML = data.map(h => {
+        const d = h.date ? new Date(h.date) : null;
+        const isPast = d && d < now;
+        const dayNum = d ? d.getDate() : '—';
+        const monthName = d ? d.toLocaleDateString('en-IN', { month: 'short' }) : '';
+
+        const typePillClass = h.type === 'national' ? 'type-national' : 'type-company';
+        const typeLabel = h.type === 'national' ? '🇮🇳 National' : '🏢 Company';
+        const recurringLabel = String(h.recurring) === 'true' ? '🔁 Yearly' : '—';
+
+        const actions = isSuperAdmin
+          ? `<button class="btn-delete" onclick="deleteHoliday('${h.holiday_id}')">🗑 Delete</button>`
+          : `<span style="color:var(--text-dim); font-size:12px;">—</span>`;
+
+        return `
+        <tr>
+          <td>
+            <div class="date-chip ${isPast ? 'is-past' : ''}">
+              <div class="chip-day">${dayNum}</div>
+              <div class="chip-month">${monthName}</div>
+            </div>
+          </td>
+          <td><strong style="color:var(--text-primary);">${h.name || '—'}</strong></td>
+          <td><span class="type-pill ${typePillClass}">${typeLabel}</span></td>
+          <td><span class="recurring-tag">${recurringLabel}</span></td>
+          <td>${actions}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function submitHolidayData(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('holidaySubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+
+      const payload = {
+        token: TOKEN,
+        action: 'addHoliday',
+        name: document.getElementById('hName').value.trim(),
+        date: document.getElementById('hDate').value,
+        type: document.getElementById('hType').value,
+        recurring: document.getElementById('hRecurring').checked
+      };
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Holiday successfully add ho gayi!');
+          toggleHolidayModal(false);
+          loadHolidays();
+        } else {
+          showToast(out.message || 'Error occurred while adding holiday.');
+        }
+      } catch (err) {
+        showToast('Network error.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Holiday';
+      }
+    }
+
+    async function deleteHoliday(holidayId) {
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'deleteHoliday', holiday_id: holidayId })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Holiday delete ho gayi!');
+          loadHolidays();
+        } else {
+          showToast(out.message || 'Error occurred while deleting holiday.');
+        }
+      } catch (e) {
+        showToast('Network error.');
+      }
+    }
+  </script>
+</body>
+
+</html>
