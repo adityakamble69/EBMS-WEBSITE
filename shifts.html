@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shift Roster — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --warning: #FBBF24;
+      --danger: #F87171;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar-spacer {
+      width: 240px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar-spacer {
+        display: none;
+      }
+    }
+
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 600px) {
+      .main-workspace {
+        padding: 16px;
+      }
+    }
+
+    .mobile-nav-bar {
+      display: none;
+      height: 50px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--radius-sm);
+      align-items: center;
+      padding: 0 16px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-nav-bar {
+        display: flex;
+      }
+    }
+
+    .header-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title-area h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .title-area p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .btn-action {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(var(--glass-blur));
+      transition: background 0.18s, border-color 0.18s, transform 0.18s;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    /* Toolbar: view toggle + date nav */
+    .roster-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .view-toggle {
+      display: inline-flex;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .view-toggle button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .view-toggle button.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .date-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .date-nav button {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .date-nav button:hover {
+      background: var(--glass-strong);
+    }
+
+    .date-nav .date-range-label {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      min-width: 160px;
+      text-align: center;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .date-nav .btn-today {
+      width: auto;
+      padding: 0 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Legend */
+    .shift-legend {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .legend-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      padding: 5px 10px;
+      border-radius: 20px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Roster grid */
+    .roster-grid-wrap {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      width: 100%;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    }
+
+    .roster-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+    }
+
+    .roster-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      padding: 10px 8px;
+      font-weight: 600;
+      white-space: nowrap;
+      text-align: center;
+      font-size: 11.5px;
+      position: sticky;
+      top: 0;
+    }
+
+    .roster-table th.emp-col-header {
+      text-align: left;
+      padding-left: 16px;
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      background: rgba(20, 20, 22, 0.96);
+      min-width: 160px;
+    }
+
+    .roster-table th .day-name {
+      display: block;
+      color: var(--text-dim);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .roster-table th.is-today {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .roster-table td {
+      padding: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      border-right: 1px solid rgba(255, 255, 255, 0.03);
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .roster-table td.emp-col {
+      text-align: left;
+      padding-left: 16px;
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: rgba(14, 14, 16, 0.97);
+      white-space: nowrap;
+    }
+
+    .roster-table tr:hover td.emp-col {
+      background: rgba(24, 24, 27, 0.97);
+    }
+
+    .emp-name-cell strong {
+      display: block;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .emp-name-cell span {
+      font-size: 10.5px;
+      color: var(--text-dim);
+    }
+
+    .shift-cell {
+      min-width: 64px;
+      min-height: 38px;
+      border-radius: 8px;
+      cursor: default;
+      padding: 5px 4px;
+      font-size: 10.5px;
+      font-weight: 600;
+      line-height: 1.25;
+      transition: filter 0.15s, transform 0.1s;
+    }
+
+    .shift-cell.is-assignable {
+      cursor: pointer;
+    }
+
+    .shift-cell.is-assignable:hover {
+      filter: brightness(1.25);
+      transform: scale(1.04);
+    }
+
+    .shift-cell.is-empty {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px dashed rgba(255, 255, 255, 0.08);
+      color: var(--text-dim);
+    }
+
+    .shift-cell.is-empty.is-assignable:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background: rgba(18, 18, 20, 0.85);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 420px;
+      width: 100%;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+    }
+
+    .modal-body {
+      padding: 22px 24px;
+    }
+
+    .assign-context {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+    }
+
+    .assign-context strong {
+      color: var(--text-primary);
+    }
+
+    .shift-option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .shift-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.03);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .shift-option:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .shift-option .so-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .shift-option .so-time {
+      font-size: 11.5px;
+      color: var(--text-dim);
+    }
+
+    .btn-remove-assignment {
+      width: 100%;
+      padding: 10px;
+      background: rgba(248, 113, 113, 0.08);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+      color: #FCA5A5;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-remove-assignment:hover {
+      background: rgba(248, 113, 113, 0.16);
+    }
+
+    /* New shift template modal */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 15px;
+    }
+
+    .form-row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .form-group label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 600;
+    }
+
+    .form-group input {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.18s, background 0.18s;
+    }
+
+    .form-group input:focus {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    @media (max-width: 900px) {
+      .form-group input {
+        font-size: 16px;
+      }
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--glass-strong);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.18s, transform 0.18s;
+    }
+
+    .btn-submit:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">
+      ☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span>
+    </div>
+
+    <div class="header-block">
+      <div class="title-area">
+        <h1>🗓️ Shift Roster</h1>
+        <p>Employees ko shifts assign karein aur weekly/monthly roster dekhein.</p>
+      </div>
+      <button class="btn-action" id="manageShiftsBtn" style="display:none;" onclick="toggleShiftTemplateModal(true)">⚙️
+        Manage Shift Templates</button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="roster-toolbar">
+      <div class="view-toggle">
+        <button id="viewWeekBtn" class="active" onclick="switchView('week')">Week</button>
+        <button id="viewMonthBtn" onclick="switchView('month')">Month</button>
+      </div>
+      <div class="date-nav">
+        <button onclick="navigate(-1)" title="Previous">‹</button>
+        <span class="date-range-label" id="dateRangeLabel">Loading...</span>
+        <button onclick="navigate(1)" title="Next">›</button>
+        <button class="btn-today" onclick="goToday()">Today</button>
+      </div>
+    </div>
+
+    <!-- Shift legend -->
+    <div class="shift-legend" id="shiftLegend"></div>
+
+    <!-- Roster Grid -->
+    <div class="roster-grid-wrap">
+      <table class="roster-table" id="rosterTable">
+        <thead id="rosterTableHead"></thead>
+        <tbody id="rosterTableBody">
+          <tr>
+            <td colspan="10">
+              <div class="empty-state">
+                <div class="empty-icon">🗓️</div>
+                <p>Roster is loading...</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Assign Shift Modal -->
+  <div class="modal-overlay" id="assignModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📌 Assign Shift</h3>
+        <button
+          style="background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; line-height:1; padding:8px; margin:-8px; border-radius:8px;"
+          onclick="toggleAssignModal(false)">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="assign-context">
+          <strong id="assignCtxEmpName">—</strong> · <span id="assignCtxDate">—</span>
+        </div>
+        <div class="shift-option-list" id="shiftOptionList">
+          <!-- populated dynamically -->
+        </div>
+        <button class="btn-remove-assignment" id="removeAssignBtn" style="display:none;"
+          onclick="removeCurrentAssignment()">🗑 Remove Current Shift</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shift Template Manager Modal -->
+  <div class="modal-overlay" id="shiftTemplateModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚙️ Shift Templates</h3>
+        <button
+          style="background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; line-height:1; padding:8px; margin:-8px; border-radius:8px;"
+          onclick="toggleShiftTemplateModal(false)">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="shift-option-list" id="existingShiftsList" style="margin-bottom:20px;"></div>
+        <form id="newShiftForm" onsubmit="submitNewShift(event)">
+          <div class="form-group">
+            <label>Shift Name *</label>
+            <input type="text" id="sName" required placeholder="e.g. Night Shift" />
+          </div>
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label>Start Time *</label>
+              <input type="time" id="sStart" required />
+            </div>
+            <div class="form-group">
+              <label>End Time *</label>
+              <input type="time" id="sEnd" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Branch Code (Optional)</label>
+            <input type="text" id="sBranch" placeholder="e.g. BR001 — leave blank for all branches" />
+          </div>
+          <button type="submit" class="btn-submit">➕ Add Shift Template</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const USER = AppSession.getUser();
+    const IS_SUPER_ADMIN = USER.role === 'super_admin';
+
+    let currentView = 'week';   // 'week' | 'month'
+    let anchorDate = new Date(); // the date used to compute the visible range
+    let shiftTemplates = [];
+    let rosterAssignments = [];
+    let employeesList = [];
+
+    // Soft, distinguishable colors cycled per shift_id
+    const SHIFT_COLOR_PALETTE = [
+      { bg: 'rgba(96,165,250,0.18)',  fg: '#93C5FD' },
+      { bg: 'rgba(52,211,153,0.18)',  fg: '#6EE7B7' },
+      { bg: 'rgba(251,191,36,0.18)',  fg: '#FCD34D' },
+      { bg: 'rgba(167,139,250,0.18)', fg: '#C4B5FD' },
+      { bg: 'rgba(244,114,182,0.18)', fg: '#F9A8D4' },
+      { bg: 'rgba(248,113,113,0.18)', fg: '#FCA5A5' },
+    ];
+    let shiftColorMap = {};
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (IS_SUPER_ADMIN) {
+        document.getElementById('manageShiftsBtn').style.display = 'inline-flex';
+      }
+      init();
+    });
+
+    async function init() {
+      await Promise.all([loadShiftTemplates(), loadEmployees()]);
+      renderLegend();
+      loadRoster();
+    }
+
+    // ---------- DATA LOADING ----------
+    async function loadShiftTemplates() {
+      try {
+        const res = await fetch(`${API_URL}?action=getShifts&token=${TOKEN}`);
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          shiftTemplates = payload.data || [];
+          shiftTemplates.forEach((s, i) => {
+            shiftColorMap[s.shift_id] = SHIFT_COLOR_PALETTE[i % SHIFT_COLOR_PALETTE.length];
+          });
+        }
+      } catch (e) { showToast('Shift templates load nahi ho paye.'); }
+    }
+
+    async function loadEmployees() {
+      try {
+        const res = await fetch(`${API_URL}?action=getEmployees&token=${TOKEN}`);
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          const arr = payload.data && payload.data.data ? payload.data.data : payload.data;
+          employeesList = (arr || []).filter(e => e.status === 'active');
+        }
+      } catch (e) { showToast('Employees load nahi ho paye.'); }
+    }
+
+    async function loadRoster() {
+      const { from, to } = getVisibleRange();
+      try {
+        const res = await fetch(`${API_URL}?action=getShiftRoster&token=${TOKEN}&from_date=${from}&to_date=${to}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          rosterAssignments = payload.data || [];
+        } else {
+          showToast(payload.message || 'Roster load nahi ho paya.');
+          rosterAssignments = [];
+        }
+      } catch (e) {
+        showToast('Network error — roster load nahi ho paya.');
+        rosterAssignments = [];
+      }
+      renderGrid();
+    }
+
+    // ---------- DATE RANGE HELPERS ----------
+    function toDateStr(d) {
+      return d.toISOString().split('T')[0];
+    }
+
+    function getVisibleRange() {
+      const d = new Date(anchorDate);
+      if (currentView === 'week') {
+        const day = d.getDay(); // 0 = Sun
+        const diffToMonday = (day === 0 ? -6 : 1 - day);
+        const monday = new Date(d);
+        monday.setDate(d.getDate() + diffToMonday);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        return { from: toDateStr(monday), to: toDateStr(sunday), start: monday, end: sunday };
+      } else {
+        const first = new Date(d.getFullYear(), d.getMonth(), 1);
+        const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        return { from: toDateStr(first), to: toDateStr(last), start: first, end: last };
+      }
+    }
+
+    function getVisibleDates() {
+      const { start, end } = getVisibleRange();
+      const dates = [];
+      const cur = new Date(start);
+      while (cur <= end) {
+        dates.push(new Date(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+      return dates;
+    }
+
+    function switchView(view) {
+      currentView = view;
+      document.getElementById('viewWeekBtn').classList.toggle('active', view === 'week');
+      document.getElementById('viewMonthBtn').classList.toggle('active', view === 'month');
+      loadRoster();
+    }
+
+    function navigate(direction) {
+      if (currentView === 'week') {
+        anchorDate.setDate(anchorDate.getDate() + direction * 7);
+      } else {
+        anchorDate.setMonth(anchorDate.getMonth() + direction);
+      }
+      loadRoster();
+    }
+
+    function goToday() {
+      anchorDate = new Date();
+      loadRoster();
+    }
+
+    // ---------- RENDERING ----------
+    function renderLegend() {
+      const legend = document.getElementById('shiftLegend');
+      if (shiftTemplates.length === 0) {
+        legend.innerHTML = '<span style="font-size:12px; color:var(--text-dim);">Koi shift templates nahi hain abhi.</span>';
+        return;
+      }
+      legend.innerHTML = shiftTemplates.map(s => {
+        const c = shiftColorMap[s.shift_id] || SHIFT_COLOR_PALETTE[0];
+        return `<span class="legend-chip"><span class="legend-dot" style="background:${c.fg};"></span>${s.shift_name} (${formatTime12Hour(s.start_time)} – ${formatTime12Hour(s.end_time)})</span>`;
+      }).join('');
+    }
+
+    function renderGrid() {
+      const dates = getVisibleDates();
+      const { start, end } = getVisibleRange();
+
+      // Date range label
+      const fmt = (d) => d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+      document.getElementById('dateRangeLabel').textContent =
+        currentView === 'week'
+          ? `${fmt(start)} – ${fmt(end)}, ${end.getFullYear()}`
+          : start.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+
+      // Head
+      const todayStr = toDateStr(new Date());
+      const thead = document.getElementById('rosterTableHead');
+      thead.innerHTML = `<tr>
+        <th class="emp-col-header">Employee</th>
+        ${dates.map(d => {
+          const dStr = toDateStr(d);
+          const isToday = dStr === todayStr;
+          return `<th class="${isToday ? 'is-today' : ''}">
+            <span class="day-name">${d.toLocaleDateString('en-IN', { weekday: 'short' })}</span>
+            ${d.getDate()}
+          </th>`;
+        }).join('')}
+      </tr>`;
+
+      // Body
+      const tbody = document.getElementById('rosterTableBody');
+      if (employeesList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${dates.length + 1}">
+          <div class="empty-state"><div class="empty-icon">👥</div><p>Koi active employees nahi mile.</p></div>
+        </td></tr>`;
+        return;
+      }
+
+      // Map: emp_id -> date -> assignment
+      const assignMap = {};
+      rosterAssignments.forEach(a => {
+        if (!assignMap[a.emp_id]) assignMap[a.emp_id] = {};
+        assignMap[a.emp_id][a.date] = a;
+      });
+
+      // Branch scoping mirrors backend: super_admin sees all, others see own branch
+      const visibleEmployees = IS_SUPER_ADMIN
+        ? employeesList
+        : employeesList.filter(e => e.branch_id === USER.branch_id);
+
+      tbody.innerHTML = visibleEmployees.map(emp => {
+        const cells = dates.map(d => {
+          const dStr = toDateStr(d);
+          const assignment = (assignMap[emp.emp_id] || {})[dStr];
+          const isToday = dStr === todayStr;
+          const assignableClass = IS_SUPER_ADMIN ? 'is-assignable' : '';
+
+          if (assignment) {
+            const c = shiftColorMap[assignment.shift_id] || SHIFT_COLOR_PALETTE[0];
+            return `<td class="${isToday ? 'is-today' : ''}">
+              <div class="shift-cell ${assignableClass}"
+                   style="background:${c.bg}; color:${c.fg};"
+                   onclick="${IS_SUPER_ADMIN ? `openAssignModal('${emp.emp_id}', '${emp.name}', '${dStr}', '${assignment.assign_id}')` : ''}">
+                ${assignment.shift_name}
+              </div>
+            </td>`;
+          }
+          return `<td class="${isToday ? 'is-today' : ''}">
+            <div class="shift-cell is-empty ${assignableClass}"
+                 onclick="${IS_SUPER_ADMIN ? `openAssignModal('${emp.emp_id}', '${emp.name}', '${dStr}', '')` : ''}">
+              ${IS_SUPER_ADMIN ? '+ Add' : '—'}
+            </div>
+          </td>`;
+        }).join('');
+
+        return `<tr>
+          <td class="emp-col">
+            <div class="emp-name-cell">
+              <strong>${emp.name}</strong>
+              <span>${emp.emp_id} · ${emp.branch_id || ''}</span>
+            </div>
+          </td>
+          ${cells}
+        </tr>`;
+      }).join('');
+    }
+
+    // ---------- ASSIGN MODAL ----------
+    let assignCtx = { empId: null, empName: null, date: null, assignId: null };
+
+    function openAssignModal(empId, empName, dateStr, assignId) {
+      if (!IS_SUPER_ADMIN) return;
+      assignCtx = { empId, empName, date: dateStr, assignId };
+
+      document.getElementById('assignCtxEmpName').textContent = empName;
+      document.getElementById('assignCtxDate').textContent = new Date(dateStr).toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+
+      const list = document.getElementById('shiftOptionList');
+      if (shiftTemplates.length === 0) {
+        list.innerHTML = '<p style="font-size:13px; color:var(--text-dim);">Koi shift templates nahi hain. Pehle "Manage Shift Templates" se ek banayein.</p>';
+      } else {
+        list.innerHTML = shiftTemplates.map(s => `
+          <div class="shift-option" onclick="assignShiftToCell('${s.shift_id}')">
+            <div>
+              <div class="so-name">${s.shift_name}</div>
+              <div class="so-time">${formatTime12Hour(s.start_time)} – ${formatTime12Hour(s.end_time)}</div>
+            </div>
+            <span>→</span>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('removeAssignBtn').style.display = assignId ? 'block' : 'none';
+      document.getElementById('assignModal').style.display = 'flex';
+    }
+
+    function toggleAssignModal(on) {
+      document.getElementById('assignModal').style.display = on ? 'flex' : 'none';
+    }
+
+    async function assignShiftToCell(shiftId) {
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            token: TOKEN,
+            action: 'assignShiftRoster',
+            emp_id: assignCtx.empId,
+            shift_id: shiftId,
+            date: assignCtx.date
+          })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Shift assign ho gayi!');
+          toggleAssignModal(false);
+          loadRoster();
+        } else {
+          showToast(out.message || 'Error occurred.');
+        }
+      } catch (e) { showToast('Network error.'); }
+    }
+
+    async function removeCurrentAssignment() {
+      if (!assignCtx.assignId) return;
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'removeShiftAssignment', assign_id: assignCtx.assignId })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Shift remove ho gayi.');
+          toggleAssignModal(false);
+          loadRoster();
+        } else {
+          showToast(out.message || 'Error occurred.');
+        }
+      } catch (e) { showToast('Network error.'); }
+    }
+
+    // ---------- SHIFT TEMPLATE MANAGER ----------
+    function toggleShiftTemplateModal(on) {
+      if (on) renderExistingShiftsList();
+      document.getElementById('shiftTemplateModal').style.display = on ? 'flex' : 'none';
+      if (!on) document.getElementById('newShiftForm').reset();
+    }
+
+    function renderExistingShiftsList() {
+      const list = document.getElementById('existingShiftsList');
+      if (shiftTemplates.length === 0) {
+        list.innerHTML = '<p style="font-size:13px; color:var(--text-dim);">Koi shift templates nahi hain abhi.</p>';
+        return;
+      }
+      list.innerHTML = shiftTemplates.map(s => `
+        <div class="shift-option" style="cursor:default;">
+          <div>
+            <div class="so-name">${s.shift_name} ${s.branch_id ? '· ' + s.branch_id : '· All Branches'}</div>
+            <div class="so-time">${formatTime12Hour(s.start_time)} – ${formatTime12Hour(s.end_time)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function submitNewShift(e) {
+      e.preventDefault();
+      const payload = {
+        token: TOKEN,
+        action: 'addShift',
+        shift_name: document.getElementById('sName').value.trim(),
+        start_time: document.getElementById('sStart').value,
+        end_time: document.getElementById('sEnd').value,
+        branch_id: document.getElementById('sBranch').value.trim()
+      };
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Shift template add ho gaya!');
+          document.getElementById('newShiftForm').reset();
+          await loadShiftTemplates();
+          renderLegend();
+          renderExistingShiftsList();
+          renderGrid();
+        } else {
+          showToast(out.message || 'Error occurred.');
+        }
+      } catch (err) { showToast('Network error.'); }
+    }
+  </script>
+</body>
+
+</html>

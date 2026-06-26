@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense Claims — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --warning: #FBBF24;
+      --danger: #F87171;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar-spacer {
+      width: 240px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar-spacer {
+        display: none;
+      }
+    }
+
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 600px) {
+      .main-workspace {
+        padding: 16px;
+      }
+    }
+
+    .mobile-nav-bar {
+      display: none;
+      height: 50px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--radius-sm);
+      align-items: center;
+      padding: 0 16px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-nav-bar {
+        display: flex;
+      }
+    }
+
+    .header-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title-area h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .title-area p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .btn-action {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(var(--glass-blur));
+      transition: background 0.18s, border-color 0.18s, transform 0.18s;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .stat-card .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .stat-card .stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .stat-card .stat-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-bar select {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      cursor: pointer;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .filter-bar select option {
+      background: #1a1a1e;
+    }
+
+    @media (max-width: 900px) {
+      .filter-bar select {
+        font-size: 16px;
+      }
+    }
+
+    .table-container {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      width: 100%;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+      min-width: 900px;
+    }
+
+    .data-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      padding: 14px 16px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .data-table tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .emp-id-tag {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .amount-val {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .category-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background: rgba(251, 191, 36, 0.12);
+      color: #FCD34D;
+    }
+
+    .status-approved {
+      background: rgba(52, 211, 153, 0.12);
+      color: #6EE7B7;
+    }
+
+    .status-rejected {
+      background: rgba(248, 113, 113, 0.12);
+      color: #FCA5A5;
+    }
+
+    .receipt-link {
+      color: var(--accent-glow);
+      text-decoration: none;
+      font-size: 12.5px;
+      border-bottom: 1px dotted rgba(212, 217, 230, 0.4);
+    }
+
+    .receipt-link:hover {
+      color: #fff;
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-approve,
+    .btn-reject {
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      border: 1px solid;
+    }
+
+    .btn-approve {
+      background: rgba(52, 211, 153, 0.1);
+      border-color: rgba(52, 211, 153, 0.25);
+      color: #6EE7B7;
+    }
+
+    .btn-approve:hover {
+      background: rgba(52, 211, 153, 0.2);
+    }
+
+    .btn-reject {
+      background: rgba(248, 113, 113, 0.1);
+      border-color: rgba(248, 113, 113, 0.25);
+      color: #FCA5A5;
+    }
+
+    .btn-reject:hover {
+      background: rgba(248, 113, 113, 0.2);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background: rgba(18, 18, 20, 0.85);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 480px;
+      width: 100%;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: rgba(18, 18, 20, 0.95);
+      z-index: 1;
+    }
+
+    .modal-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .form-row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .form-row-2col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 600;
+    }
+
+    .form-group label .required-mark {
+      color: #FCA5A5;
+    }
+
+    .form-group .field-hint {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 400;
+      margin-top: -2px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.18s, background 0.18s;
+      width: 100%;
+      resize: vertical;
+    }
+
+    .form-group select option {
+      background: #1a1a1e;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    @media (max-width: 900px) {
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        font-size: 16px;
+      }
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--glass-strong);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.18s, transform 0.18s;
+      margin-top: 4px;
+    }
+
+    .btn-submit:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">
+      ☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span>
+    </div>
+
+    <div class="header-block">
+      <div class="title-area">
+        <h1>🧾 Expense Claims</h1>
+        <p>Submit aur track karein apne business expense claims.</p>
+      </div>
+      <button class="btn-action" onclick="toggleExpenseModal(true)">➕ New Claim</button>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="stat-label">Total Claims</div>
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value" id="statPending" style="color:#FCD34D;">—</div>
+        <div class="stat-sub">Awaiting review</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Approved</div>
+        <div class="stat-value" id="statApproved" style="color:var(--success);">—</div>
+        <div class="stat-sub">₹<span id="statApprovedAmt">0</span> total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Rejected</div>
+        <div class="stat-value" id="statRejected" style="color:var(--danger);">—</div>
+        <div class="stat-sub">Declined claims</div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <select id="filterStatus" onchange="applyFilters()">
+        <option value="">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <select id="filterCategory" onchange="applyFilters()">
+        <option value="">All Categories</option>
+        <option value="Travel">Travel</option>
+        <option value="Food">Food</option>
+        <option value="Accommodation">Accommodation</option>
+        <option value="Office Supplies">Office Supplies</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Receipt</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="expensesRowsContainer">
+          <tr>
+            <td colspan="8">
+              <div class="empty-state">
+                <div class="empty-icon">🧾</div>
+                <p>Expense claims are loading...</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- New Expense Claim Modal -->
+  <div class="modal-overlay" id="expenseModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🧾 Submit Expense Claim</h3>
+        <button
+          style="background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer; line-height:1; padding:10px; margin:-10px; border-radius:8px;"
+          onclick="toggleExpenseModal(false)">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="newExpenseForm" onsubmit="submitExpenseData(event)">
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label>Category <span class="required-mark">*</span></label>
+              <select id="eCategory" required>
+                <option value="Travel">Travel</option>
+                <option value="Food">Food</option>
+                <option value="Accommodation">Accommodation</option>
+                <option value="Office Supplies">Office Supplies</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Amount (₹) <span class="required-mark">*</span></label>
+              <input type="number" id="eAmount" min="1" step="0.01" required placeholder="e.g. 1200" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Expense Date <span class="required-mark">*</span></label>
+            <input type="date" id="eDate" required />
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="eDescription" rows="2" placeholder="e.g. Client site visit travel cost"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Receipt URL <span class="required-mark">*</span></label>
+            <div class="field-hint">Receipt/bill ko Google Drive par upload karke yahan share link paste karein.</div>
+            <input type="url" id="eReceiptUrl" required placeholder="https://drive.google.com/..." />
+          </div>
+          <button type="submit" class="btn-submit" id="expenseSubmitBtn">Submit Claim</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const USER = AppSession.getUser();
+
+    let allExpenses = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Default the date field to today for convenience
+      document.getElementById('eDate').value = new Date().toISOString().split('T')[0];
+      loadExpenses();
+    });
+
+    function toggleExpenseModal(on) {
+      document.getElementById('expenseModal').style.display = on ? 'flex' : 'none';
+      if (!on) {
+        document.getElementById('newExpenseForm').reset();
+        document.getElementById('eDate').value = new Date().toISOString().split('T')[0];
+      }
+    }
+
+    async function loadExpenses() {
+      try {
+        const res = await fetch(`${API_URL}?action=getExpenses&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+
+        if (payload.status === 'success') {
+          allExpenses = payload.data || [];
+          updateStats(allExpenses);
+          applyFilters();
+        } else {
+          showToast(payload.message || 'Error occurred while fetching expenses.');
+        }
+      } catch (e) {
+        showToast('Network error — expenses could not be loaded.');
+      }
+    }
+
+    function updateStats(data) {
+      const pending = data.filter(x => x.status === 'pending');
+      const approved = data.filter(x => x.status === 'approved');
+      const rejected = data.filter(x => x.status === 'rejected');
+      const approvedAmt = approved.reduce((sum, x) => sum + (parseFloat(x.amount) || 0), 0);
+
+      document.getElementById('statTotal').textContent = data.length;
+      document.getElementById('statPending').textContent = pending.length;
+      document.getElementById('statApproved').textContent = approved.length;
+      document.getElementById('statApprovedAmt').textContent = approvedAmt.toLocaleString('en-IN');
+      document.getElementById('statRejected').textContent = rejected.length;
+    }
+
+    function applyFilters() {
+      const status = document.getElementById('filterStatus').value;
+      const category = document.getElementById('filterCategory').value;
+      let filtered = allExpenses;
+      if (status) filtered = filtered.filter(x => x.status === status);
+      if (category) filtered = filtered.filter(x => x.category === category);
+      renderRows(filtered);
+    }
+
+    function renderRows(data) {
+      const tbody = document.getElementById('expensesRowsContainer');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `
+        <tr><td colspan="8">
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>No expense claims found.</p>
+          </div>
+        </td></tr>`;
+        return;
+      }
+
+      const isSuperAdmin = USER.role === 'super_admin';
+
+      tbody.innerHTML = data.map(x => {
+        const statusClass = 'status-' + x.status;
+        const dateDisplay = x.date ? new Date(x.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+        const amountDisplay = '₹' + (parseFloat(x.amount) || 0).toLocaleString('en-IN');
+        const descDisplay = x.description ? x.description : '<span style="color:var(--text-dim);">—</span>';
+        const receiptLink = x.receipt_url
+          ? `<a class="receipt-link" href="${x.receipt_url}" target="_blank" rel="noopener">📎 View</a>`
+          : '<span style="color:var(--text-dim);">—</span>';
+
+        let actions = '<span style="color:var(--text-dim); font-size:12px;">—</span>';
+        if (isSuperAdmin && x.status === 'pending') {
+          actions = `
+            <div class="row-actions">
+              <button class="btn-approve" onclick="approveExpense('${x.expense_id}')">✓ Approve</button>
+              <button class="btn-reject" onclick="rejectExpense('${x.expense_id}')">✕ Reject</button>
+            </div>`;
+        }
+
+        return `
+        <tr>
+          <td>
+            <strong style="color:var(--text-primary);">${x.emp_id || '—'}</strong>
+            <span class="emp-id-tag">${x.branch_id || ''}</span>
+          </td>
+          <td><span class="category-pill">${x.category || '—'}</span></td>
+          <td><span class="amount-val">${amountDisplay}</span></td>
+          <td>${dateDisplay}</td>
+          <td style="max-width:220px; white-space:normal;">${descDisplay}</td>
+          <td>${receiptLink}</td>
+          <td><span class="status-pill ${statusClass}">${x.status}</span></td>
+          <td>${actions}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function submitExpenseData(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('expenseSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      const payload = {
+        token: TOKEN,
+        action: 'applyExpense',
+        category: document.getElementById('eCategory').value,
+        amount: document.getElementById('eAmount').value,
+        date: document.getElementById('eDate').value,
+        description: document.getElementById('eDescription').value.trim(),
+        receipt_url: document.getElementById('eReceiptUrl').value.trim()
+      };
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Expense claim successfully submit ho gaya!');
+          toggleExpenseModal(false);
+          loadExpenses();
+        } else {
+          showToast(out.message || 'Error occurred while submitting claim.');
+        }
+      } catch (err) {
+        showToast('Network error.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Claim';
+      }
+    }
+
+    async function approveExpense(expenseId) {
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'approveExpense', expense_id: expenseId })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Expense claim approve ho gaya!');
+          loadExpenses();
+        } else {
+          showToast(out.message || 'Error occurred.');
+        }
+      } catch (e) {
+        showToast('Network error.');
+      }
+    }
+
+    async function rejectExpense(expenseId) {
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'rejectExpense', expense_id: expenseId })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Expense claim reject ho gaya.');
+          loadExpenses();
+        } else {
+          showToast(out.message || 'Error occurred.');
+        }
+      } catch (e) {
+        showToast('Network error.');
+      }
+    }
+  </script>
+</body>
+
+</html>

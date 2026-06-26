@@ -3,7 +3,7 @@
 // File: app.js
 // ============================================================
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbw8NY1rDyI47qjA6S-gxCWCkuIerqUL-lqkw0EienUt4t1l8nx8aWI5jNdw6Kk8SE05rA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwzYZmxZ3AQCBdXRDgg5p442mW-THoHvR4YI2eA1G2ERICPS052J1oM5CXPYc83w0wnvw/exec';
 
 // ============================================================
 // QR Attendance — shared checksum util

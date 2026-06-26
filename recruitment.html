@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recruitment Tracker — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --warning: #FBBF24;
+      --danger: #F87171;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar-spacer {
+      width: 240px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar-spacer {
+        display: none;
+      }
+    }
+
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 600px) {
+      .main-workspace {
+        padding: 16px;
+      }
+    }
+
+    .mobile-nav-bar {
+      display: none;
+      height: 50px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--radius-sm);
+      align-items: center;
+      padding: 0 16px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-nav-bar {
+        display: flex;
+      }
+    }
+
+    .header-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title-area h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .title-area p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .btn-action {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(var(--glass-blur));
+      transition: background 0.18s, border-color 0.18s, transform 0.18s;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    /* Job openings strip */
+    .jobs-strip {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 22px;
+    }
+
+    .job-card {
+      flex-shrink: 0;
+      min-width: 220px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      cursor: pointer;
+      backdrop-filter: blur(var(--glass-blur));
+      transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    }
+
+    .job-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .job-card.is-selected {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    .job-card .job-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14.5px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .job-card .job-meta {
+      font-size: 11.5px;
+      color: var(--text-dim);
+    }
+
+    .job-card .job-status-tag {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 9px;
+      border-radius: 20px;
+    }
+
+    .job-status-open {
+      background: rgba(52, 211, 153, 0.12);
+      color: #6EE7B7;
+    }
+
+    .job-status-closed {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-dim);
+    }
+
+    .job-card-new {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed var(--glass-border);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .job-card-new:hover {
+      color: #fff;
+    }
+
+    /* Pipeline */
+    .pipeline-context {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pipeline-context h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .pipeline-context .pipeline-sub {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .pipeline-board {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(200px, 1fr));
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    @media (max-width: 1100px) {
+      .pipeline-board {
+        grid-template-columns: repeat(5, 220px);
+      }
+    }
+
+    .pipeline-col {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 12px;
+      min-height: 180px;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .pipeline-col-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 0 2px;
+    }
+
+    .pipeline-col-head .col-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pipeline-col-head .col-count {
+      font-size: 11px;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 1px 8px;
+      border-radius: 20px;
+    }
+
+    .col-applied .col-title {
+      color: #93C5FD;
+    }
+
+    .col-screening .col-title {
+      color: #FCD34D;
+    }
+
+    .col-interview .col-title {
+      color: #C4B5FD;
+    }
+
+    .col-offered .col-title {
+      color: #6EE7B7;
+    }
+
+    .col-hired-rejected .col-title {
+      color: var(--text-muted);
+    }
+
+    .candidate-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      transition: background 0.15s;
+    }
+
+    .candidate-card:hover {
+      background: rgba(255, 255, 255, 0.075);
+    }
+
+    .candidate-card .c-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .candidate-card .c-contact {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .candidate-card .c-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .candidate-card .c-resume-link {
+      font-size: 10.5px;
+      color: var(--accent-glow);
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(212, 217, 230, 0.4);
+    }
+
+    .stage-pill {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .stage-hired {
+      background: rgba(52, 211, 153, 0.14);
+      color: #6EE7B7;
+    }
+
+    .stage-rejected {
+      background: rgba(248, 113, 113, 0.14);
+      color: #FCA5A5;
+    }
+
+    .btn-move {
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      transition: background 0.15s;
+    }
+
+    .btn-move:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-move.btn-reject {
+      color: #FCA5A5;
+      border-color: rgba(248, 113, 113, 0.25);
+    }
+
+    .col-empty-hint {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 16px 4px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background: rgba(18, 18, 20, 0.85);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 460px;
+      width: 100%;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: rgba(18, 18, 20, 0.95);
+    }
+
+    .modal-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .form-row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .form-row-2col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 600;
+    }
+
+    .form-group label .required-mark {
+      color: #FCA5A5;
+    }
+
+    .form-group .field-hint {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 400;
+      margin-top: -2px;
+    }
+
+    .form-group input,
+    .form-group select {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.18s, background 0.18s;
+    }
+
+    .form-group select option {
+      background: #1a1a1e;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    @media (max-width: 900px) {
+
+      .form-group input,
+      .form-group select {
+        font-size: 16px;
+      }
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--glass-strong);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.18s, transform 0.18s;
+      margin-top: 4px;
+    }
+
+    .btn-submit:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">
+      ☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span>
+    </div>
+
+    <div class="header-block">
+      <div class="title-area">
+        <h1>🧑‍💼 Recruitment Tracker</h1>
+        <p>Job openings aur candidate pipeline track karein.</p>
+      </div>
+      <button class="btn-action" id="addJobBtn" style="display:none;" onclick="toggleJobModal(true)">➕ New Job
+        Opening</button>
+    </div>
+
+    <!-- Job Openings Strip -->
+    <div class="jobs-strip" id="jobsStrip">
+      <div class="empty-state" style="min-width:100%;">
+        <div class="empty-icon">🧑‍💼</div>
+        <p>Job openings are loading...</p>
+      </div>
+    </div>
+
+    <!-- Pipeline -->
+    <div id="pipelineWrap" style="display:none;">
+      <div class="pipeline-context">
+        <div>
+          <h2 id="pipelineJobTitle">—</h2>
+          <div class="pipeline-sub" id="pipelineJobMeta">—</div>
+        </div>
+        <button class="btn-action" id="addCandidateBtn" style="display:none;" onclick="toggleCandidateModal(true)">➕
+          Add Candidate</button>
+      </div>
+
+      <div class="pipeline-board" id="pipelineBoard">
+        <!-- columns rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- New Job Opening Modal -->
+  <div class="modal-overlay" id="jobModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🧑‍💼 New Job Opening</h3>
+        <button
+          style="background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; line-height:1; padding:8px; margin:-8px; border-radius:8px;"
+          onclick="toggleJobModal(false)">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="newJobForm" onsubmit="submitNewJob(event)">
+          <div class="form-group">
+            <label>Job Title <span class="required-mark">*</span></label>
+            <input type="text" id="jTitle" required placeholder="e.g. Java Trainer" />
+          </div>
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label>Branch Code <span class="required-mark">*</span></label>
+              <input type="text" id="jBranch" required placeholder="e.g. BR001" />
+            </div>
+            <div class="form-group">
+              <label>Department Code</label>
+              <input type="text" id="jDept" placeholder="e.g. DEPT001" />
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">Create Job Opening</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Candidate Modal -->
+  <div class="modal-overlay" id="candidateModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>👤 Add Candidate</h3>
+        <button
+          style="background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; line-height:1; padding:8px; margin:-8px; border-radius:8px;"
+          onclick="toggleCandidateModal(false)">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="newCandidateForm" onsubmit="submitNewCandidate(event)">
+          <div class="form-group">
+            <label>Full Name <span class="required-mark">*</span></label>
+            <input type="text" id="cName" required placeholder="e.g. Vikas Mehta" />
+          </div>
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label>Mobile <span class="required-mark">*</span></label>
+              <input type="tel" id="cMobile" required placeholder="e.g. 9876543210" />
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="cEmail" placeholder="e.g. name@example.com" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Resume URL <span class="required-mark">*</span></label>
+            <div class="field-hint">Resume ko Google Drive par upload karke yahan share link paste karein.</div>
+            <input type="url" id="cResumeUrl" required placeholder="https://drive.google.com/..." />
+          </div>
+          <button type="submit" class="btn-submit" id="candidateSubmitBtn">Add Candidate</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const USER = AppSession.getUser();
+    const IS_SUPER_ADMIN = USER.role === 'super_admin';
+
+    const STAGE_ORDER = ['applied', 'screening', 'interview', 'offered'];
+    const STAGE_LABELS = {
+      applied: 'Applied', screening: 'Screening', interview: 'Interview',
+      offered: 'Offered', hired: 'Hired', rejected: 'Rejected'
+    };
+    const NEXT_STAGE = { applied: 'screening', screening: 'interview', interview: 'offered', offered: 'hired' };
+
+    let allJobs = [];
+    let selectedJobId = null;
+    let candidatesForJob = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (IS_SUPER_ADMIN) {
+        document.getElementById('addJobBtn').style.display = 'inline-flex';
+        document.getElementById('addCandidateBtn').style.display = 'inline-flex';
+      }
+      loadJobs();
+    });
+
+    function toggleJobModal(on) {
+      document.getElementById('jobModal').style.display = on ? 'flex' : 'none';
+      if (!on) document.getElementById('newJobForm').reset();
+    }
+
+    function toggleCandidateModal(on) {
+      document.getElementById('candidateModal').style.display = on ? 'flex' : 'none';
+      if (!on) document.getElementById('newCandidateForm').reset();
+    }
+
+    // ---------- JOBS ----------
+    async function loadJobs() {
+      try {
+        const res = await fetch(`${API_URL}?action=getJobOpenings&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          allJobs = payload.data || [];
+          renderJobsStrip();
+          if (allJobs.length > 0 && !selectedJobId) {
+            selectJob(allJobs[0].job_id);
+          } else if (allJobs.length === 0) {
+            document.getElementById('pipelineWrap').style.display = 'none';
+          }
+        } else {
+          showToast(payload.message || 'Error occurred while fetching job openings.');
+        }
+      } catch (e) {
+        showToast('Network error — job openings could not be loaded.');
+      }
+    }
+
+    function renderJobsStrip() {
+      const strip = document.getElementById('jobsStrip');
+      const newCardHtml = IS_SUPER_ADMIN
+        ? `<div class="job-card job-card-new" onclick="toggleJobModal(true)">➕ New Opening</div>`
+        : '';
+
+      if (allJobs.length === 0) {
+        strip.innerHTML = `
+          <div class="empty-state" style="min-width:100%;">
+            <div class="empty-icon">📭</div>
+            <p>Koi job openings nahi hain abhi.</p>
+          </div>` + newCardHtml;
+        return;
+      }
+
+      strip.innerHTML = allJobs.map(j => {
+        const statusClass = j.status === 'open' ? 'job-status-open' : 'job-status-closed';
+        const isSelected = j.job_id === selectedJobId ? 'is-selected' : '';
+        return `
+        <div class="job-card ${isSelected}" onclick="selectJob('${j.job_id}')">
+          <div class="job-title">${j.title}</div>
+          <div class="job-meta">${j.branch_id || ''} ${j.dept_id ? '· ' + j.dept_id : ''}</div>
+          <span class="job-status-tag ${statusClass}">${j.status}</span>
+        </div>`;
+      }).join('') + newCardHtml;
+    }
+
+    function selectJob(jobId) {
+      selectedJobId = jobId;
+      renderJobsStrip();
+      const job = allJobs.find(j => j.job_id === jobId);
+      if (!job) return;
+
+      document.getElementById('pipelineWrap').style.display = 'block';
+      document.getElementById('pipelineJobTitle').textContent = job.title;
+      document.getElementById('pipelineJobMeta').textContent = `${job.branch_id || ''} ${job.dept_id ? '· ' + job.dept_id : ''} · Status: ${job.status}`;
+
+      loadCandidates(jobId);
+    }
+
+    async function submitNewJob(e) {
+      e.preventDefault();
+      const payload = {
+        token: TOKEN,
+        action: 'addJobOpening',
+        title: document.getElementById('jTitle').value.trim(),
+        branch_id: document.getElementById('jBranch').value.trim(),
+        dept_id: document.getElementById('jDept').value.trim()
+      };
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Job opening successfully create ho gayi!');
+          toggleJobModal(false);
+          selectedJobId = out.data.job_id;
+          await loadJobs();
+        } else {
+          showToast(out.message || 'Error occurred.');
+        }
+      } catch (err) { showToast('Network error.'); }
+    }
+
+    // ---------- CANDIDATES / PIPELINE ----------
+    async function loadCandidates(jobId) {
+      try {
+        const res = await fetch(`${API_URL}?action=getCandidates&token=${TOKEN}&job_id=${jobId}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          candidatesForJob = payload.data || [];
+          renderPipeline();
+        } else {
+          showToast(payload.message || 'Error occurred while fetching candidates.');
+        }
+      } catch (e) {
+        showToast('Network error — candidates could not be loaded.');
+      }
+    }
+
+    function renderPipeline() {
+      const board = document.getElementById('pipelineBoard');
+      const cols = ['applied', 'screening', 'interview', 'offered', 'hired_rejected'];
+
+      board.innerHTML = cols.map(colKey => {
+        let label, candidatesInCol, colClass;
+
+        if (colKey === 'hired_rejected') {
+          label = 'Hired / Rejected';
+          colClass = 'col-hired-rejected';
+          candidatesInCol = candidatesForJob.filter(c => c.stage === 'hired' || c.stage === 'rejected');
+        } else {
+          label = STAGE_LABELS[colKey];
+          colClass = 'col-' + colKey;
+          candidatesInCol = candidatesForJob.filter(c => c.stage === colKey);
+        }
+
+        const cardsHtml = candidatesInCol.length === 0
+          ? `<div class="col-empty-hint">Koi candidate nahi hai</div>`
+          : candidatesInCol.map(c => renderCandidateCard(c)).join('');
+
+        return `
+        <div class="pipeline-col ${colClass}">
+          <div class="pipeline-col-head">
+            <span class="col-title">${label}</span>
+            <span class="col-count">${candidatesInCol.length}</span>
+          </div>
+          ${cardsHtml}
+        </div>`;
+      }).join('');
+    }
+
+    function renderCandidateCard(c) {
+      const isFinal = c.stage === 'hired' || c.stage === 'rejected';
+      let actionsHtml = '';
+
+      if (IS_SUPER_ADMIN && !isFinal) {
+        const nextStage = NEXT_STAGE[c.stage];
+        const nextLabel = nextStage === 'hired' ? '✓ Hire' : '→ ' + STAGE_LABELS[nextStage];
+        actionsHtml = `
+          <div class="c-actions">
+            <button class="btn-move" onclick="moveCandidateStage('${c.candidate_id}', '${nextStage}')">${nextLabel}</button>
+            <button class="btn-move btn-reject" onclick="moveCandidateStage('${c.candidate_id}', 'rejected')">✕ Reject</button>
+          </div>`;
+      }
+
+      const stagePill = isFinal
+        ? `<span class="stage-pill stage-${c.stage}">${STAGE_LABELS[c.stage]}</span>`
+        : '';
+
+      return `
+        <div class="candidate-card">
+          <div class="c-name">${c.name}</div>
+          <div class="c-contact">${c.mobile || ''} ${c.email ? '· ' + c.email : ''}</div>
+          ${c.resume_url ? `<a class="c-resume-link" href="${c.resume_url}" target="_blank" rel="noopener">📎 Resume</a>` : ''}
+          ${stagePill}
+          ${actionsHtml}
+        </div>`;
+    }
+
+    async function moveCandidateStage(candidateId, newStage) {
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'updateCandidateStage', candidate_id: candidateId, stage: newStage })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Candidate stage update ho gaya!');
+          loadCandidates(selectedJobId);
+        } else {
+          showToast(out.message || 'Error occurred.');
+        }
+      } catch (e) { showToast('Network error.'); }
+    }
+
+    async function submitNewCandidate(e) {
+      e.preventDefault();
+      if (!selectedJobId) { showToast('Pehle ek job opening select karein.'); return; }
+
+      const submitBtn = document.getElementById('candidateSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Adding...';
+
+      const payload = {
+        token: TOKEN,
+        action: 'addCandidate',
+        job_id: selectedJobId,
+        name: document.getElementById('cName').value.trim(),
+        mobile: document.getElementById('cMobile').value.trim(),
+        email: document.getElementById('cEmail').value.trim(),
+        resume_url: document.getElementById('cResumeUrl').value.trim()
+      };
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Candidate successfully add ho gaya!');
+          toggleCandidateModal(false);
+          loadCandidates(selectedJobId);
+        } else {
+          showToast(out.message || 'Error occurred.');
+        }
+      } catch (err) {
+        showToast('Network error.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Candidate';
+      }
+    }
+  </script>
+</body>
+
+</html>
