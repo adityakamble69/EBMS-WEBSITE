@@ -31,7 +31,17 @@ const AppSession = {
   },
   getRole: function() { return localStorage.getItem('ebms_role'); },
   protect: function() {
-    if (!localStorage.getItem('ebms_token')) { window.location.href = 'index.html'; }
+    if (!localStorage.getItem('ebms_token')) { window.location.href = 'index.html'; return; }
+
+    // Role-aware page guard: employees stay on their own dashboard,
+    // and the admin-side dashboard isn't meant for the employee role.
+    const role = localStorage.getItem('ebms_role');
+    const page = window.location.pathname.split('/').pop();
+    if (role === 'employee' && page === 'dashboard.html') {
+      window.location.href = 'employee_dashboard.html';
+    } else if (role && role !== 'employee' && page === 'employee_dashboard.html') {
+      window.location.href = 'dashboard.html';
+    }
   }
 };
 
@@ -76,6 +86,7 @@ async function injectSidebar() {
   const spacer = document.querySelector('.sidebar-spacer');
   if (!spacer) return;
 
+  // FIX: sidebar.html uses '.open' class — app.js injected CSS must match
   if (!document.getElementById('ebms-sidebar-styles')) {
     const styles = document.createElement('style');
     styles.id = 'ebms-sidebar-styles';
@@ -100,8 +111,8 @@ async function injectSidebar() {
       }
       @media (max-width: 768px) {
         .ebms-sidebar-aside { transform: translateX(-100%); }
-        .ebms-sidebar-aside.mobile-open { transform: translateX(0) !important; }
-        .sidebar-overlay-mask.mobile-open { display: block !important; }
+        .ebms-sidebar-aside.open { transform: translateX(0) !important; }
+        .sidebar-overlay-mask.open { display: block !important; }
       }
     `;
     document.head.appendChild(styles);
@@ -132,17 +143,18 @@ async function injectSidebar() {
   } catch (err) { console.error('Sidebar layout sync failure:', err); }
 }
 
+// FIX: Now uses '.open' class to match sidebar.html's own CSS & script
 function openSidebar() {
   const sidebar = document.getElementById('sidebar');
   const mask = document.getElementById('sidebarOverlayMask');
-  if(sidebar) sidebar.classList.add('mobile-open');
-  if(mask) mask.classList.add('mobile-open');
+  if(sidebar) sidebar.classList.add('open');
+  if(mask) mask.classList.add('open');
 }
 function closeSidebar() {
   const sidebar = document.getElementById('sidebar');
   const mask = document.getElementById('sidebarOverlayMask');
-  if(sidebar) sidebar.classList.remove('mobile-open');
-  if(mask) mask.classList.remove('mobile-open');
+  if(sidebar) sidebar.classList.remove('open');
+  if(mask) mask.classList.remove('open');
 }
 
 document.addEventListener('DOMContentLoaded', injectSidebar);

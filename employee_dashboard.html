@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:        #0A0A0B;
+      --glass:          rgba(255,255,255,0.045);
+      --glass-strong:   rgba(255,255,255,0.08);
+      --glass-border:   rgba(255,255,255,0.09);
+      --glass-blur:     20px;
+      --text-primary:   #F4F4F5;
+      --text-muted:     #A1A1AA;
+      --text-dim:       #6B7280;
+      --accent:         #A8AFC4;
+      --accent-glow:    #D4D9E6;
+      --success:        #34D399;
+      --warning:        #FBBF24;
+      --danger:         #F87171;
+      --purple:         #C084FC;
+      --radius:         16px;
+      --radius-sm:      10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255,255,255,0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255,255,255,0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ── Top Navbar (no sidebar on this page) ── */
+    .top-navbar {
+      height: 64px;
+      background: rgba(16,16,18,0.65);
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 16px;
+    }
+
+    .navbar-logo { display: flex; align-items: center; gap: 10px; }
+    .navbar-logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #2A2A30, #404048);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .navbar-logo-text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .navbar-logo-text span { color: var(--accent-glow); font-weight: 500; }
+
+    .navbar-actions { display: flex; align-items: center; gap: 10px; }
+
+    .nav-btn {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(var(--glass-blur));
+      transition: background 0.18s, border-color 0.18s, transform 0.18s;
+      font-family: 'Inter', sans-serif;
+      white-space: nowrap;
+    }
+    .nav-btn:hover { background: var(--glass-strong); border-color: rgba(255,255,255,0.18); transform: translateY(-1px); }
+    .nav-btn.logout { color: #FC9999; border-color: rgba(248,113,113,0.18); background: rgba(248,113,113,0.06); }
+    .nav-btn.logout:hover { background: rgba(248,113,113,0.12); }
+
+    .navbar-mobile-toggle { display: none; font-size: 20px; cursor: pointer; color: var(--text-muted); background: none; border: none; }
+
+    @media (max-width: 760px) {
+      .navbar-actions.desktop-actions { display: none; }
+      .navbar-mobile-toggle { display: block; }
+    }
+
+    .mobile-actions-sheet {
+      display: none;
+      position: fixed;
+      top: 64px; right: 0; left: 0;
+      background: rgba(14,14,16,0.97);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      flex-direction: column;
+      gap: 8px;
+      padding: 14px;
+      z-index: 99;
+    }
+    .mobile-actions-sheet.open { display: flex; }
+
+    /* ── Page shell ── */
+    .page-content {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 24px 60px;
+    }
+    @media (max-width: 600px) { .page-content { padding: 18px 14px 50px; } }
+
+    .glass-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    }
+
+    .section-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent-glow);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Section 1: Profile Banner ── */
+    .profile-banner {
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+    .profile-avatar {
+      width: 68px; height: 68px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2A2A32, #3A3A44);
+      border: 2px solid rgba(255,255,255,0.10);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent-glow);
+      flex-shrink: 0;
+    }
+    .profile-meta h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .profile-meta .meta-line {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 5px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+    }
+    .profile-meta .meta-line span { display: inline-flex; align-items: center; gap: 5px; }
+
+    /* ── Section 2: Stats Row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    @media (max-width: 760px) { .stats-row { grid-template-columns: 1fr; } }
+
+    .stat-card {
+      padding: 18px 20px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .stat-card:hover { border-color: rgba(255,255,255,0.18); transform: translateY(-2px); }
+    .stat-card .stat-icon-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .stat-card .stat-icon { font-size: 20px; opacity: 0.85; }
+    .stat-card .stat-title { font-size: 11.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .stat-card .stat-main { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 700; color: var(--text-primary); }
+    .stat-card .stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+    .weekly-off-select {
+      width: 100%;
+      margin-top: 8px;
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      padding: 7px 10px;
+      font-size: 12.5px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      cursor: pointer;
+    }
+    .weekly-off-select option { background: #18181B; }
+
+    /* ── Section 3: Info Cards ── */
+    .info-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    @media (max-width: 900px) { .info-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .info-row { grid-template-columns: 1fr; } }
+
+    .info-card { padding: 16px 18px; }
+    .info-card .info-label { font-size: 10.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 6px; }
+    .info-card .info-value { font-size: 14.5px; font-weight: 600; color: var(--text-primary); overflow-wrap: break-word; }
+    .info-card .info-sub { font-size: 11.5px; color: var(--accent-glow); margin-top: 3px; }
+
+    /* ── Section 4: Attendance Calendar ── */
+    .calendar-card { padding: 20px; margin-bottom: 22px; }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .calendar-month-label { font-family: 'Space Grotesk', sans-serif; font-size: 15.5px; font-weight: 600; }
+    .calendar-nav { display: flex; gap: 8px; }
+    .btn-cal-nav {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-cal-nav:hover { background: rgba(255,255,255,0.14); }
+    .btn-cal-nav:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .calendar-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; font-size: 11.5px; color: var(--text-muted); }
+    .legend-dot { display: inline-flex; align-items: center; gap: 5px; }
+    .legend-dot span { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+    .cal-weekday {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding-bottom: 4px;
+      font-weight: 600;
+    }
+    .cal-cell {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12.5px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      position: relative;
+      min-height: 36px;
+    }
+    .cal-cell.empty { background: transparent; }
+    .cal-present  { background: rgba(52,211,153,0.16);  color: #6EE7B7; border-color: rgba(52,211,153,0.25); }
+    .cal-absent   { background: rgba(248,113,113,0.16);  color: #FCA5A5; border-color: rgba(248,113,113,0.25); }
+    .cal-late     { background: rgba(251,191,36,0.16);   color: #FCD34D; border-color: rgba(251,191,36,0.25); }
+    .cal-leave    { background: rgba(192,132,252,0.16);  color: #D8B4FE; border-color: rgba(192,132,252,0.25); }
+    .cal-off      { background: rgba(161,161,170,0.08);  color: var(--text-dim); border-color: rgba(255,255,255,0.04); }
+    .cal-future   { background: rgba(255,255,255,0.02);  color: var(--text-dim); }
+
+    /* ── Section 5: Tasks ── */
+    .tasks-section { margin-bottom: 22px; }
+    .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+    .task-card { padding: 16px 18px; }
+    .task-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+    .task-title { font-size: 14px; font-weight: 600; color: var(--text-primary); line-height: 1.4; }
+    .task-due { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+    .task-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .badge-high     { background: rgba(248,113,113,0.12); color: #FCA5A5; }
+    .badge-medium   { background: rgba(251,191,36,0.12);  color: #FCD34D; }
+    .badge-low      { background: rgba(161,161,170,0.12); color: #A1A1AA; }
+    .badge-pending   { background: rgba(251,191,36,0.12); color: #FCD34D; }
+    .badge-completed { background: rgba(52,211,153,0.12); color: #6EE7B7; }
+    .badge-approved   { background: rgba(52,211,153,0.12); color: #6EE7B7; }
+    .badge-rejected   { background: rgba(248,113,113,0.12); color: #FCA5A5; }
+
+    .btn-done {
+      background: rgba(52,211,153,0.12);
+      border: 1px solid rgba(52,211,153,0.25);
+      color: #34D399;
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.18s, transform 0.15s;
+    }
+    .btn-done:hover { background: rgba(52,211,153,0.2); transform: translateY(-1px); }
+
+    .empty-note { padding: 26px; text-align: center; color: var(--text-dim); font-size: 13px; }
+
+    /* ── Section 6: Leave Request ── */
+    .leave-section { margin-bottom: 22px; }
+    .leave-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 18px; align-items: start; }
+    @media (max-width: 860px) { .leave-grid { grid-template-columns: 1fr; } }
+
+    .leave-form-card { padding: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 13px; }
+    .form-group label { font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+    .form-group input, .form-group select, .form-group textarea {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.18s, background 0.18s;
+      resize: none;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: rgba(255,255,255,0.22);
+      background: var(--glass-strong);
+    }
+    .form-group select option { background: #18181B; }
+    .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 900px) { .form-group input, .form-group select, .form-group textarea { font-size: 16px; } }
+
+    .btn-submit-leave {
+      width: 100%;
+      background: rgba(244,244,245,0.92);
+      color: #0A0A0B;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 11px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.2s;
+      margin-top: 2px;
+    }
+    .btn-submit-leave:hover { background: #fff; transform: translateY(-1px); }
+    .btn-submit-leave:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .my-leaves-card { padding: 20px; }
+    .leave-row-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .leave-row-item:last-child { border-bottom: none; }
+    .leave-row-left .leave-type-text { font-size: 13.5px; font-weight: 600; }
+    .leave-row-left .leave-dates-text { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── Section 7: Punch Status (read-only) ── */
+    .punch-status-card { padding: 20px 22px; margin-bottom: 10px; }
+    .punch-status-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .punch-status-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 600px) { .punch-status-cols { grid-template-columns: 1fr; } }
+    .punch-col { text-align: center; padding: 14px 10px; background: rgba(255,255,255,0.025); border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.05); }
+    .punch-col-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .punch-col-value { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; }
+    .punch-note {
+      margin-top: 14px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #systemToastNotification { font-family: 'Inter', sans-serif; }
+
+    /* ── Modals shared shell ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.68);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-card {
+      background: rgba(18,18,20,0.92);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 480px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .modal-card.wide { max-width: 560px; }
+
+    .modal-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: rgba(18,18,20,0.95);
+      z-index: 1;
+    }
+    .modal-header h3 { font-family: 'Space Grotesk', sans-serif; font-size: 16px; }
+    .modal-close-btn {
+      background: rgba(248,113,113,0.12);
+      border: 1px solid rgba(248,113,113,0.25);
+      color: #FCA5A5;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .modal-close-btn:hover { background: rgba(248,113,113,0.2); }
+    .modal-body { padding: 22px; }
+
+    /* ── ID Card ── */
+    .id-card-shell {
+      background: linear-gradient(165deg, rgba(40,40,46,0.55), rgba(10,10,12,0.85));
+      border: 1px solid rgba(108,142,255,0.35);
+      border-radius: var(--radius);
+      padding: 26px 22px;
+      text-align: center;
+    }
+    .id-card-brand { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 700; letter-spacing: 0.3px; }
+    .id-card-brand span { color: #6C8EFF; }
+    .id-card-tagline { font-size: 10.5px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; margin-bottom: 18px; }
+
+    .id-card-avatar {
+      width: 84px; height: 84px;
+      border-radius: 50%;
+      margin: 0 auto 14px;
+      background: linear-gradient(135deg, #2A2A32, #3A3A44);
+      border: 2px solid rgba(52,211,153,0.5);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #6EE7B7;
+    }
+    .id-card-name { font-size: 18px; font-weight: 700; }
+    .id-card-role { font-size: 12.5px; color: #6EE7B7; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 3px; margin-bottom: 18px; }
+
+    .id-card-info {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+    .id-card-info-row { display: flex; justify-content: space-between; padding: 4px 0; }
+    .id-card-info-row span:first-child { color: var(--text-muted); }
+    .id-card-info-row span:last-child { font-weight: 600; }
+
+    .id-card-qr-wrap {
+      background: #fff;
+      width: 140px; height: 140px;
+      margin: 0 auto;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 8px;
+    }
+
+    .btn-download-pdf {
+      width: 100%;
+      margin-top: 18px;
+      background: linear-gradient(135deg, #059669, #34D399);
+      color: #fff;
+      border: none;
+      padding: 11px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: transform 0.18s;
+    }
+    .btn-download-pdf:hover { transform: translateY(-1px); }
+
+    /* ── Bank & Docs tabs ── */
+    .bd-tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--glass-border); padding: 0 22px; }
+    .bd-tab {
+      padding: 12px 2px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .bd-tab.active { color: var(--accent-glow); border-bottom-color: #6C8EFF; }
+    .bd-panel { display: none; }
+    .bd-panel.active { display: block; }
+
+    .bd-note {
+      background: rgba(251,191,36,0.08);
+      border: 1px solid rgba(251,191,36,0.22);
+      border-left: 3px solid #FBBF24;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .bd-note strong { color: #FCD34D; }
+
+    .bd-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 480px) { .bd-form-grid { grid-template-columns: 1fr; } }
+    .bd-form-grid .form-group.full { grid-column: 1 / -1; }
+
+    .bd-readonly-card {
+      background: rgba(52,211,153,0.06);
+      border: 1px solid rgba(52,211,153,0.2);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+    .bd-readonly-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; }
+    .bd-readonly-row span:first-child { color: var(--text-muted); }
+    .bd-readonly-row span:last-child { font-weight: 600; }
+
+    .doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 480px) { .doc-grid { grid-template-columns: 1fr; } }
+    .doc-tile {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 18px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s;
+      position: relative;
+    }
+    .doc-tile:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18); }
+    .doc-tile .doc-icon { font-size: 26px; margin-bottom: 8px; }
+    .doc-tile .doc-label { font-size: 13px; font-weight: 600; }
+    .doc-tile .doc-status { font-size: 10.5px; color: #6EE7B7; margin-top: 4px; }
+    .doc-tile .doc-status.empty { color: var(--text-dim); }
+    .doc-tile input[type="file"] { display: none; }
+
+    /* ── Password modal ── */
+    .pw-strength-hint { font-size: 11.5px; color: var(--text-dim); margin-top: -5px; margin-bottom: 12px; }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── Top Navbar ── -->
+  <div class="top-navbar">
+    <div class="navbar-logo">
+      <div class="navbar-logo-icon">⚡</div>
+      <div class="navbar-logo-text">Codeline<span>.AI</span></div>
+    </div>
+
+    <div class="navbar-actions desktop-actions">
+      <button class="nav-btn" onclick="openIdCardModal()">🪪 Virtual ID Card</button>
+      <button class="nav-btn" onclick="openBankDocsModal('bank')">📁 Bank & Docs</button>
+      <button class="nav-btn" onclick="openPasswordModal()">🔒 Password</button>
+      <button class="nav-btn logout" onclick="doLogout()">🚪 Logout</button>
+    </div>
+
+    <button class="navbar-mobile-toggle" onclick="toggleMobileActions()">☰</button>
+  </div>
+
+  <div class="mobile-actions-sheet" id="mobileActionsSheet">
+    <button class="nav-btn" onclick="openIdCardModal()">🪪 Virtual ID Card</button>
+    <button class="nav-btn" onclick="openBankDocsModal('bank')">📁 Bank & Docs</button>
+    <button class="nav-btn" onclick="openPasswordModal()">🔒 Password</button>
+    <button class="nav-btn logout" onclick="doLogout()">🚪 Logout</button>
+  </div>
+
+  <div class="page-content">
+
+    <!-- Section 1: Profile Banner -->
+    <div class="glass-card profile-banner">
+      <div class="profile-avatar" id="profileAvatarInitials">—</div>
+      <div class="profile-meta">
+        <h2 id="profileName">Loading...</h2>
+        <div class="meta-line">
+          <span id="profileDesignation">💼 —</span>
+          <span id="profileDepartment">🏷️ —</span>
+          <span id="profileBranch">🏢 —</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Stats Row -->
+    <div class="stats-row">
+      <div class="glass-card stat-card">
+        <div class="stat-icon-row">
+          <div class="stat-title">My Shift Timing</div>
+          <div class="stat-icon">🕐</div>
+        </div>
+        <div class="stat-main" id="statShiftTime">—</div>
+        <div class="stat-sub" id="statShiftName">No shift assigned today</div>
+      </div>
+
+      <div class="glass-card stat-card">
+        <div class="stat-icon-row">
+          <div class="stat-title">Weekly Off</div>
+          <div class="stat-icon">📅</div>
+        </div>
+        <div class="stat-main" id="statWeeklyOff">Not set</div>
+        <select class="weekly-off-select" id="weeklyOffSelect" onchange="saveWeeklyOff()">
+          <option value="">Select your weekly off day</option>
+          <option value="Sunday">Sunday</option>
+          <option value="Monday">Monday</option>
+          <option value="Tuesday">Tuesday</option>
+          <option value="Wednesday">Wednesday</option>
+          <option value="Thursday">Thursday</option>
+          <option value="Friday">Friday</option>
+          <option value="Saturday">Saturday</option>
+        </select>
+      </div>
+
+      <div class="glass-card stat-card">
+        <div class="stat-icon-row">
+          <div class="stat-title">Total Hours This Month</div>
+          <div class="stat-icon">⏱️</div>
+        </div>
+        <div class="stat-main" id="statMonthHours">—</div>
+        <div class="stat-sub" id="statMonthHoursSub">Calculating...</div>
+      </div>
+    </div>
+
+    <!-- Section 3: Info Cards -->
+    <div class="info-row">
+      <div class="glass-card info-card">
+        <div class="info-label">Employee ID</div>
+        <div class="info-value" id="infoEmpId">—</div>
+      </div>
+      <div class="glass-card info-card">
+        <div class="info-label">Date of Joining</div>
+        <div class="info-value" id="infoJoinDate">—</div>
+        <div class="info-sub" id="infoJoinDays"></div>
+      </div>
+      <div class="glass-card info-card">
+        <div class="info-label">Email Address</div>
+        <div class="info-value" id="infoEmail" style="font-size:13px;">—</div>
+      </div>
+      <div class="glass-card info-card">
+        <div class="info-label">Contact Number</div>
+        <div class="info-value" id="infoMobile">—</div>
+      </div>
+    </div>
+
+    <!-- Section 4: Attendance Calendar -->
+    <div class="glass-card calendar-card">
+      <div class="calendar-header">
+        <div class="calendar-month-label" id="calendarMonthLabel">— —</div>
+        <div class="calendar-nav">
+          <button class="btn-cal-nav" id="btnCalPrev" onclick="changeCalendarMonth(-1)">← Prev</button>
+          <button class="btn-cal-nav" id="btnCalNext" onclick="changeCalendarMonth(1)">Next →</button>
+        </div>
+      </div>
+      <div class="calendar-legend">
+        <span class="legend-dot"><span style="background:#34D399;"></span>Present</span>
+        <span class="legend-dot"><span style="background:#F87171;"></span>Absent</span>
+        <span class="legend-dot"><span style="background:#FBBF24;"></span>Late</span>
+        <span class="legend-dot"><span style="background:#C084FC;"></span>Leave</span>
+        <span class="legend-dot"><span style="background:#71717A;"></span>Off / Holiday</span>
+      </div>
+      <div class="calendar-grid" id="calendarGrid">
+        <div class="empty-note" style="grid-column: 1 / -1;">Calendar load ho raha hai...</div>
+      </div>
+    </div>
+
+    <!-- Section 5: Assigned Tasks -->
+    <div class="tasks-section">
+      <div class="section-label">📋 My Assigned Tasks</div>
+      <div class="task-grid" id="taskGrid">
+        <div class="glass-card empty-note">Tasks load ho rahe hain...</div>
+      </div>
+    </div>
+
+    <!-- Section 6: Leave Request -->
+    <div class="leave-section">
+      <div class="section-label">📅 Leave Requests</div>
+      <div class="leave-grid">
+        <div class="glass-card leave-form-card">
+          <form id="quickLeaveForm" onsubmit="submitQuickLeave(event)">
+            <div class="form-group">
+              <label>Leave Type</label>
+              <select id="qlType" required>
+                <option value="Sick Leave">🤒 Sick Leave</option>
+                <option value="Casual Leave">🏖️ Casual Leave</option>
+                <option value="Annual Leave">📆 Annual Leave</option>
+                <option value="Emergency Leave">🚨 Emergency Leave</option>
+              </select>
+            </div>
+            <div class="date-row">
+              <div class="form-group">
+                <label>From Date</label>
+                <input type="date" id="qlFrom" required />
+              </div>
+              <div class="form-group">
+                <label>To Date</label>
+                <input type="date" id="qlTo" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Reason</label>
+              <textarea id="qlReason" rows="3" placeholder="Brief reason for leave..."></textarea>
+            </div>
+            <button type="submit" class="btn-submit-leave" id="qlSubmitBtn">Submit Leave Request</button>
+          </form>
+        </div>
+
+        <div class="glass-card my-leaves-card">
+          <div class="section-label" style="margin-bottom:10px; font-size:13.5px;">My Recent Leaves</div>
+          <div id="myLeavesList">
+            <div class="empty-note">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 7: Punch Status (read-only) -->
+    <div class="glass-card punch-status-card">
+      <div class="punch-status-top">
+        <div class="section-label" style="margin-bottom:0;">✅ Today's Attendance Status</div>
+        <div style="font-size:12px; color:var(--text-dim);" id="punchTodayDate">—</div>
+      </div>
+      <div class="punch-status-cols">
+        <div class="punch-col">
+          <div class="punch-col-label">Punch In</div>
+          <div class="punch-col-value" style="color:#6EE7B7;" id="punchInTime">—</div>
+        </div>
+        <div class="punch-col">
+          <div class="punch-col-label">Punch Out</div>
+          <div class="punch-col-value" style="color:#FCA5A5;" id="punchOutTime">—</div>
+        </div>
+        <div class="punch-col">
+          <div class="punch-col-label">Hours Worked</div>
+          <div class="punch-col-value" style="color:var(--accent-glow);" id="punchHoursToday">—</div>
+        </div>
+      </div>
+      <div class="punch-note">📷 Attendance QR code scan karke mark hoti hai — apni branch ki QR location par scan karein. Yeh card sirf aaj ka status dikhata hai.</div>
+    </div>
+
+  </div>
+
+  <!-- ═══ Virtual ID Card Modal ═══ -->
+  <div class="modal-overlay" id="idCardModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🪪 Virtual ID Card</h3>
+        <button class="modal-close-btn" onclick="closeModal('idCardModal')">✕ Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="id-card-shell">
+          <div class="id-card-brand">CODELINE<span>.AI</span></div>
+          <div class="id-card-tagline">Employee Identity Card</div>
+
+          <div class="id-card-avatar" id="idCardAvatar">—</div>
+          <div class="id-card-name" id="idCardName">—</div>
+          <div class="id-card-role" id="idCardRole">STAFF</div>
+
+          <div class="id-card-info">
+            <div class="id-card-info-row"><span>EMP ID:</span><span id="idCardEmpId">—</span></div>
+            <div class="id-card-info-row"><span>Department:</span><span id="idCardDept">—</span></div>
+            <div class="id-card-info-row"><span>Joining Date:</span><span id="idCardJoin">—</span></div>
+            <div class="id-card-info-row"><span>Contact:</span><span id="idCardMobile">—</span></div>
+          </div>
+
+          <div class="id-card-qr-wrap" id="idCardQrWrap"></div>
+        </div>
+        <button class="btn-download-pdf" onclick="downloadIdCardPdf()">⬇️ Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Bank & Docs Modal (3 tabs: Bank Details | My Documents | Salary Slips) ═══ -->
+  <div class="modal-overlay" id="bankDocsModal">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <h3>📁 Bank Details &amp; Documents</h3>
+        <button class="modal-close-btn" onclick="closeModal('bankDocsModal')">✕ Close</button>
+      </div>
+
+      <div class="bd-tabs">
+        <div class="bd-tab active" id="tabBtnBank" onclick="switchBdTab('bank')">Bank Details</div>
+        <div class="bd-tab" id="tabBtnDocs" onclick="switchBdTab('docs')">My Documents</div>
+        <div class="bd-tab" id="tabBtnSlips" onclick="switchBdTab('slips')">Salary Slips</div>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Tab 1: Bank Details -->
+        <div class="bd-panel active" id="bdPanelBank">
+          <div id="bankFormWrapper">
+            <div class="bd-note"><strong>Note:</strong> Bank details can only be submitted once. Please ensure the information matches your passbook.</div>
+            <form id="bankDetailsForm" onsubmit="submitBankDetailsForm(event)">
+              <div class="bd-form-grid">
+                <div class="form-group">
+                  <label>Account Holder Name *</label>
+                  <input type="text" id="bdHolderName" required />
+                </div>
+                <div class="form-group">
+                  <label>Account Number *</label>
+                  <input type="text" id="bdAccNumber" required />
+                </div>
+                <div class="form-group">
+                  <label>IFSC Code *</label>
+                  <input type="text" id="bdIfsc" required style="text-transform:uppercase;" />
+                </div>
+                <div class="form-group">
+                  <label>Bank Name *</label>
+                  <input type="text" id="bdBankName" required />
+                </div>
+                <div class="form-group">
+                  <label>Branch Name</label>
+                  <input type="text" id="bdBranchName" />
+                </div>
+                <div class="form-group">
+                  <label>Account Type</label>
+                  <select id="bdAccType">
+                    <option value="Savings">Savings</option>
+                    <option value="Current">Current</option>
+                  </select>
+                </div>
+                <div class="form-group full">
+                  <label>Aadhaar Card Number</label>
+                  <input type="text" id="bdAadhaar" placeholder="e.g. 123456789012" />
+                </div>
+                <div class="form-group full">
+                  <label>Passbook / Cancelled Cheque Photo</label>
+                  <input type="file" id="bdPassbookFile" accept="image/*,application/pdf" />
+                </div>
+              </div>
+              <button type="submit" class="btn-submit-leave" id="bdSubmitBtn" style="margin-top:6px;">Submit Bank Details</button>
+            </form>
+          </div>
+
+          <div id="bankReadonlyWrapper" style="display:none;">
+            <div class="bd-readonly-card">
+              <div class="bd-readonly-row"><span>Account Holder:</span><span id="roHolderName">—</span></div>
+              <div class="bd-readonly-row"><span>Account Number:</span><span id="roAccNumber">—</span></div>
+              <div class="bd-readonly-row"><span>IFSC Code:</span><span id="roIfsc">—</span></div>
+              <div class="bd-readonly-row"><span>Bank Name:</span><span id="roBankName">—</span></div>
+              <div class="bd-readonly-row"><span>Branch:</span><span id="roBranchName">—</span></div>
+              <div class="bd-readonly-row"><span>Account Type:</span><span id="roAccType">—</span></div>
+              <div class="bd-readonly-row"><span>Submitted On:</span><span id="roSubmittedAt">—</span></div>
+            </div>
+            <div class="bd-note" style="margin-top:14px; margin-bottom:0;">Bank details already submit ho chuki hain. Change ke liye HR se contact karein.</div>
+          </div>
+        </div>
+
+        <!-- Tab 2: My Documents -->
+        <div class="bd-panel" id="bdPanelDocs">
+          <div class="doc-grid">
+            <div class="doc-tile" onclick="document.getElementById('fileProfilePhoto').click()">
+              <div class="doc-icon">🖼️</div>
+              <div class="doc-label">Profile Photo</div>
+              <div class="doc-status empty" id="statusProfilePhoto">Not uploaded</div>
+              <input type="file" id="fileProfilePhoto" accept="image/*" onchange="handleDocUpload('profile_photo', this)" />
+            </div>
+            <div class="doc-tile" onclick="document.getElementById('fileAadhaarPdf').click()">
+              <div class="doc-icon">📄</div>
+              <div class="doc-label">Aadhar Card (PDF)</div>
+              <div class="doc-status empty" id="statusAadhaarPdf">Not uploaded</div>
+              <input type="file" id="fileAadhaarPdf" accept="application/pdf" onchange="handleDocUpload('aadhaar_pdf', this)" />
+            </div>
+            <div class="doc-tile" onclick="document.getElementById('fileEduExp').click()">
+              <div class="doc-icon">🎓</div>
+              <div class="doc-label">Education/Experience</div>
+              <div class="doc-status empty" id="statusEduExp">Not uploaded</div>
+              <input type="file" id="fileEduExp" accept="image/*,application/pdf" onchange="handleDocUpload('education_experience', this)" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Salary Slips -->
+        <div class="bd-panel" id="bdPanelSlips">
+          <div id="slipsListWrapper">
+            <div class="empty-note">Salary slips load ho rahe hain...</div>
+          </div>
+          <div id="slipDetailWrapper" style="display:none;">
+            <button class="nav-btn" style="margin-bottom:14px;" onclick="closeSlipDetail()">← Back to list</button>
+            <div class="bd-readonly-card">
+              <div class="bd-readonly-row"><span>Period:</span><span id="slipPeriod">—</span></div>
+              <div class="bd-readonly-row"><span>Present Days:</span><span id="slipPresent">—</span></div>
+              <div class="bd-readonly-row"><span>Absent Days:</span><span id="slipAbsent">—</span></div>
+              <div class="bd-readonly-row"><span>Gross Salary:</span><span id="slipGross">—</span></div>
+              <div class="bd-readonly-row"><span>Deductions:</span><span id="slipDed">—</span></div>
+              <div class="bd-readonly-row" style="border-top:1px solid rgba(255,255,255,0.08); margin-top:6px; padding-top:10px;">
+                <span style="font-weight:700; color:var(--text-primary);">Net Salary:</span>
+                <span id="slipNet" style="color:#6EE7B7; font-size:15px;">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Password Modal ═══ -->
+  <div class="modal-overlay" id="passwordModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔒 Change Password</h3>
+        <button class="modal-close-btn" onclick="closeModal('passwordModal')">✕ Close</button>
+      </div>
+      <div class="modal-body">
+        <form id="changePasswordForm" onsubmit="submitPasswordChange(event)">
+          <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" id="pwOld" required />
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" id="pwNew" required minlength="6" />
+          </div>
+          <div class="pw-strength-hint">Kam se kam 6 characters ka hona chahiye.</div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" id="pwConfirm" required minlength="6" />
+          </div>
+          <button type="submit" class="btn-submit-leave" id="pwSubmitBtn">Update Password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const USER  = AppSession.getUser();
+
+    let EMPLOYEE_DATA = null;
+    let CAL_MONTH = new Date().getMonth();
+    let CAL_YEAR  = new Date().getFullYear();
+    const TODAY = new Date();
+    TODAY.setHours(0,0,0,0);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!USER || !USER.employee_id) { window.location.href = 'index.html'; return; }
+      loadProfile();
+      loadShiftAndAttendanceStats();
+      loadCalendar();
+      loadTasks();
+      loadMyLeaves();
+      loadTodayPunchStatus();
+    });
+
+    /* ── Navbar actions ── */
+    function toggleMobileActions() {
+      document.getElementById('mobileActionsSheet').classList.toggle('open');
+    }
+    function doLogout() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    /* ── ID Card Modal ── */
+    function openIdCardModal() {
+      if (!EMPLOYEE_DATA) { showToast('Profile data abhi load ho rahi hai, ek second mein try karein.'); return; }
+      const emp = EMPLOYEE_DATA;
+      const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() : 'EE';
+
+      document.getElementById('idCardAvatar').textContent = initials;
+      document.getElementById('idCardName').textContent = emp.name || 'Employee';
+      document.getElementById('idCardRole').textContent = (USER.role || 'staff').replace(/_/g, ' ').toUpperCase();
+      document.getElementById('idCardEmpId').textContent = emp.emp_id || '—';
+      document.getElementById('idCardDept').textContent = emp.department_id || '—';
+      document.getElementById('idCardJoin').textContent = emp.joining_date
+        ? new Date(emp.joining_date).toLocaleDateString('en-IN', { day:'numeric', month:'numeric', year:'numeric' })
+        : '—';
+      document.getElementById('idCardMobile').textContent = emp.mobile || '—';
+
+      const qrWrap = document.getElementById('idCardQrWrap');
+      qrWrap.innerHTML = '';
+      const qrPayload = `EBMS:${emp.emp_id}:${emp.name}`;
+      if (window.QRCode) {
+        new QRCode(qrWrap, { text: qrPayload, width: 124, height: 124, colorDark: '#000000', colorLight: '#ffffff' });
+      } else {
+        qrWrap.textContent = 'QR unavailable';
+      }
+
+      document.getElementById('idCardModal').classList.add('open');
+    }
+
+    function downloadIdCardPdf() {
+      const cardEl = document.querySelector('#idCardModal .id-card-shell');
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html><head><title>ID Card — ${EMPLOYEE_DATA ? EMPLOYEE_DATA.name : 'Employee'}</title>
+        <style>
+          body { font-family: Inter, sans-serif; background:#0A0A0B; color:#fff; display:flex; justify-content:center; padding:40px; }
+          @media print { body { background: #fff; } }
+        </style></head><body>${cardEl.outerHTML}</body></html>
+      `);
+      printWindow.document.close();
+      setTimeout(() => { printWindow.print(); }, 350);
+    }
+
+    /* ── Bank & Docs Modal ── */
+    let BANK_DETAILS_CACHE = null;
+
+    function openBankDocsModal(initialTab) {
+      document.getElementById('bankDocsModal').classList.add('open');
+      switchBdTab(initialTab || 'bank');
+      loadBankDetails();
+      loadMyDocuments();
+    }
+
+    function switchBdTab(tab) {
+      document.querySelectorAll('.bd-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.bd-panel').forEach(p => p.classList.remove('active'));
+
+      if (tab === 'bank') {
+        document.getElementById('tabBtnBank').classList.add('active');
+        document.getElementById('bdPanelBank').classList.add('active');
+      } else if (tab === 'docs') {
+        document.getElementById('tabBtnDocs').classList.add('active');
+        document.getElementById('bdPanelDocs').classList.add('active');
+      } else if (tab === 'slips') {
+        document.getElementById('tabBtnSlips').classList.add('active');
+        document.getElementById('bdPanelSlips').classList.add('active');
+        loadSalarySlips();
+      }
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function loadBankDetails() {
+      try {
+        const res = await fetch(`${API_URL}?action=getBankDetails&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success' && payload.data) {
+          BANK_DETAILS_CACHE = payload.data;
+          renderBankDetailsReadonly(payload.data);
+        } else {
+          document.getElementById('bankFormWrapper').style.display = 'block';
+          document.getElementById('bankReadonlyWrapper').style.display = 'none';
+        }
+      } catch (e) { showToast('Bank details load nahi hui.'); }
+    }
+
+    function renderBankDetailsReadonly(d) {
+      document.getElementById('bankFormWrapper').style.display = 'none';
+      document.getElementById('bankReadonlyWrapper').style.display = 'block';
+      document.getElementById('roHolderName').textContent = d.account_holder_name || '—';
+      document.getElementById('roAccNumber').textContent = d.account_number || '—';
+      document.getElementById('roIfsc').textContent = d.ifsc_code || '—';
+      document.getElementById('roBankName').textContent = d.bank_name || '—';
+      document.getElementById('roBranchName').textContent = d.branch_name || '—';
+      document.getElementById('roAccType').textContent = d.account_type || '—';
+      document.getElementById('roSubmittedAt').textContent = d.submitted_at
+        ? new Date(d.submitted_at).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })
+        : '—';
+    }
+
+    async function submitBankDetailsForm(e) {
+      e.preventDefault();
+      const btn = document.getElementById('bdSubmitBtn');
+      btn.disabled = true; btn.textContent = 'Submitting...';
+
+      try {
+        const payload = {
+          token: TOKEN,
+          action: 'submitBankDetails',
+          account_holder_name: document.getElementById('bdHolderName').value.trim(),
+          account_number: document.getElementById('bdAccNumber').value.trim(),
+          ifsc_code: document.getElementById('bdIfsc').value.trim(),
+          bank_name: document.getElementById('bdBankName').value.trim(),
+          branch_name: document.getElementById('bdBranchName').value.trim(),
+          account_type: document.getElementById('bdAccType').value,
+          aadhaar_number: document.getElementById('bdAadhaar').value.trim()
+        };
+
+        const fileInput = document.getElementById('bdPassbookFile');
+        if (fileInput.files && fileInput.files[0]) {
+          const file = fileInput.files[0];
+          payload.passbook_file_base64 = await fileToBase64(file);
+          payload.passbook_file_name = file.name;
+          payload.passbook_mime_type = file.type;
+        }
+
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Bank details successfully save ho gayi!');
+          loadBankDetails();
+        } else {
+          showToast(out.message || 'Submission mein error.');
+        }
+      } catch (err) {
+        showToast('Network error.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Submit Bank Details';
+      }
+    }
+
+    /* ── My Documents tab ── */
+    const docInputMap = { profile_photo: 'fileProfilePhoto', aadhaar_pdf: 'fileAadhaarPdf', education_experience: 'fileEduExp' };
+    const docStatusMap = { profile_photo: 'statusProfilePhoto', aadhaar_pdf: 'statusAadhaarPdf', education_experience: 'statusEduExp' };
+
+    async function loadMyDocuments() {
+      try {
+        const res = await fetch(`${API_URL}?action=getMyDocuments&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          Object.keys(docStatusMap).forEach(cat => {
+            const el = document.getElementById(docStatusMap[cat]);
+            el.textContent = 'Not uploaded';
+            el.classList.add('empty');
+          });
+          (payload.data || []).forEach(doc => {
+            const el = document.getElementById(docStatusMap[doc.doc_category]);
+            if (el) {
+              el.textContent = '✓ Uploaded';
+              el.classList.remove('empty');
+            }
+          });
+        }
+      } catch (e) { /* keep defaults */ }
+    }
+
+    async function handleDocUpload(category, inputEl) {
+      if (!inputEl.files || !inputEl.files[0]) return;
+      const file = inputEl.files[0];
+      const statusEl = document.getElementById(docStatusMap[category]);
+      const prevText = statusEl.textContent;
+      statusEl.textContent = 'Uploading...';
+
+      try {
+        const base64 = await fileToBase64(file);
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            token: TOKEN,
+            action: 'uploadDocument',
+            doc_category: category,
+            file_base64: base64,
+            file_name: file.name,
+            mime_type: file.type
+          })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Document upload ho gaya!');
+          statusEl.textContent = '✓ Uploaded';
+          statusEl.classList.remove('empty');
+        } else {
+          showToast(out.message || 'Upload error.');
+          statusEl.textContent = prevText;
+        }
+      } catch (e) {
+        showToast('Network error during upload.');
+        statusEl.textContent = prevText;
+      } finally {
+        inputEl.value = '';
+      }
+    }
+
+    /* ── Salary Slips tab ── */
+    async function loadSalarySlips() {
+      const wrapper = document.getElementById('slipsListWrapper');
+      document.getElementById('slipDetailWrapper').style.display = 'none';
+      wrapper.style.display = 'block';
+      wrapper.innerHTML = '<div class="empty-note">Salary slips load ho rahe hain...</div>';
+
+      try {
+        const res = await fetch(`${API_URL}?action=getSalarySlips&token=${TOKEN}`);
+        const payload = await res.json();
+        const slips = (payload.data && payload.data.data) || [];
+        if (!slips.length) {
+          wrapper.innerHTML = '<div class="empty-note">Koi salary slip generate nahi hui abhi.</div>';
+          return;
+        }
+        const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        wrapper.innerHTML = slips.map(s => `
+          <div class="leave-row-item" style="cursor:pointer;" onclick="openSlipDetail('${s.slip_id}')">
+            <div class="leave-row-left">
+              <div class="leave-type-text">${monthNames[(parseInt(s.month)||1)-1]} ${s.year}</div>
+              <div class="leave-dates-text">Net Pay: ₹${parseFloat(s.net_salary||0).toLocaleString('en-IN', {minimumFractionDigits:2})}</div>
+            </div>
+            <span class="badge badge-completed">View →</span>
+          </div>
+        `).join('');
+      } catch (e) {
+        wrapper.innerHTML = '<div class="empty-note">Salary slips load nahi hue.</div>';
+      }
+    }
+
+    async function openSlipDetail(slipId) {
+      try {
+        const res = await fetch(`${API_URL}?action=getSingleSalarySlip&token=${TOKEN}&slip_id=${slipId}`);
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          const s = payload.data.slip;
+          const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          document.getElementById('slipPeriod').textContent = `${monthNames[(parseInt(s.month)||1)-1]} ${s.year}`;
+          document.getElementById('slipPresent').textContent = (s.present_days ?? '—') + ' days';
+          document.getElementById('slipAbsent').textContent = (s.absent_days ?? '0') + ' days';
+          document.getElementById('slipGross').textContent = '₹' + parseFloat(s.gross_salary||0).toLocaleString('en-IN', {minimumFractionDigits:2});
+          document.getElementById('slipDed').textContent = '₹' + parseFloat(s.deductions||0).toLocaleString('en-IN', {minimumFractionDigits:2});
+          document.getElementById('slipNet').textContent = '₹' + parseFloat(s.net_salary||0).toLocaleString('en-IN', {minimumFractionDigits:2});
+
+          document.getElementById('slipsListWrapper').style.display = 'none';
+          document.getElementById('slipDetailWrapper').style.display = 'block';
+        } else {
+          showToast(payload.message || 'Slip detail load nahi hui.');
+        }
+      } catch (e) { showToast('Network error.'); }
+    }
+
+    function closeSlipDetail() {
+      document.getElementById('slipDetailWrapper').style.display = 'none';
+      document.getElementById('slipsListWrapper').style.display = 'block';
+    }
+
+    /* ── Password Modal ── */
+    function openPasswordModal() {
+      document.getElementById('changePasswordForm').reset();
+      document.getElementById('passwordModal').classList.add('open');
+    }
+
+    async function submitPasswordChange(e) {
+      e.preventDefault();
+      const oldPw = document.getElementById('pwOld').value;
+      const newPw = document.getElementById('pwNew').value;
+      const confirmPw = document.getElementById('pwConfirm').value;
+
+      if (newPw !== confirmPw) { showToast('New password aur confirm password match nahi karte.'); return; }
+      if (newPw.length < 6) { showToast('New password kam se kam 6 characters ka hona chahiye.'); return; }
+
+      const btn = document.getElementById('pwSubmitBtn');
+      btn.disabled = true; btn.textContent = 'Updating...';
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'changePassword', old_password: oldPw, new_password: newPw })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Password successfully change ho gaya!');
+          closeModal('passwordModal');
+        } else {
+          showToast(out.message || 'Password change nahi hua.');
+        }
+      } catch (err) {
+        showToast('Network error.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Update Password';
+      }
+    }
+
+    /* ── Section 1: Profile ── */
+    async function loadProfile() {
+      try {
+        const res = await fetch(`${API_URL}?action=getEmployee&token=${TOKEN}&emp_id=${USER.employee_id}`);
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          EMPLOYEE_DATA = payload.data;
+          bindProfile(EMPLOYEE_DATA);
+        }
+      } catch (e) { showToast('Profile load nahi hua.'); }
+    }
+
+    function bindProfile(emp) {
+      const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() : 'EE';
+      document.getElementById('profileAvatarInitials').textContent = initials;
+      document.getElementById('profileName').textContent = emp.name || 'Employee';
+      document.getElementById('profileDesignation').textContent = '💼 ' + (emp.designation_id || 'Staff Regular');
+      document.getElementById('profileDepartment').textContent = '🏷️ ' + (emp.department_id || '—');
+      document.getElementById('profileBranch').textContent = '🏢 ' + (emp.branch_id || '—');
+
+      document.getElementById('infoEmpId').textContent = emp.emp_id || '—';
+      document.getElementById('infoEmail').textContent = emp.email || '—';
+      document.getElementById('infoMobile').textContent = emp.mobile || '—';
+
+      // Date of joining — backend field is "joining_date" (see appscript_employees.gs)
+      if (emp.joining_date) {
+        const d = new Date(emp.joining_date);
+        document.getElementById('infoJoinDate').textContent = d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+        const days = Math.floor((TODAY - d) / (1000*60*60*24));
+        if (days >= 0) document.getElementById('infoJoinDays').textContent = `${days} Days with us`;
+      } else {
+        document.getElementById('infoJoinDate').textContent = '—';
+        document.getElementById('infoJoinDays').textContent = '';
+      }
+
+      // Weekly off — employee-set field, may not exist yet
+      if (emp.weekly_off) {
+        document.getElementById('statWeeklyOff').textContent = emp.weekly_off;
+        document.getElementById('weeklyOffSelect').value = emp.weekly_off;
+      } else {
+        document.getElementById('statWeeklyOff').textContent = 'Not set';
+      }
+    }
+
+    /* ── Weekly Off picker ── */
+    async function saveWeeklyOff() {
+      const val = document.getElementById('weeklyOffSelect').value;
+      if (!val) return;
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'updateEmployee', emp_id: USER.employee_id, weekly_off: val })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          document.getElementById('statWeeklyOff').textContent = val;
+          showToast('Weekly off set to ' + val + '!');
+          loadCalendar();
+        } else {
+          showToast(out.message || 'Could not save weekly off.');
+        }
+      } catch (e) { showToast('Network error saving weekly off.'); }
+    }
+
+    /* ── Section 2: Shift + Monthly Hours ── */
+    async function loadShiftAndAttendanceStats() {
+      const todayStr = formatDateYMD(new Date());
+      try {
+        const res = await fetch(`${API_URL}?action=getShiftRoster&token=${TOKEN}&from_date=${todayStr}&to_date=${todayStr}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success' && Array.isArray(payload.data)) {
+          const mine = payload.data.find(a => a.emp_id === USER.employee_id && a.date === todayStr);
+          if (mine) {
+            document.getElementById('statShiftTime').textContent = `${formatTime12Hour(mine.start_time)} – ${formatTime12Hour(mine.end_time)}`;
+            document.getElementById('statShiftName').textContent = mine.shift_name || '—';
+          } else {
+            document.getElementById('statShiftTime').textContent = '—';
+            document.getElementById('statShiftName').textContent = 'No shift assigned today';
+          }
+        }
+      } catch (e) { /* keep default */ }
+
+      // Monthly hours from attendance
+      try {
+        const firstDay = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH, 1));
+        const lastDay  = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH + 1, 0));
+        const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&emp_id=${USER.employee_id}&from_date=${firstDay}&to_date=${lastDay}&limit=200`);
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          const logs = (payload.data && payload.data.data) || [];
+          const mine = logs.filter(l => l.emp_id === USER.employee_id);
+          let totalMinutes = 0;
+          let presentDays = 0;
+          mine.forEach(l => {
+            if (l.in_time && l.out_time) {
+              const mins = diffMinutes(l.in_time, l.out_time);
+              if (mins > 0) totalMinutes += mins;
+            }
+            if (l.status === 'present') presentDays++;
+          });
+          const hrs = Math.floor(totalMinutes / 60);
+          const mins = totalMinutes % 60;
+          document.getElementById('statMonthHours').textContent = `${hrs}h ${mins}m`;
+          document.getElementById('statMonthHoursSub').textContent = `${presentDays} days present`;
+        } else {
+          document.getElementById('statMonthHours').textContent = '—';
+          document.getElementById('statMonthHoursSub').textContent = 'No data yet';
+        }
+      } catch (e) {
+        document.getElementById('statMonthHours').textContent = '—';
+        document.getElementById('statMonthHoursSub').textContent = 'Could not load';
+      }
+    }
+
+    function diffMinutes(inTime, outTime) {
+      const toMins = (t) => {
+        const str = String(t);
+        let h = 0, m = 0;
+        if (str.includes('T')) { const p = str.split('T')[1].split(':'); h = +p[0]; m = +p[1]; }
+        else if (str.includes(':')) { const p = str.split(':'); h = +p[0]; m = +p[1]; }
+        return h * 60 + m;
+      };
+      const diff = toMins(outTime) - toMins(inTime);
+      return diff > 0 ? diff : 0;
+    }
+
+    function formatDateYMD(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    /* ── Section 4: Attendance Calendar ── */
+    async function loadCalendar() {
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      document.getElementById('calendarMonthLabel').textContent = `${monthNames[CAL_MONTH]} ${CAL_YEAR}`;
+
+      const now = new Date();
+      document.getElementById('btnCalNext').disabled = (CAL_YEAR === now.getFullYear() && CAL_MONTH === now.getMonth());
+
+      const firstDay = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH, 1));
+      const lastDay  = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH + 1, 0));
+      const daysInMonth = new Date(CAL_YEAR, CAL_MONTH + 1, 0).getDate();
+      const startWeekday = new Date(CAL_YEAR, CAL_MONTH, 1).getDay();
+
+      let attendanceMap = {};
+      let leaveDatesSet = new Set();
+      let holidaySet = new Set();
+
+      try {
+        const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&emp_id=${USER.employee_id}&from_date=${firstDay}&to_date=${lastDay}&limit=200`);
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          const logs = (payload.data && payload.data.data) || [];
+          logs.filter(l => l.emp_id === USER.employee_id).forEach(l => {
+            const dateKey = String(l.date).split('T')[0];
+            attendanceMap[dateKey] = l;
+          });
+        }
+      } catch (e) { /* ignore, render what we have */ }
+
+      try {
+        const res = await fetch(`${API_URL}?action=getLeaves&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          const leaves = (payload.data && payload.data.data) || [];
+          leaves.filter(l => l.emp_id === USER.employee_id && l.status === 'approved').forEach(l => {
+            let d = new Date(l.from_date);
+            const to = new Date(l.to_date);
+            while (d <= to) { leaveDatesSet.add(formatDateYMD(d)); d.setDate(d.getDate() + 1); }
+          });
+        }
+      } catch (e) { /* ignore */ }
+
+      try {
+        const res = await fetch(`${API_URL}?action=getHolidays&token=${TOKEN}&year=${CAL_YEAR}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          (payload.data || []).forEach(h => holidaySet.add(String(h.date).split('T')[0]));
+        }
+      } catch (e) { /* ignore */ }
+
+      const weeklyOff = (EMPLOYEE_DATA && EMPLOYEE_DATA.weekly_off) || null;
+      const weekdayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+      let html = '';
+      ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(w => html += `<div class="cal-weekday">${w}</div>`);
+      for (let i = 0; i < startWeekday; i++) html += `<div class="cal-cell empty"></div>`;
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateObj = new Date(CAL_YEAR, CAL_MONTH, day);
+        const dateKey = formatDateYMD(dateObj);
+        const isFuture = dateObj > TODAY;
+        const isOffDay = (weeklyOff && weekdayNames[dateObj.getDay()] === weeklyOff) || holidaySet.has(dateKey);
+
+        let cls = 'cal-cell';
+        if (isFuture) {
+          cls += ' cal-future';
+        } else if (isOffDay) {
+          cls += ' cal-off';
+        } else if (leaveDatesSet.has(dateKey)) {
+          cls += ' cal-leave';
+        } else if (attendanceMap[dateKey]) {
+          const log = attendanceMap[dateKey];
+          if (log.status === 'present' && log.late_minutes > 0) cls += ' cal-late';
+          else if (log.status === 'present') cls += ' cal-present';
+          else cls += ' cal-absent';
+        } else {
+          cls += ' cal-absent';
+        }
+
+        html += `<div class="${cls}" title="${dateKey}">${day}</div>`;
+      }
+
+      document.getElementById('calendarGrid').innerHTML = html;
+    }
+
+    function changeCalendarMonth(delta) {
+      CAL_MONTH += delta;
+      if (CAL_MONTH > 11) { CAL_MONTH = 0; CAL_YEAR++; }
+      if (CAL_MONTH < 0) { CAL_MONTH = 11; CAL_YEAR--; }
+      loadCalendar();
+    }
+
+    /* ── Section 5: Tasks ── */
+    const priorityClass = { high: 'badge-high', medium: 'badge-medium', low: 'badge-low' };
+
+    async function loadTasks() {
+      try {
+        const res = await fetch(`${API_URL}?action=getTasks&token=${TOKEN}`);
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          const arr = ((payload.data && payload.data.data) || []).filter(t => t.assigned_to === USER.employee_id);
+          if (arr.length === 0) {
+            document.getElementById('taskGrid').innerHTML = '<div class="glass-card empty-note">Aapko abhi koi task assign nahi hua.</div>';
+            return;
+          }
+          document.getElementById('taskGrid').innerHTML = arr.map(t => {
+            const dueDate = t.due_date ? new Date(t.due_date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+            return `
+              <div class="glass-card task-card">
+                <div class="task-top">
+                  <div class="task-title">${t.title}</div>
+                  <span class="badge ${priorityClass[t.priority] || 'badge-low'}">${(t.priority||'').toUpperCase()}</span>
+                </div>
+                <div class="task-due">📅 Due: ${dueDate}</div>
+                <div class="task-footer">
+                  <span class="badge ${t.status === 'completed' ? 'badge-completed' : 'badge-pending'}">${t.status}</span>
+                  ${t.status !== 'completed'
+                    ? `<button class="btn-done" onclick="completeMyTask('${t.task_id}')">Mark Complete ✓</button>`
+                    : '<span style="color:var(--text-dim); font-size:12px;">Done</span>'
+                  }
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (e) { showToast('Tasks load nahi ho paye.'); }
+    }
+
+    async function completeMyTask(taskId) {
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'updateTask', task_id: taskId, status: 'completed' })
+        });
+        const out = await res.json();
+        if (out.status === 'success') { showToast('Task completed! ✓'); loadTasks(); }
+        else showToast(out.message || 'Update error.');
+      } catch (e) { showToast('Network error.'); }
+    }
+
+    /* ── Section 6: Leave Request ── */
+    function calcLeaveDays(fromStr, toStr) {
+      if (!fromStr || !toStr) return 1;
+      const from = new Date(fromStr), to = new Date(toStr);
+      const diff = Math.round((to - from) / (1000*60*60*24)) + 1;
+      return diff > 0 ? diff : 1;
+    }
+
+    async function submitQuickLeave(e) {
+      e.preventDefault();
+      const btn = document.getElementById('qlSubmitBtn');
+      btn.disabled = true; btn.textContent = 'Submitting...';
+
+      const fromVal = document.getElementById('qlFrom').value;
+      const toVal = document.getElementById('qlTo').value;
+
+      const payload = {
+        token: TOKEN,
+        action: 'applyLeave',
+        emp_id: USER.employee_id,
+        leave_type: document.getElementById('qlType').value,
+        from_date: fromVal,
+        to_date: toVal,
+        days: calcLeaveDays(fromVal, toVal),
+        reason: document.getElementById('qlReason').value
+      };
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Leave request submit ho gayi!');
+          document.getElementById('quickLeaveForm').reset();
+          loadMyLeaves();
+        } else {
+          showToast(out.message || 'Submission mein error.');
+        }
+      } catch (err) {
+        showToast('Network error.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Submit Leave Request';
+      }
+    }
+
+    async function loadMyLeaves() {
+      try {
+        const res = await fetch(`${API_URL}?action=getLeaves&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          const mine = ((payload.data && payload.data.data) || []).filter(l => l.emp_id === USER.employee_id);
+          if (mine.length === 0) {
+            document.getElementById('myLeavesList').innerHTML = '<div class="empty-note">Koi leave history nahi hai.</div>';
+            return;
+          }
+          const badgeClass = { approved: 'badge-approved', rejected: 'badge-rejected', pending: 'badge-pending' };
+          document.getElementById('myLeavesList').innerHTML = mine.slice(0, 8).map(l => {
+            const from = l.from_date ? new Date(l.from_date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' }) : '—';
+            const to = l.to_date ? new Date(l.to_date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' }) : '—';
+            return `
+              <div class="leave-row-item">
+                <div class="leave-row-left">
+                  <div class="leave-type-text">${l.leave_type || '—'}</div>
+                  <div class="leave-dates-text">${from} – ${to} · ${l.days || '—'} day(s)</div>
+                </div>
+                <span class="badge ${badgeClass[l.status] || 'badge-pending'}">${l.status}</span>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (e) { showToast('Leaves load nahi hue.'); }
+    }
+
+    /* ── Section 7: Punch Status (read-only) ── */
+    async function loadTodayPunchStatus() {
+      const todayStr = formatDateYMD(new Date());
+      document.getElementById('punchTodayDate').textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', day:'2-digit', month:'short', year:'numeric' });
+
+      try {
+        const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&emp_id=${USER.employee_id}&date=${todayStr}&limit=5`);
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          const logs = (payload.data && payload.data.data) || [];
+          const mine = logs.find(l => l.emp_id === USER.employee_id && String(l.date).split('T')[0] === todayStr);
+          if (mine) {
+            document.getElementById('punchInTime').textContent = formatTime12Hour(mine.in_time);
+            document.getElementById('punchOutTime').textContent = formatTime12Hour(mine.out_time);
+            if (mine.in_time && mine.out_time) {
+              const mins = diffMinutes(mine.in_time, mine.out_time);
+              document.getElementById('punchHoursToday').textContent = `${Math.floor(mins/60)}h ${mins%60}m`;
+            } else if (mine.in_time) {
+              document.getElementById('punchHoursToday').textContent = 'In progress';
+            }
+          } else {
+            document.getElementById('punchInTime').textContent = '—';
+            document.getElementById('punchOutTime').textContent = '—';
+            document.getElementById('punchHoursToday').textContent = '—';
+          }
+        }
+      } catch (e) { /* keep dashes */ }
+    }
+  </script>
+</body>
+
+</html>

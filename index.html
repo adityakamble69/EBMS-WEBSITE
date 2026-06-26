@@ -572,7 +572,8 @@
           localStorage.setItem('ebms_user',  JSON.stringify(data.data.user));
           localStorage.setItem('ebms_role',  data.data.user.role);
           showAlert('Login successful! Redirecting...', 'success');
-          setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
+          const destination = (data.data.user.role === 'employee') ? 'employee_dashboard.html' : 'dashboard.html';
+          setTimeout(() => { window.location.href = destination; }, 700);
         } else {
           showAlert(data.message || 'Login fail hua. Dobara try karein.');
           btn.disabled = false;
