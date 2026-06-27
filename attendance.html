@@ -242,6 +242,7 @@
     }
 
     @media (max-width: 900px) {
+
       .input-date-picker,
       .dropdown-select,
       .input-text-box {
@@ -344,21 +345,55 @@
     }
 
     @keyframes scanAnim {
-      0%   { top: 8px; opacity: 1; }
-      45%  { top: calc(100% - 10px); opacity: 1; }
-      50%  { top: calc(100% - 10px); opacity: 0; }
-      55%  { top: 8px; opacity: 0; }
-      60%  { top: 8px; opacity: 1; }
-      100% { top: 8px; opacity: 1; }
+      0% {
+        top: 8px;
+        opacity: 1;
+      }
+
+      45% {
+        top: calc(100% - 10px);
+        opacity: 1;
+      }
+
+      50% {
+        top: calc(100% - 10px);
+        opacity: 0;
+      }
+
+      55% {
+        top: 8px;
+        opacity: 0;
+      }
+
+      60% {
+        top: 8px;
+        opacity: 1;
+      }
+
+      100% {
+        top: 8px;
+        opacity: 1;
+      }
     }
 
     /* Punch success flash */
     @keyframes punchFlash {
-      0%   { box-shadow: 0 0 0 0 rgba(52,211,153,0.5); }
-      70%  { box-shadow: 0 0 0 20px rgba(52,211,153,0); }
-      100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+      0% {
+        box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5);
+      }
+
+      70% {
+        box-shadow: 0 0 0 20px rgba(52, 211, 153, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+      }
     }
-    .punch-success-flash { animation: punchFlash 0.6s ease-out; }
+
+    .punch-success-flash {
+      animation: punchFlash 0.6s ease-out;
+    }
   </style>
 </head>
 
@@ -375,8 +410,84 @@
         <h1>✅ Attendance Console</h1>
         <p>Real-time login/logout track records database ledger pipeline sync</p>
       </div>
+      <div style="text-align:right; line-height:1.4;">
+        <div id="livePortalTimeClock"
+          style="font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; color:var(--accent-glow);">
+          --:--</div>
+        <div id="livePortalDateDisplay" style="font-size:12px; color:var(--text-muted);">--</div>
+      </div>
     </div>
 
+    <!-- Today Summary Cards -->
+    <div id="todaySummaryRow" style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px;">
+      <div
+        style="background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--radius); padding:18px 20px; backdrop-filter:blur(var(--glass-blur));">
+        <div
+          style="font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+          Total Present Today</div>
+        <div id="summaryPresent"
+          style="font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; color:#34D399;">—</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:3px;" id="summaryDate">—</div>
+      </div>
+      <div
+        style="background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--radius); padding:18px 20px; backdrop-filter:blur(var(--glass-blur));">
+        <div
+          style="font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+          Absent Today</div>
+        <div id="summaryAbsent"
+          style="font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; color:#F87171;">—</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Not punched in</div>
+      </div>
+      <div
+        style="background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--radius); padding:18px 20px; backdrop-filter:blur(var(--glass-blur));">
+        <div
+          style="font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+          Late Arrivals</div>
+        <div id="summaryLate"
+          style="font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; color:#FBBF24;">—</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">After 9:00 AM</div>
+      </div>
+      <div
+        style="background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--radius); padding:18px 20px; backdrop-filter:blur(var(--glass-blur));">
+        <div
+          style="font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+          Punched Out</div>
+        <div id="summaryOut"
+          style="font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; color:var(--accent-glow);">—
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Completed today</div>
+      </div>
+    </div>
+
+    <!-- Today's Punch-In List -->
+    <div
+      style="background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--radius); padding:18px 20px; margin-bottom:20px; backdrop-filter:blur(var(--glass-blur));">
+      <div
+        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; color:var(--accent-glow);">
+          📋 Aaj ke Punch-In Records</div>
+        <button onclick="loadTodaySummary()"
+          style="background:var(--glass-strong); border:1px solid var(--glass-border); color:#fff; border-radius:8px; padding:6px 14px; font-size:12px; cursor:pointer;">↻
+          Refresh</button>
+      </div>
+      <div id="todayPunchList" style="display:flex; flex-direction:column; gap:8px;">
+        <div style="text-align:center; color:var(--text-dim); font-size:13px; padding:20px;">Load ho raha hai...</div>
+      </div>
+    </div>
+
+    <!-- Filter Deck -->
+    <div class="filter-deck">
+      <input type="text" id="filterEmpId" class="input-text-box" placeholder="Filter by Employee ID"
+        oninput="triggerLogSearch()" style="max-width:220px;" />
+      <input type="date" id="filterDate" class="input-date-picker" onchange="triggerLogSearch()" />
+      <select id="filterBranch" class="dropdown-select" onchange="triggerLogSearch()">
+        <option value="">All Branches</option>
+        <option value="BR001">BR001</option>
+        <option value="BR002">BR002</option>
+      </select>
+      <button onclick="CURRENT_PAGE_TRACKER=1; loadAttendanceMasterLogs();"
+        style="background:var(--glass-strong); border:1px solid var(--glass-border); color:#fff; border-radius:var(--radius-sm); padding:9px 16px; font-size:13px; cursor:pointer;">Refresh</button>
+    </div>
 
     <div class="table-container">
       <table class="data-table">
@@ -432,25 +543,37 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       initializeRuntimeClock();
+      // Auto-set today's date in filter
+      const todayStr = new Date().toISOString().split('T')[0];
+      const dateEl = document.getElementById('filterDate');
+      if (dateEl) dateEl.value = todayStr;
+      loadTodaySummary();
       loadAttendanceMasterLogs();
-      // Prepare off-screen canvas for QR decoding
       qrCanvas = document.createElement('canvas');
       qrCanvasCtx = qrCanvas.getContext('2d');
     });
 
     function initializeRuntimeClock() {
-      setInterval(() => {
+      function tick() {
         const d = new Date();
-        document.getElementById('livePortalTimeClock').textContent = d.toLocaleTimeString('en-US', { hour12: true });
-        document.getElementById('livePortalDateDisplay').textContent = d.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      }, 1000);
+        const t = d.toLocaleTimeString('en-US', { hour12: true });
+        const dt = d.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const el1 = document.getElementById('livePortalTimeClock');
+        const el2 = document.getElementById('livePortalDateDisplay');
+        const el3 = document.getElementById('punchClockDisplay');
+        if (el1) el1.textContent = t;
+        if (el2) el2.textContent = dt;
+        if (el3) el3.textContent = t;
+      }
+      tick();
+      setInterval(tick, 1000);
     }
 
     // ── QR Scanner ──────────────────────────────────────────────
     async function startQrScanner() {
       const scanBox = document.getElementById('qrScannerBox');
       const startBtn = document.getElementById('startScanBtn');
-      const video    = document.getElementById('qrVideo');
+      const video = document.getElementById('qrVideo');
 
       try {
         qrVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -469,7 +592,7 @@
 
     function stopQrScanner() {
       if (qrVideoStream) { qrVideoStream.getTracks().forEach(t => t.stop()); qrVideoStream = null; }
-      if (qrAnimFrame)   { cancelAnimationFrame(qrAnimFrame); qrAnimFrame = null; }
+      if (qrAnimFrame) { cancelAnimationFrame(qrAnimFrame); qrAnimFrame = null; }
       document.getElementById('qrScannerBox').style.display = 'none';
       document.getElementById('startScanBtn').style.display = 'flex';
       document.getElementById('punchButtonActionLabel').textContent = 'SCAN QR';
@@ -482,11 +605,11 @@
         return;
       }
 
-      qrCanvas.width  = video.videoWidth;
+      qrCanvas.width = video.videoWidth;
       qrCanvas.height = video.videoHeight;
       qrCanvasCtx.drawImage(video, 0, 0, qrCanvas.width, qrCanvas.height);
       const imageData = qrCanvasCtx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
-      const decoded   = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+      const decoded = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
 
       if (decoded && decoded.data && !scanCooldown) {
         const qrData = decoded.data.trim();
@@ -515,10 +638,23 @@
     }
 
     async function processPunchFromQR(empId) {
+      // Generate checksum same as app.js generateQrChecksum
+      function _qrChecksum(id) {
+        const str = String(id) + '::CDLN-EBMS-2025-SECURE';
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+          hash = ((hash << 5) - hash) + str.charCodeAt(i);
+          hash |= 0;
+        }
+        return Math.abs(hash).toString(16).toUpperCase().padStart(8, '0').slice(0, 8);
+      }
+
       const postPayload = {
-        token:   AUTHENTICATED_SESSION_TOKEN,
-        action:  'markAttendance',
-        emp_id:  empId
+        token: AUTHENTICATED_SESSION_TOKEN,
+        action: 'markAttendance',
+        emp_id: empId,
+        qr_checksum: _qrChecksum(empId),
+        method: 'QR-Scan'
       };
 
       try {
@@ -544,6 +680,98 @@
       }
     }
 
+    // ── Today Summary ───────────────────────────────────────────
+    async function loadTodaySummary() {
+      const todayStr = new Date().toISOString().split('T')[0];
+      document.getElementById('summaryDate').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+
+      try {
+        const res = await fetch(`${API_URL}?action=getAttendance&token=${AUTHENTICATED_SESSION_TOKEN}&date=${todayStr}&limit=200`);
+        const data = await res.json();
+        if (data.status !== 'success') return;
+
+        const logs = (data.data && data.data.data) || [];
+
+        const present = logs.filter(l => l.status === 'present' || l.in_time);
+        const late = logs.filter(l => parseInt(l.late_minutes) > 0);
+        const punchedOut = logs.filter(l => l.out_time && String(l.out_time).trim() !== '');
+
+        document.getElementById('summaryPresent').textContent = present.length;
+        document.getElementById('summaryLate').textContent = late.length;
+        document.getElementById('summaryOut').textContent = punchedOut.length;
+
+        // Absent count needs total employees - but we show what we have
+        // Show dash for absent since we don't fetch total employees here
+        document.getElementById('summaryAbsent').textContent = '—';
+
+        // Render punch list
+        const listEl = document.getElementById('todayPunchList');
+        if (logs.length === 0) {
+          listEl.innerHTML = '<div style="text-align:center; color:var(--text-dim); font-size:13px; padding:20px;">Aaj koi punch record nahi mila.</div>';
+          return;
+        }
+
+        // Sort by in_time latest first
+        const sorted = [...logs].sort((a, b) => {
+          const ta = String(a.in_time || '').replace(':', '');
+          const tb = String(b.in_time || '').replace(':', '');
+          return tb.localeCompare(ta);
+        });
+
+        listEl.innerHTML = sorted.map(l => {
+          const inT = l.in_time ? fmt12Hr(l.in_time) : '—';
+          const outT = l.out_time && String(l.out_time).trim() ? fmt12Hr(l.out_time) : 'Still In';
+          const late = parseInt(l.late_minutes) || 0;
+          const lateStr = late > 0 ? `<span style="color:#FBBF24; font-size:11px; margin-left:8px;">+${late}m late</span>` : '<span style="color:#34D399; font-size:11px; margin-left:8px;">On time</span>';
+          const outColor = outT === 'Still In' ? '#A1A1AA' : '#FCA5A5';
+          return `
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(255,255,255,0.025); border-radius:10px; border:1px solid rgba(255,255,255,0.05); flex-wrap:wrap; gap:8px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:36px; height:36px; border-radius:50%; background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.2); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#6EE7B7; flex-shrink:0;">
+                  ${(l.emp_id || '?').slice(-2)}
+                </div>
+                <div>
+                  <div style="font-size:13.5px; font-weight:600; color:var(--text-primary);">${l.emp_id || '—'} ${lateStr}</div>
+                  <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">${l.branch_id || ''} · ${l.method || 'manual'}</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:18px; align-items:center;">
+                <div style="text-align:center;">
+                  <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.4px;">IN</div>
+                  <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; color:#6EE7B7;">${inT}</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.4px;">OUT</div>
+                  <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; color:${outColor};">${outT}</div>
+                </div>
+              </div>
+            </div>`;
+        }).join('');
+
+      } catch (err) {
+        document.getElementById('todayPunchList').innerHTML = '<div style="text-align:center; color:#F87171; font-size:13px; padding:20px;">Load nahi ho saka. Network check karein.</div>';
+      }
+    }
+
+    function fmt12Hr(val) {
+      if (!val && val !== 0) return '—';
+      const s = String(val).trim();
+      let h = 0, m = 0;
+      if (s.includes('T')) {
+        const p = s.split('T')[1].split(':'); h = +p[0]; m = +p[1];
+      } else if (s.includes(':')) {
+        const p = s.split(':'); h = +p[0]; m = +p[1];
+      } else if (!isNaN(parseFloat(s))) {
+        // Google Sheets time cell = decimal fraction of day (e.g. 11:38 → 0.4847)
+        const totalMins = Math.round(parseFloat(s) * 24 * 60);
+        h = Math.floor(totalMins / 60) % 24;
+        m = totalMins % 60;
+      } else return s;
+      const ap = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ' ' + ap;
+    }
+
     // ── Attendance Logs ──────────────────────────────────────────
     function triggerLogSearch() {
       clearTimeout(DEBOUNCE_TIMER_HOOK);
@@ -551,13 +779,16 @@
     }
 
     async function loadAttendanceMasterLogs() {
-      const empVal    = encodeURIComponent(document.getElementById('filterEmpId').value.trim());
-      const dateVal   = document.getElementById('filterDate').value;
-      const branchVal = document.getElementById('filterBranch').value;
-      const ENDPOINT  = `${API_URL}?action=getAttendance&token=${AUTHENTICATED_SESSION_TOKEN}&page=${CURRENT_PAGE_TRACKER}&limit=12&emp_id=${empVal}&date=${dateVal}&branch_id=${branchVal}`;
+      const empEl = document.getElementById('filterEmpId');
+      const dateEl = document.getElementById('filterDate');
+      const branchEl = document.getElementById('filterBranch');
+      const empVal = encodeURIComponent(empEl ? empEl.value.trim() : '');
+      const dateVal = dateEl ? dateEl.value : '';
+      const branchVal = branchEl ? branchEl.value : '';
+      const ENDPOINT = `${API_URL}?action=getAttendance&token=${AUTHENTICATED_SESSION_TOKEN}&page=${CURRENT_PAGE_TRACKER}&limit=12&emp_id=${empVal}&date=${dateVal}&branch_id=${branchVal}`;
 
       try {
-        const res  = await fetch(ENDPOINT);
+        const res = await fetch(ENDPOINT);
         const data = await res.json();
         if (data.status === 'success') {
           renderAttendanceRowsMatrix(data.data.data);
@@ -576,7 +807,7 @@
       }
       container.innerHTML = logsArray.map(log => {
         const formattedDate = log.date ? new Date(log.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-        const statusClass   = log.status === 'present' ? 'badge-present' : 'badge-absent';
+        const statusClass = log.status === 'present' ? 'badge-present' : 'badge-absent';
         return `
         <tr>
           <td><code style="color:var(--text-dim);">${log.att_id}</code></td>
@@ -594,7 +825,7 @@
 
     function updatePaginationNodeUI(ctx) {
       CURRENT_PAGE_TRACKER = ctx.page;
-      TOTAL_PAGES_LIMIT    = ctx.totalPages;
+      TOTAL_PAGES_LIMIT = ctx.totalPages;
       document.getElementById('paginationInfoDisplay').textContent = `Showing page ${CURRENT_PAGE_TRACKER} of ${TOTAL_PAGES_LIMIT || 1} (${ctx.total} logs tracked)`;
       document.getElementById('btnPrevPage').disabled = CURRENT_PAGE_TRACKER <= 1;
       document.getElementById('btnNextPage').disabled = CURRENT_PAGE_TRACKER >= TOTAL_PAGES_LIMIT;

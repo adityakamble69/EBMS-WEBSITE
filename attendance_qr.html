@@ -1,33 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Attendance Punch — Codeline.AI</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
-      --bg:           #07070A;
-      --surface:      rgba(255,255,255,0.038);
-      --surface-hi:   rgba(255,255,255,0.072);
-      --border:       rgba(255,255,255,0.08);
-      --border-hi:    rgba(255,255,255,0.14);
-      --text:         #F0F0F5;
-      --muted:        #8A8A97;
-      --dim:          #44444F;
-      --accent:       #6C8EFF;
-      --accent-dim:   rgba(108,142,255,0.14);
-      --success:      #34D399;
-      --success-dim:  rgba(52,211,153,0.13);
-      --warning:      #FBBF24;
-      --warning-dim:  rgba(251,191,36,0.12);
-      --danger:       #F87171;
-      --danger-dim:   rgba(248,113,113,0.12);
-      --r:            18px;
-      --r-sm:         10px;
+      --bg: #07070A;
+      --surface: rgba(255, 255, 255, 0.038);
+      --surface-hi: rgba(255, 255, 255, 0.072);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hi: rgba(255, 255, 255, 0.14);
+      --text: #F0F0F5;
+      --muted: #8A8A97;
+      --dim: #44444F;
+      --accent: #6C8EFF;
+      --accent-dim: rgba(108, 142, 255, 0.14);
+      --success: #34D399;
+      --success-dim: rgba(52, 211, 153, 0.13);
+      --warning: #FBBF24;
+      --warning-dim: rgba(251, 191, 36, 0.12);
+      --danger: #F87171;
+      --danger-dim: rgba(248, 113, 113, 0.12);
+      --r: 18px;
+      --r-sm: 10px;
     }
 
     body {
@@ -35,10 +44,10 @@
       background: var(--bg);
       /* Subtle grid overlay */
       background-image:
-        linear-gradient(rgba(108,142,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(108,142,255,0.025) 1px, transparent 1px),
-        radial-gradient(ellipse at 30% 0%,   rgba(108,142,255,0.10) 0%, transparent 60%),
-        radial-gradient(ellipse at 75% 100%, rgba(52,211,153,0.06)  0%, transparent 55%);
+        linear-gradient(rgba(108, 142, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108, 142, 255, 0.025) 1px, transparent 1px),
+        radial-gradient(ellipse at 30% 0%, rgba(108, 142, 255, 0.10) 0%, transparent 60%),
+        radial-gradient(ellipse at 75% 100%, rgba(52, 211, 153, 0.06) 0%, transparent 55%);
       background-size: 48px 48px, 48px 48px, 100% 100%, 100% 100%;
       background-attachment: fixed;
       color: var(--text);
@@ -54,15 +63,15 @@
     .card {
       width: 100%;
       max-width: 400px;
-      background: rgba(12,12,16,0.82);
+      background: rgba(12, 12, 16, 0.82);
       border: 1px solid var(--border-hi);
       border-radius: 24px;
       backdrop-filter: blur(32px) saturate(160%);
       -webkit-backdrop-filter: blur(32px) saturate(160%);
       box-shadow:
-        0 32px 80px rgba(0,0,0,0.65),
-        inset 0 1px 0 rgba(255,255,255,0.07),
-        inset 0 -1px 0 rgba(0,0,0,0.3);
+        0 32px 80px rgba(0, 0, 0, 0.65),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
       overflow: hidden;
     }
 
@@ -73,22 +82,35 @@
       display: flex;
       align-items: center;
       gap: 13px;
-      background: rgba(255,255,255,0.02);
+      background: rgba(255, 255, 255, 0.02);
     }
+
     .hdr-icon {
-      width: 38px; height: 38px;
-      background: linear-gradient(135deg, rgba(108,142,255,0.22), rgba(108,142,255,0.08));
-      border: 1px solid rgba(108,142,255,0.22);
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, rgba(108, 142, 255, 0.22), rgba(108, 142, 255, 0.08));
+      border: 1px solid rgba(108, 142, 255, 0.22);
       border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 17px; flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
     }
+
     .hdr-title {
       font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700; font-size: 15.5px;
-      color: var(--text); line-height: 1;
+      font-weight: 700;
+      font-size: 15.5px;
+      color: var(--text);
+      line-height: 1;
     }
-    .hdr-sub { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+
+    .hdr-sub {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
 
     /* Live clock badge in header */
     .hdr-clock {
@@ -96,72 +118,168 @@
       text-align: right;
       font-family: 'Space Grotesk', sans-serif;
     }
-    .hdr-clock .t { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; }
-    .hdr-clock .d { font-size: 10px; color: var(--dim); margin-top: 1px; }
+
+    .hdr-clock .t {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.5px;
+    }
+
+    .hdr-clock .d {
+      font-size: 10px;
+      color: var(--dim);
+      margin-top: 1px;
+    }
 
     /* ── Body ───────────────────────────────── */
-    .body { padding: 26px 24px 28px; }
+    .body {
+      padding: 26px 24px 28px;
+    }
 
     /* ── Steps ──────────────────────────────── */
-    .step { display: none; }
-    .step.active { display: block; }
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
 
     /* ── Progress dots ─────────────────────── */
     .progress-dots {
-      display: flex; align-items: center; justify-content: center;
-      gap: 6px; margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 28px;
     }
+
     .dot-step {
-      width: 6px; height: 6px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: var(--dim);
       transition: all 0.3s ease;
     }
-    .dot-step.done  { background: var(--success); transform: scale(1.1); }
-    .dot-step.cur   { background: var(--accent); width: 20px; border-radius: 3px; }
+
+    .dot-step.done {
+      background: var(--success);
+      transform: scale(1.1);
+    }
+
+    .dot-step.cur {
+      background: var(--accent);
+      width: 20px;
+      border-radius: 3px;
+    }
 
     /* ── Icon ring ──────────────────────────── */
     .icon-ring {
-      width: 72px; height: 72px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
-      display: inline-flex; align-items: center; justify-content: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       font-size: 28px;
       margin: 0 auto 18px;
     }
-    .ring-blue   { background: var(--accent-dim); border: 1.5px solid rgba(108,142,255,0.28); animation: pulse-b 2.2s ease-in-out infinite; }
-    .ring-green  { background: var(--success-dim); border: 1.5px solid rgba(52,211,153,0.28); }
-    .ring-yellow { background: var(--warning-dim); border: 1.5px solid rgba(251,191,36,0.28); }
+
+    .ring-blue {
+      background: var(--accent-dim);
+      border: 1.5px solid rgba(108, 142, 255, 0.28);
+      animation: pulse-b 2.2s ease-in-out infinite;
+    }
+
+    .ring-green {
+      background: var(--success-dim);
+      border: 1.5px solid rgba(52, 211, 153, 0.28);
+    }
+
+    .ring-yellow {
+      background: var(--warning-dim);
+      border: 1.5px solid rgba(251, 191, 36, 0.28);
+    }
 
     @keyframes pulse-b {
-      0%,100% { box-shadow: 0 0 0 0   rgba(108,142,255,0.18); }
-      50%      { box-shadow: 0 0 0 12px rgba(108,142,255,0); }
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(108, 142, 255, 0.18);
+      }
+
+      50% {
+        box-shadow: 0 0 0 12px rgba(108, 142, 255, 0);
+      }
     }
 
-    .step-center { text-align: center; }
+    .step-center {
+      text-align: center;
+    }
+
     .step-title {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 18px; font-weight: 700;
+      font-size: 18px;
+      font-weight: 700;
       margin-bottom: 8px;
     }
+
     .step-sub {
-      font-size: 13px; color: var(--muted);
-      line-height: 1.65; margin-bottom: 22px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 22px;
     }
 
     /* ── Status pill ────────────────────────── */
     .pill {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 6px 14px; border-radius: 99px;
-      font-size: 12px; font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
       margin: 0 auto 20px;
     }
-    .pill-waiting { background: var(--warning-dim); color: var(--warning); border: 1px solid rgba(251,191,36,0.2); }
-    .pill-ok      { background: var(--success-dim); color: var(--success); border: 1px solid rgba(52,211,153,0.2); }
-    .pill-denied  { background: var(--danger-dim);  color: var(--danger);  border: 1px solid rgba(248,113,113,0.2); }
-    .pill .pdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .pdot-y { background: var(--warning); }
-    .pdot-g { background: var(--success); }
-    .pdot-r { background: var(--danger); }
+
+    .pill-waiting {
+      background: var(--warning-dim);
+      color: var(--warning);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .pill-ok {
+      background: var(--success-dim);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+    }
+
+    .pill-denied {
+      background: var(--danger-dim);
+      color: var(--danger);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+    }
+
+    .pill .pdot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .pdot-y {
+      background: var(--warning);
+    }
+
+    .pdot-g {
+      background: var(--success);
+    }
+
+    .pdot-r {
+      background: var(--danger);
+    }
 
     /* ── Info box ───────────────────────────── */
     .info-box {
@@ -169,545 +287,734 @@
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
       padding: 12px 14px;
-      font-size: 12.5px; color: var(--muted);
-      line-height: 1.6; margin-bottom: 18px;
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 18px;
     }
-    .info-box strong { color: var(--text); }
+
+    .info-box strong {
+      color: var(--text);
+    }
 
     /* ── Error banner ───────────────────────── */
     .err {
       background: var(--danger-dim);
-      border: 1px solid rgba(248,113,113,0.22);
+      border: 1px solid rgba(248, 113, 113, 0.22);
       border-radius: var(--r-sm);
       padding: 10px 13px;
-      font-size: 12.5px; color: var(--danger);
-      margin-bottom: 14px; display: none; line-height: 1.5;
+      font-size: 12.5px;
+      color: var(--danger);
+      margin-bottom: 14px;
+      display: none;
+      line-height: 1.5;
     }
 
     /* ── Form ───────────────────────────────── */
-    .fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 13px; }
-    .fg label {
-      font-size: 10.5px; font-weight: 700;
-      color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;
+    .fg {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 13px;
     }
+
+    .fg label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     .fg input {
-      background: rgba(255,255,255,0.042);
+      background: rgba(255, 255, 255, 0.042);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
       padding: 11px 13px;
-      color: var(--text); font-size: 14px;
+      color: var(--text);
+      font-size: 14px;
       font-family: 'Inter', sans-serif;
-      outline: none; width: 100%;
+      outline: none;
+      width: 100%;
       transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
     }
-    .fg input::placeholder { color: var(--dim); }
+
+    .fg input::placeholder {
+      color: var(--dim);
+    }
+
     .fg input:focus {
-      border-color: rgba(108,142,255,0.42);
-      background: rgba(108,142,255,0.04);
-      box-shadow: 0 0 0 3px rgba(108,142,255,0.09);
+      border-color: rgba(108, 142, 255, 0.42);
+      background: rgba(108, 142, 255, 0.04);
+      box-shadow: 0 0 0 3px rgba(108, 142, 255, 0.09);
     }
 
     /* ── Buttons ────────────────────────────── */
     .btn {
-      width: 100%; padding: 13px;
+      width: 100%;
+      padding: 13px;
       border-radius: var(--r-sm);
-      font-size: 14px; font-weight: 700;
+      font-size: 14px;
+      font-weight: 700;
       font-family: 'Space Grotesk', sans-serif;
-      cursor: pointer; border: none;
-      display: flex; align-items: center; justify-content: center;
-      gap: 9px; letter-spacing: 0.2px;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      letter-spacing: 0.2px;
       transition: all 0.2s ease;
     }
-    .btn + .btn { margin-top: 10px; }
+
+    .btn+.btn {
+      margin-top: 10px;
+    }
+
     .btn-blue {
       background: linear-gradient(135deg, #3A5EE8, #6C8EFF);
       color: #fff;
-      box-shadow: 0 5px 18px rgba(108,142,255,0.28);
+      box-shadow: 0 5px 18px rgba(108, 142, 255, 0.28);
     }
-    .btn-blue:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(108,142,255,0.40); }
+
+    .btn-blue:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 26px rgba(108, 142, 255, 0.40);
+    }
+
     .btn-in {
       background: linear-gradient(135deg, #059669, #34D399);
       color: #fff;
-      box-shadow: 0 5px 18px rgba(52,211,153,0.28);
+      box-shadow: 0 5px 18px rgba(52, 211, 153, 0.28);
     }
-    .btn-in:hover  { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(52,211,153,0.42); }
+
+    .btn-in:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 26px rgba(52, 211, 153, 0.42);
+    }
+
     .btn-out {
       background: linear-gradient(135deg, #92400E, #FBBF24);
       color: #111;
-      box-shadow: 0 5px 18px rgba(251,191,36,0.22);
+      box-shadow: 0 5px 18px rgba(251, 191, 36, 0.22);
     }
-    .btn-out:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(251,191,36,0.35); }
-    .btn:active    { transform: translateY(0) !important; }
-    .btn:disabled  { opacity: 0.48; cursor: not-allowed; transform: none !important; }
+
+    .btn-out:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 26px rgba(251, 191, 36, 0.35);
+    }
+
+    .btn:active {
+      transform: translateY(0) !important;
+    }
+
+    .btn:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+      transform: none !important;
+    }
 
     /* ── Time chips row ─────────────────────── */
-    .time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 20px; }
+    .time-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-bottom: 20px;
+    }
+
     .tc {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
-      padding: 12px 13px; text-align: center;
+      padding: 12px 13px;
+      text-align: center;
     }
-    .tc-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
-    .tc-val   { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; }
-    .tc-in  .tc-val { color: var(--success); }
-    .tc-out .tc-val { color: var(--warning); }
+
+    .tc-label {
+      font-size: 10px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+
+    .tc-val {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .tc-in .tc-val {
+      color: var(--success);
+    }
+
+    .tc-out .tc-val {
+      color: var(--warning);
+    }
 
     /* ── Emp meta line ──────────────────────── */
     .emp-meta {
-      text-align: center; margin-bottom: 18px;
-      font-size: 13px; color: var(--muted);
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 13px;
+      color: var(--muted);
     }
-    .emp-meta strong { color: var(--text); display: block; font-size: 15px; margin-bottom: 3px; }
+
+    .emp-meta strong {
+      color: var(--text);
+      display: block;
+      font-size: 15px;
+      margin-bottom: 3px;
+    }
 
     /* ── Success ────────────────────────────── */
     .success-detail {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
-      padding: 14px 16px; text-align: center;
+      padding: 14px 16px;
+      text-align: center;
       margin-bottom: 18px;
     }
-    .success-detail strong { color: var(--text); display: block; font-size: 14px; margin-bottom: 4px; }
-    .success-detail span   { color: var(--dim); font-size: 12px; }
+
+    .success-detail strong {
+      color: var(--text);
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .success-detail span {
+      color: var(--dim);
+      font-size: 12px;
+    }
 
     /* ── Spinner ────────────────────────────── */
     .spin {
-      width: 15px; height: 15px;
-      border: 2.5px solid rgba(255,255,255,0.22);
+      width: 15px;
+      height: 15px;
+      border: 2.5px solid rgba(255, 255, 255, 0.22);
       border-top-color: #fff;
       border-radius: 50%;
       animation: rot 0.65s linear infinite;
-      display: none; flex-shrink: 0;
+      display: none;
+      flex-shrink: 0;
     }
-    .spin.dark { border-color: rgba(0,0,0,0.15); border-top-color: #111; }
-    @keyframes rot { to { transform: rotate(360deg); } }
+
+    .spin.dark {
+      border-color: rgba(0, 0, 0, 0.15);
+      border-top-color: #111;
+    }
+
+    @keyframes rot {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* ── Divider ─────────────────────────────── */
-    .divider { height: 1px; background: linear-gradient(90deg,transparent,var(--border),transparent); margin: 20px 0; }
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 20px 0;
+    }
 
     /* ── No-QR warning ──────────────────────── */
     .no-qr-notice {
       background: var(--warning-dim);
-      border: 1px solid rgba(251,191,36,0.22);
+      border: 1px solid rgba(251, 191, 36, 0.22);
       border-radius: var(--r-sm);
       padding: 10px 13px;
-      font-size: 12.5px; color: var(--warning);
-      margin-bottom: 16px; text-align: center;
+      font-size: 12.5px;
+      color: var(--warning);
+      margin-bottom: 16px;
+      text-align: center;
     }
   </style>
 </head>
+
 <body>
 
-<div class="card">
+  <div class="card">
 
-  <!-- Header with live clock -->
-  <div class="hdr">
-    <div class="hdr-icon">⚡</div>
-    <div>
-      <div class="hdr-title">Codeline<span style="color:rgba(108,142,255,0.8)">.AI</span></div>
-      <div class="hdr-sub">Employee Attendance Portal</div>
+    <!-- Header with live clock -->
+    <div class="hdr">
+      <div class="hdr-icon">⚡</div>
+      <div>
+        <div class="hdr-title">Codeline<span style="color:rgba(108,142,255,0.8)">.AI</span></div>
+        <div class="hdr-sub">Employee Attendance Portal</div>
+      </div>
+      <div class="hdr-clock">
+        <div class="t" id="hdrClock">--:--</div>
+        <div class="d" id="hdrDate">--</div>
+      </div>
     </div>
-    <div class="hdr-clock">
-      <div class="t" id="hdrClock">--:--</div>
-      <div class="d" id="hdrDate">--</div>
-    </div>
+
+    <div class="body">
+
+      <!-- Progress dots (3 steps) -->
+      <div class="progress-dots">
+        <div class="dot-step cur" id="dp1"></div>
+        <div class="dot-step" id="dp2"></div>
+        <div class="dot-step" id="dp3"></div>
+      </div>
+
+      <!-- ══ STEP 1 : Location ══════════════════ -->
+      <div class="step active" id="s1">
+        <div class="step-center">
+          <div style="display:flex;justify-content:center;">
+            <div class="icon-ring ring-blue">📍</div>
+          </div>
+          <div class="step-title">Location Verify</div>
+          <div class="step-sub">Punch karne ke liye aapko office ke andar hona zaroori hai. Pehle location allow karein.
+          </div>
+          <div class="pill pill-waiting" id="locPill">
+            <span class="pdot pdot-y"></span> Location check ho rahi hai…
+          </div>
+        </div>
+
+        <div class="info-box">
+          <strong>📌 Office Boundary:</strong><br />
+          GPS se verify hoga ki aap <strong id="radiusLabel">150m</strong> ke radius mein hain ya nahi. Bahar hain toh
+          punch block rahega.
+        </div>
+
+        <div class="err" id="errLoc"></div>
+
+        <button class="btn btn-blue" id="btnLoc" onclick="requestLocation()">
+          📍 &nbsp;Location Allow Karein
+        </button>
+      </div>
+
+      <!-- ══ STEP 2 : Employee Details ══════════ -->
+      <div class="step" id="s2">
+
+        <div id="noQrNotice" class="no-qr-notice" style="display:none;">
+          ⚠️ QR code se nahi aaye — Employee ID manually bharen
+        </div>
+
+        <!-- Location ok pill -->
+        <div style="display:flex;justify-content:center;margin-bottom:18px;">
+          <div class="pill pill-ok">
+            <span class="pdot pdot-g"></span>
+            <span id="distLabel">Location Verified ✓</span>
+          </div>
+        </div>
+
+        <div class="err" id="errDet"></div>
+
+        <!-- Only show emp_id field if NOT from QR -->
+        <div class="fg" id="fgEmpId" style="display:none;">
+          <label>Employee ID *</label>
+          <input type="text" id="manualEmpId" placeholder="e.g. EMP004" autocomplete="off" />
+        </div>
+
+        <div class="fg">
+          <label>Full Name *</label>
+          <input type="text" id="empName" placeholder="Apna poora naam likhein" autocomplete="name" />
+        </div>
+        <div class="fg">
+          <label>Phone Number *</label>
+          <input type="tel" id="empPhone" placeholder="10-digit mobile number" autocomplete="tel" maxlength="13" />
+        </div>
+        <div class="fg">
+          <label>Email Address <span style="color:var(--dim);font-size:10px;">(optional)</span></label>
+          <input type="email" id="empEmail" placeholder="yourname@company.com" autocomplete="email" />
+        </div>
+
+        <button class="btn btn-blue" onclick="goToPunch()">Continue →</button>
+      </div>
+
+      <!-- ══ STEP 3 : Punch ══════════════════════ -->
+      <div class="step" id="s3">
+
+        <!-- Employee banner -->
+        <div class="emp-meta">
+          <strong id="showName">—</strong>
+          <span id="showPhone" style="font-size:11.5px; color:var(--dim);">—</span>
+        </div>
+
+        <!-- Today's timings -->
+        <div class="time-row">
+          <div class="tc tc-in">
+            <div class="tc-label">⬆ Punch IN</div>
+            <div class="tc-val" id="inDisp">—</div>
+          </div>
+          <div class="tc tc-out">
+            <div class="tc-label">⬇ Punch OUT</div>
+            <div class="tc-val" id="outDisp">—</div>
+          </div>
+        </div>
+
+        <div class="err" id="errPunch"></div>
+
+        <button class="btn btn-in" id="btnIn" onclick="doPunch('in')">
+          <span class="spin" id="spIn"></span> ✅ &nbsp;Punch IN
+        </button>
+        <button class="btn btn-out" id="btnOut" onclick="doPunch('out')" style="display:none;">
+          <span class="spin dark" id="spOut"></span> 🕐 &nbsp;Punch OUT
+        </button>
+      </div>
+
+      <!-- ══ STEP 4 : Success ════════════════════ -->
+      <div class="step" id="s4">
+        <div class="step-center">
+          <div style="display:flex;justify-content:center;">
+            <div class="icon-ring" id="successRing"
+              style="background:var(--success-dim);border:1.5px solid rgba(52,211,153,0.3);">✅</div>
+          </div>
+          <div class="step-title" id="successTitle">Punch Successful!</div>
+          <div class="step-sub" id="successMsg">Attendance record ho gayi hai.</div>
+        </div>
+
+        <div class="time-row">
+          <div class="tc tc-in">
+            <div class="tc-label">⬆ IN Time</div>
+            <div class="tc-val" id="finalIn">—</div>
+          </div>
+          <div class="tc tc-out">
+            <div class="tc-label">⬇ OUT Time</div>
+            <div class="tc-val" id="finalOut">—</div>
+          </div>
+        </div>
+
+        <div class="success-detail">
+          <strong id="finalName">—</strong>
+          <span id="finalDate">—</span>
+        </div>
+
+        <!-- Reset button so another employee can punch from same device -->
+        <button class="btn btn-blue" onclick="resetFlow()">↩ &nbsp;Done / Next Employee</button>
+      </div>
+
+    </div><!-- /body -->
   </div>
 
-  <div class="body">
+  <script>
+    // ═══════════════════════════════════════════════════
+    //  CONFIG — update these before deploying
+    // ═══════════════════════════════════════════════════
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwzYZmxZ3AQCBdXRDgg5p442mW-THoHvR4YI2eA1G2ERICPS052J1oM5CXPYc83w0wnvw/exec';
+    const OFFICE_LAT = 21.115480;    // ← apni office ki latitude
+    const OFFICE_LNG = 79.011733;    // ← apni office ki longitude
+    const OFFICE_RADIUS = 150;       // ← metres, adjust as needed
+    const QR_SECRET = 'CDLN-EBMS-2025-SECURE'; // must match app.js + backend
+    // ═══════════════════════════════════════════════════
 
-    <!-- Progress dots (3 steps) -->
-    <div class="progress-dots">
-      <div class="dot-step cur"  id="dp1"></div>
-      <div class="dot-step"      id="dp2"></div>
-      <div class="dot-step"      id="dp3"></div>
-    </div>
+    document.getElementById('radiusLabel').textContent = OFFICE_RADIUS + 'm';
 
-    <!-- ══ STEP 1 : Location ══════════════════ -->
-    <div class="step active" id="s1">
-      <div class="step-center">
-        <div style="display:flex;justify-content:center;">
-          <div class="icon-ring ring-blue">📍</div>
-        </div>
-        <div class="step-title">Location Verify</div>
-        <div class="step-sub">Punch karne ke liye aapko office ke andar hona zaroori hai. Pehle location allow karein.</div>
-        <div class="pill pill-waiting" id="locPill">
-          <span class="pdot pdot-y"></span> Location check ho rahi hai…
-        </div>
-      </div>
+    // Parse URL params (QR code se milte hain)
+    const urlP = new URLSearchParams(window.location.search);
+    const EMP_ID = urlP.get('emp') || '';
+    const QR_CS = urlP.get('cs') || '';   // optional checksum from QR
+    const isQR = EMP_ID.length > 0;
 
-      <div class="info-box">
-        <strong>📌 Office Boundary:</strong><br/>
-        GPS se verify hoga ki aap <strong id="radiusLabel">150m</strong> ke radius mein hain ya nahi. Bahar hain toh punch block rahega.
-      </div>
+    // ── Token resolution ──────────────────────────────
+    // Priority: URL param ?token=... (kiosk use) → localStorage (logged-in employee)
+    const SESSION_TOKEN = urlP.get('token') || localStorage.getItem('ebms_token') || '';
 
-      <div class="err" id="errLoc"></div>
-
-      <button class="btn btn-blue" id="btnLoc" onclick="requestLocation()">
-        📍 &nbsp;Location Allow Karein
-      </button>
-    </div>
-
-    <!-- ══ STEP 2 : Employee Details ══════════ -->
-    <div class="step" id="s2">
-
-      <div id="noQrNotice" class="no-qr-notice" style="display:none;">
-        ⚠️ QR code se nahi aaye — Employee ID manually bharen
-      </div>
-
-      <!-- Location ok pill -->
-      <div style="display:flex;justify-content:center;margin-bottom:18px;">
-        <div class="pill pill-ok">
-          <span class="pdot pdot-g"></span>
-          <span id="distLabel">Location Verified ✓</span>
-        </div>
-      </div>
-
-      <div class="err" id="errDet"></div>
-
-      <!-- Only show emp_id field if NOT from QR -->
-      <div class="fg" id="fgEmpId" style="display:none;">
-        <label>Employee ID *</label>
-        <input type="text" id="manualEmpId" placeholder="e.g. EMP004" autocomplete="off"/>
-      </div>
-
-      <div class="fg">
-        <label>Full Name *</label>
-        <input type="text" id="empName" placeholder="Apna poora naam likhein" autocomplete="name"/>
-      </div>
-      <div class="fg">
-        <label>Phone Number *</label>
-        <input type="tel" id="empPhone" placeholder="10-digit mobile number" autocomplete="tel" maxlength="13"/>
-      </div>
-      <div class="fg">
-        <label>Email Address <span style="color:var(--dim);font-size:10px;">(optional)</span></label>
-        <input type="email" id="empEmail" placeholder="yourname@company.com" autocomplete="email"/>
-      </div>
-
-      <button class="btn btn-blue" onclick="goToPunch()">Continue →</button>
-    </div>
-
-    <!-- ══ STEP 3 : Punch ══════════════════════ -->
-    <div class="step" id="s3">
-
-      <!-- Employee banner -->
-      <div class="emp-meta">
-        <strong id="showName">—</strong>
-        <span id="showPhone" style="font-size:11.5px; color:var(--dim);">—</span>
-      </div>
-
-      <!-- Today's timings -->
-      <div class="time-row">
-        <div class="tc tc-in">
-          <div class="tc-label">⬆ Punch IN</div>
-          <div class="tc-val" id="inDisp">—</div>
-        </div>
-        <div class="tc tc-out">
-          <div class="tc-label">⬇ Punch OUT</div>
-          <div class="tc-val" id="outDisp">—</div>
-        </div>
-      </div>
-
-      <div class="err" id="errPunch"></div>
-
-      <button class="btn btn-in"  id="btnIn"  onclick="doPunch('in')">
-        <span class="spin" id="spIn"></span> ✅ &nbsp;Punch IN
-      </button>
-      <button class="btn btn-out" id="btnOut" onclick="doPunch('out')" style="display:none;">
-        <span class="spin dark" id="spOut"></span> 🕐 &nbsp;Punch OUT
-      </button>
-    </div>
-
-    <!-- ══ STEP 4 : Success ════════════════════ -->
-    <div class="step" id="s4">
-      <div class="step-center">
-        <div style="display:flex;justify-content:center;">
-          <div class="icon-ring" id="successRing" style="background:var(--success-dim);border:1.5px solid rgba(52,211,153,0.3);">✅</div>
-        </div>
-        <div class="step-title" id="successTitle">Punch Successful!</div>
-        <div class="step-sub"   id="successMsg">Attendance record ho gayi hai.</div>
-      </div>
-
-      <div class="time-row">
-        <div class="tc tc-in">
-          <div class="tc-label">⬆ IN Time</div>
-          <div class="tc-val" id="finalIn">—</div>
-        </div>
-        <div class="tc tc-out">
-          <div class="tc-label">⬇ OUT Time</div>
-          <div class="tc-val" id="finalOut">—</div>
-        </div>
-      </div>
-
-      <div class="success-detail">
-        <strong id="finalName">—</strong>
-        <span id="finalDate">—</span>
-      </div>
-
-      <!-- Reset button so another employee can punch from same device -->
-      <button class="btn btn-blue" onclick="resetFlow()">↩ &nbsp;Done / Next Employee</button>
-    </div>
-
-  </div><!-- /body -->
-</div>
-
-<script>
-  // ═══════════════════════════════════════════════════
-  //  CONFIG — update these before deploying
-  // ═══════════════════════════════════════════════════
-  const API_URL    = 'https://script.google.com/macros/s/AKfycbwzYZmxZ3AQCBdXRDgg5p442mW-THoHvR4YI2eA1G2ERICPS052J1oM5CXPYc83w0wnvw/exec';
-  const OFFICE_LAT = 21.115480;    // ← apni office ki latitude
-  const OFFICE_LNG = 79.011733;    // ← apni office ki longitude
-  const OFFICE_RADIUS = 150;       // ← metres, adjust as needed
-  const QR_SECRET  = 'CDLN-EBMS-2025-SECURE'; // must match app.js + backend
-  // ═══════════════════════════════════════════════════
-
-  document.getElementById('radiusLabel').textContent = OFFICE_RADIUS + 'm';
-
-  // Parse URL params (QR code se milte hain)
-  const urlP   = new URLSearchParams(window.location.search);
-  const EMP_ID = urlP.get('emp')      || '';
-  const QR_CS  = urlP.get('cs')       || '';   // optional checksum from QR
-  const isQR   = EMP_ID.length > 0;
-
-  let userLat      = null;
-  let userLng      = null;
-  let lastPunch    = null;   // 'in' | 'out' | null
-  let todayIn      = '—';
-  let todayOut     = '—';
-  let empInfo      = {};
-
-  // ── Live clock ────────────────────────────────────
-  function tick() {
-    const n = new Date();
-    const t = n.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true });
-    const d = n.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
-    document.getElementById('hdrClock').textContent = t;
-    document.getElementById('hdrDate').textContent  = d;
-  }
-  tick(); setInterval(tick, 1000);
-
-  // ── Progress dots ─────────────────────────────────
-  function setProgress(step) {
-    for (let i = 1; i <= 3; i++) {
-      const el = document.getElementById('dp' + i);
-      el.className = 'dot-step' + (i < step ? ' done' : i === step ? ' cur' : '');
-    }
-  }
-
-  // ── Show step ─────────────────────────────────────
-  function showStep(n) {
-    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-    document.getElementById('s' + n).classList.add('active');
-    setProgress(Math.min(n, 3));
-  }
-
-  // ── Haversine distance (metres) ───────────────────
-  function haversine(la1, lo1, la2, lo2) {
-    const R = 6371000, rad = Math.PI / 180;
-    const dLa = (la2 - la1) * rad, dLo = (lo2 - lo1) * rad;
-    const a = Math.sin(dLa/2)**2 + Math.cos(la1*rad)*Math.cos(la2*rad)*Math.sin(dLo/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  }
-
-  // ── STEP 1 : Location ─────────────────────────────
-  function requestLocation() {
-    const pill  = document.getElementById('locPill');
-    const errEl = document.getElementById('errLoc');
-    const btn   = document.getElementById('btnLoc');
-    errEl.style.display = 'none';
-    pill.className = 'pill pill-waiting';
-    pill.innerHTML = '<span class="pdot pdot-y"></span> GPS fetch ho raha hai…';
-    btn.disabled = true;
-
-    if (!navigator.geolocation) {
-      showErr(errEl, 'Browser mein geolocation support nahi hai. Kisi aur device se try karein.');
-      btn.disabled = false; return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        userLat = pos.coords.latitude;
-        userLng = pos.coords.longitude;
-        const dist = Math.round(haversine(userLat, userLng, OFFICE_LAT, OFFICE_LNG));
-
-        if (dist <= OFFICE_RADIUS) {
-          pill.className = 'pill pill-ok';
-          pill.innerHTML = '<span class="pdot pdot-g"></span> Office area verified ✓ (' + dist + 'm)';
-          document.getElementById('distLabel').textContent = 'Office se sirf ' + dist + 'm — Verified ✓';
-          // If no QR, show emp_id field
-          if (!isQR) document.getElementById('fgEmpId').style.display = 'flex';
-          else document.getElementById('noQrNotice').style.display = 'none';
-          fetchLastPunch();
-          setTimeout(() => showStep(2), 700);
-        } else {
-          pill.className = 'pill pill-denied';
-          pill.innerHTML = '<span class="pdot pdot-r"></span> Office ke bahar (' + dist + 'm away)';
-          showErr(errEl, '⚠️ Aap office boundary (' + OFFICE_RADIUS + 'm) ke bahar hain (' + dist + 'm door). Andar aakar dobara try karein.');
-          btn.disabled = false;
-        }
-      },
-      err => {
-        const m = { 1:'Location permission deny hua. Browser settings mein allow karein.', 2:'GPS signal nahi mila. WiFi on karein aur bahar jaayein.', 3:'Location timeout hua. Dobara try karein.' };
-        showErr(errEl, m[err.code] || 'Location error: ' + err.message);
-        pill.className = 'pill pill-denied';
-        pill.innerHTML = '<span class="pdot pdot-r"></span> Location Error';
-        btn.disabled = false;
-      },
-      { enableHighAccuracy: true, timeout: 14000, maximumAge: 0 }
-    );
-  }
-
-  // Auto-request silently on load
-  window.addEventListener('load', () => setTimeout(() => { if (navigator.geolocation) requestLocation(); }, 400));
-
-  // ── Fetch last punch state from backend ───────────
-  async function fetchLastPunch() {
-    const empId = isQR ? EMP_ID : (document.getElementById('manualEmpId')?.value.trim() || '');
-    if (!empId) return;
-    try {
-      const r = await fetch(`${API_URL}?action=getLastPunch&emp_id=${encodeURIComponent(empId)}`);
-      const d = await r.json();
-      if (d.status === 'success') {
-        lastPunch = d.last_punch || null;
-        todayIn   = d.in_time   || '—';
-        todayOut  = d.out_time  || '—';
-        document.getElementById('inDisp').textContent  = todayIn  !== '—' ? fmt12(todayIn)  : '—';
-        document.getElementById('outDisp').textContent = todayOut !== '—' ? fmt12(todayOut) : '—';
+    // QR Checksum generator (must match app.js + backend)
+    function generateQrChecksum(empId, secretKey) {
+      const str = String(empId) + '::' + secretKey;
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
       }
-    } catch(e) { /* silent */ }
-  }
-
-  // ── STEP 2 : Details → proceed ────────────────────
-  function goToPunch() {
-    const name  = document.getElementById('empName').value.trim();
-    const phone = document.getElementById('empPhone').value.trim();
-    const errEl = document.getElementById('errDet');
-
-    if (!isQR) {
-      const mid = document.getElementById('manualEmpId').value.trim();
-      if (!mid) return showErr(errEl, 'Employee ID likhein.');
+      return Math.abs(hash).toString(16).toUpperCase().padStart(8, '0').slice(0, 8);
     }
-    if (!name)  return showErr(errEl, 'Naam likhna zaroori hai.');
-    if (!phone) return showErr(errEl, 'Phone number zaroori hai.');
-    const digits = phone.replace(/\D/g, '').slice(-10);
-    if (!/^[6-9]\d{9}$/.test(digits)) return showErr(errEl, 'Valid 10-digit Indian mobile number likhein (6-9 se start).');
-    errEl.style.display = 'none';
 
-    empInfo = {
-      emp_id: isQR ? EMP_ID : document.getElementById('manualEmpId').value.trim(),
-      name,
-      phone: digits,
-      email: document.getElementById('empEmail').value.trim()
-    };
+    let userLat = null;
+    let userLng = null;
+    let lastPunch = null;   // 'in' | 'out' | null
+    let todayIn = '—';
+    let todayOut = '—';
+    let empInfo = {};
 
-    document.getElementById('showName').textContent  = name;
-    document.getElementById('showPhone').textContent = phone;
+    // ── Live clock ────────────────────────────────────
+    function tick() {
+      const n = new Date();
+      const t = n.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      const d = n.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+      document.getElementById('hdrClock').textContent = t;
+      document.getElementById('hdrDate').textContent = d;
+    }
+    tick(); setInterval(tick, 1000);
 
-    // Decide IN / OUT button
-    const showOut = lastPunch === 'in';
-    document.getElementById('btnIn').style.display  = showOut ? 'none'  : 'flex';
-    document.getElementById('btnOut').style.display = showOut ? 'flex'  : 'none';
+    // ── Progress dots ─────────────────────────────────
+    function setProgress(step) {
+      for (let i = 1; i <= 3; i++) {
+        const el = document.getElementById('dp' + i);
+        el.className = 'dot-step' + (i < step ? ' done' : i === step ? ' cur' : '');
+      }
+    }
 
-    showStep(3);
-  }
+    // ── Show step ─────────────────────────────────────
+    function showStep(n) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('s' + n).classList.add('active');
+      setProgress(Math.min(n, 3));
+    }
 
-  // ── STEP 3 : Punch ────────────────────────────────
-  async function doPunch(type) {
-    const errEl = document.getElementById('errPunch');
-    errEl.style.display = 'none';
+    // ── Haversine distance (metres) ───────────────────
+    function haversine(la1, lo1, la2, lo2) {
+      const R = 6371000, rad = Math.PI / 180;
+      const dLa = (la2 - la1) * rad, dLo = (lo2 - lo1) * rad;
+      const a = Math.sin(dLa / 2) ** 2 + Math.cos(la1 * rad) * Math.cos(la2 * rad) * Math.sin(dLo / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
 
-    const sp  = document.getElementById(type === 'in' ? 'spIn'  : 'spOut');
-    const btn = document.getElementById(type === 'in' ? 'btnIn' : 'btnOut');
-    sp.style.display = 'inline-block';
-    btn.disabled = true;
+    // ── STEP 1 : Location ─────────────────────────────
+    function requestLocation() {
+      const pill = document.getElementById('locPill');
+      const errEl = document.getElementById('errLoc');
+      const btn = document.getElementById('btnLoc');
+      errEl.style.display = 'none';
+      pill.className = 'pill pill-waiting';
+      pill.innerHTML = '<span class="pdot pdot-y"></span> GPS fetch ho raha hai…';
+      btn.disabled = true;
 
-    const now = new Date();
-    const payload = {
-      action:     'punchAttendance',
-      emp_id:     empInfo.emp_id,
-      emp_name:   empInfo.name,
-      emp_phone:  empInfo.phone,
-      emp_email:  empInfo.email,
-      punch_type: type,
-      latitude:   userLat,
-      longitude:  userLng,
-      timestamp:  now.toISOString()
-    };
+      if (!navigator.geolocation) {
+        showErr(errEl, 'Browser mein geolocation support nahi hai. Kisi aur device se try karein.');
+        btn.disabled = false; return;
+      }
 
-    try {
-      const res  = await fetch(API_URL, { method:'POST', body: JSON.stringify(payload) });
-      const data = await res.json();
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          userLat = pos.coords.latitude;
+          userLng = pos.coords.longitude;
+          const dist = Math.round(haversine(userLat, userLng, OFFICE_LAT, OFFICE_LNG));
 
-      if (data.status === 'success') {
-        const inT  = data.in_time  || (type === 'in'  ? now.toISOString() : null);
-        const outT = data.out_time || (type === 'out' ? now.toISOString() : null);
+          if (dist <= OFFICE_RADIUS) {
+            pill.className = 'pill pill-ok';
+            pill.innerHTML = '<span class="pdot pdot-g"></span> Office area verified ✓ (' + dist + 'm)';
+            document.getElementById('distLabel').textContent = 'Office se sirf ' + dist + 'm — Verified ✓';
+            // If no QR, show emp_id field
+            if (!isQR) document.getElementById('fgEmpId').style.display = 'flex';
+            else document.getElementById('noQrNotice').style.display = 'none';
+            fetchLastPunch();
+            setTimeout(() => showStep(2), 700);
+          } else {
+            pill.className = 'pill pill-denied';
+            pill.innerHTML = '<span class="pdot pdot-r"></span> Office ke bahar (' + dist + 'm away)';
+            showErr(errEl, '⚠️ Aap office boundary (' + OFFICE_RADIUS + 'm) ke bahar hain (' + dist + 'm door). Andar aakar dobara try karein.');
+            btn.disabled = false;
+          }
+        },
+        err => {
+          const m = { 1: 'Location permission deny hua. Browser settings mein allow karein.', 2: 'GPS signal nahi mila. WiFi on karein aur bahar jaayein.', 3: 'Location timeout hua. Dobara try karein.' };
+          showErr(errEl, m[err.code] || 'Location error: ' + err.message);
+          pill.className = 'pill pill-denied';
+          pill.innerHTML = '<span class="pdot pdot-r"></span> Location Error';
+          btn.disabled = false;
+        },
+        { enableHighAccuracy: true, timeout: 14000, maximumAge: 0 }
+      );
+    }
 
-        document.getElementById('finalIn').textContent   = inT  ? fmt12(inT)  : '—';
-        document.getElementById('finalOut').textContent  = outT ? fmt12(outT) : '—';
-        document.getElementById('finalName').textContent = empInfo.name;
-        document.getElementById('finalDate').textContent = now.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    // (Auto-location request handled below after token check)
 
-        const ring  = document.getElementById('successRing');
-        const title = document.getElementById('successTitle');
-        const msg   = document.getElementById('successMsg');
-
-        if (type === 'in') {
-          ring.style.background = 'var(--success-dim)';
-          ring.style.border     = '1.5px solid rgba(52,211,153,0.3)';
-          ring.textContent = '✅';
-          title.textContent = 'Punch IN Ho Gaya!';
-          msg.textContent   = 'Aapki IN timing record ho gayi. Good morning! 🌅';
-        } else {
-          ring.style.background = 'var(--warning-dim)';
-          ring.style.border     = '1.5px solid rgba(251,191,36,0.28)';
-          ring.textContent = '🕐';
-          title.textContent = 'Punch OUT Ho Gaya!';
-          msg.textContent   = 'Aapki OUT timing record ho gayi. Have a nice evening! 🌇';
+    // ── Fetch last punch state from backend ───────────
+    async function fetchLastPunch() {
+      const empId = isQR ? EMP_ID : (document.getElementById('manualEmpId')?.value.trim() || '');
+      if (!empId || !SESSION_TOKEN) return;
+      try {
+        const todayStr = (() => { const IST = new Date(Date.now() + 330*60*1000); return IST.toISOString().split('T')[0]; })();
+        const r = await fetch(`${API_URL}?action=getAttendance&token=${encodeURIComponent(SESSION_TOKEN)}&emp_id=${encodeURIComponent(empId)}&date=${todayStr}&limit=5`);
+        const d = await r.json();
+        if (d.status === 'success') {
+          const logs = (d.data && d.data.data) || [];
+          const mine = logs.find(l => l.emp_id === empId);
+          if (mine) {
+            todayIn = mine.in_time || '—';
+            todayOut = mine.out_time || '—';
+            // lastPunch: 'in' = punched in only, 'out' = both done
+            if (mine.in_time && mine.out_time) lastPunch = 'out';
+            else if (mine.in_time) lastPunch = 'in';
+            else lastPunch = null;
+          } else {
+            lastPunch = null; todayIn = '—'; todayOut = '—';
+          }
+          document.getElementById('inDisp').textContent = todayIn !== '—' ? fmt12(todayIn) : '—';
+          document.getElementById('outDisp').textContent = todayOut !== '—' ? fmt12(todayOut) : '—';
         }
+      } catch (e) { /* silent */ }
+    }
 
-        showStep(4);
-      } else {
-        showErr(errEl, data.message || 'Punch record nahi hua. Dobara try karein.');
+    // ── STEP 2 : Details → proceed ────────────────────
+    function goToPunch() {
+      const name = document.getElementById('empName').value.trim();
+      const phone = document.getElementById('empPhone').value.trim();
+      const errEl = document.getElementById('errDet');
+
+      if (!isQR) {
+        const mid = document.getElementById('manualEmpId').value.trim();
+        if (!mid) return showErr(errEl, 'Employee ID likhein.');
+      }
+      if (!name) return showErr(errEl, 'Naam likhna zaroori hai.');
+      if (!phone) return showErr(errEl, 'Phone number zaroori hai.');
+      const digits = phone.replace(/\D/g, '').slice(-10);
+      if (!/^[6-9]\d{9}$/.test(digits)) return showErr(errEl, 'Valid 10-digit Indian mobile number likhein (6-9 se start).');
+      errEl.style.display = 'none';
+
+      empInfo = {
+        emp_id: isQR ? EMP_ID : document.getElementById('manualEmpId').value.trim(),
+        name,
+        phone: digits,
+        email: document.getElementById('empEmail').value.trim()
+      };
+
+      document.getElementById('showName').textContent = name;
+      document.getElementById('showPhone').textContent = phone;
+
+      // Decide IN / OUT button
+      const showOut = lastPunch === 'in';
+      document.getElementById('btnIn').style.display = showOut ? 'none' : 'flex';
+      document.getElementById('btnOut').style.display = showOut ? 'flex' : 'none';
+
+      showStep(3);
+    }
+
+    // ── STEP 3 : Punch ────────────────────────────────
+    async function doPunch(type) {
+      const errEl = document.getElementById('errPunch');
+      errEl.style.display = 'none';
+
+      if (!SESSION_TOKEN) {
+        showErr(errEl, '⚠️ Session token nahi mila. Please login karke dobara try karein, ya admin se QR link check karwayein.');
+        return;
+      }
+
+      const sp = document.getElementById(type === 'in' ? 'spIn' : 'spOut');
+      const btn = document.getElementById(type === 'in' ? 'btnIn' : 'btnOut');
+      sp.style.display = 'inline-block';
+      btn.disabled = true;
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+      const dateStr = (() => { const IST = new Date(Date.now() + 330*60*1000); return IST.toISOString().split('T')[0]; })();
+
+      const payload = {
+        action: 'markAttendance',
+        token: SESSION_TOKEN,
+        emp_id: empInfo.emp_id,
+        date: dateStr,
+        time: timeStr,
+        method: isQR ? 'QR-Scan' : 'Web-Portal',
+        latitude: userLat,
+        longitude: userLng,
+        remarks: type === 'in' ? 'QR Punch-In' : 'QR Punch-Out'
+      };
+
+      // QR scan hai toh checksum bhi bhejo for backend verification
+      if (isQR) {
+        payload.qr_checksum = generateQrChecksum(empInfo.emp_id, QR_SECRET);
+      }
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          // Refresh today's timings from response or local time
+          if (type === 'in') {
+            todayIn = data.data && data.data.in_time ? data.data.in_time : timeStr;
+          } else {
+            todayOut = data.data && data.data.out_time ? data.data.out_time : timeStr;
+          }
+
+          document.getElementById('finalIn').textContent = todayIn !== '—' ? fmt12(todayIn) : '—';
+          document.getElementById('finalOut').textContent = todayOut !== '—' ? fmt12(todayOut) : '—';
+          document.getElementById('finalName').textContent = empInfo.name;
+          document.getElementById('finalDate').textContent = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+          const ring = document.getElementById('successRing');
+          const title = document.getElementById('successTitle');
+          const msg = document.getElementById('successMsg');
+
+          if (type === 'in') {
+            ring.style.background = 'var(--success-dim)';
+            ring.style.border = '1.5px solid rgba(52,211,153,0.3)';
+            ring.textContent = '✅';
+            title.textContent = 'Punch IN Ho Gaya!';
+            msg.textContent = 'Aapki IN timing record ho gayi. Good morning! 🌅';
+          } else {
+            ring.style.background = 'var(--warning-dim)';
+            ring.style.border = '1.5px solid rgba(251,191,36,0.28)';
+            ring.textContent = '🕐';
+            title.textContent = 'Punch OUT Ho Gaya!';
+            msg.textContent = 'Aapki OUT timing record ho gayi. Have a nice evening! 🌇';
+          }
+
+          showStep(4);
+        } else {
+          showErr(errEl, data.message || 'Punch record nahi hua. Dobara try karein.');
+          sp.style.display = 'none'; btn.disabled = false;
+        }
+      } catch (e) {
+        showErr(errEl, 'Network error aaya. Internet check karein aur dobara try karein.');
         sp.style.display = 'none'; btn.disabled = false;
       }
-    } catch(e) {
-      showErr(errEl, 'Network error aaya. Internet check karein aur dobara try karein.');
-      sp.style.display = 'none'; btn.disabled = false;
     }
-  }
 
-  // ── Reset flow (next employee same device) ────────
-  function resetFlow() {
-    lastPunch = null; todayIn = '—'; todayOut = '—'; empInfo = {};
-    ['empName','empPhone','empEmail'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('inDisp').textContent  = '—';
-    document.getElementById('outDisp').textContent = '—';
-    // Go back to step 2 (location already granted for this session)
-    showStep(2);
-  }
+    // ── Reset flow (next employee same device) ────────
+    function resetFlow() {
+      lastPunch = null; todayIn = '—'; todayOut = '—'; empInfo = {};
+      ['empName', 'empPhone', 'empEmail'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('inDisp').textContent = '—';
+      document.getElementById('outDisp').textContent = '—';
+      // Go back to step 2 (location already granted for this session)
+      showStep(2);
+    }
 
-  // ── Helpers ───────────────────────────────────────
-  function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
+    // ── Helpers ───────────────────────────────────────
+    function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
 
-  function fmt12(val) {
-    if (!val || val === '—') return '—';
-    const s = String(val).trim();
-    let h = 0, m = 0;
-    if (s.includes('T')) {
-      const p = s.split('T')[1].split(':');
-      h = parseInt(p[0]); m = parseInt(p[1]);
-    } else if (s.includes(':')) {
-      const p = s.split(':');
-      h = parseInt(p[0]); m = parseInt(p[1]);
-    } else return s;
-    const ap = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12;
-    return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ' ' + ap;
-  }
+    function fmt12(val) {
+      if (!val || val === '—') return '—';
+      const s = String(val).trim();
+      let h = 0, m = 0;
+      if (s.includes('T')) {
+        const p = s.split('T')[1].split(':');
+        h = parseInt(p[0]); m = parseInt(p[1]);
+      } else if (s.includes(':')) {
+        const p = s.split(':');
+        h = parseInt(p[0]); m = parseInt(p[1]);
+      } else if (!isNaN(parseFloat(s))) {
+        // Google Sheets decimal time: e.g. 0.4847 = 11:38
+        const totalMins = Math.round(parseFloat(s) * 24 * 60);
+        h = Math.floor(totalMins / 60) % 24; m = totalMins % 60;
+      } else return s;
+      const ap = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ' ' + ap;
+    }
 
-  // ── If no QR, show notice on step 2 ──────────────
-  if (!isQR) document.getElementById('noQrNotice').style.display = 'block';
-</script>
+    // ── If no QR, show notice on step 2 ──────────────
+    if (!isQR) document.getElementById('noQrNotice').style.display = 'block';
+
+    // ── If no token, warn on step 1 ──────────────────
+    window.addEventListener('load', () => {
+      if (!SESSION_TOKEN) {
+        const errLoc = document.getElementById('errLoc');
+        errLoc.textContent = '⚠️ Session token nahi mila. Kripya pehle login karein, ya admin se token-wala QR link maangein (QR mein ?token=... hona chahiye).';
+        errLoc.style.display = 'block';
+        document.getElementById('btnLoc').disabled = true;
+      }
+
+      // If QR mode + logged-in user info available, pre-fill name
+      if (isQR) {
+        const savedUser = JSON.parse(localStorage.getItem('ebms_user') || '{}');
+        if (savedUser && savedUser.employee_id === EMP_ID) {
+          const nameField = document.getElementById('empName');
+          if (nameField && savedUser.name) nameField.value = savedUser.name;
+        }
+      }
+
+      // Auto-request location silently (only if token exists)
+      if (SESSION_TOKEN && navigator.geolocation) setTimeout(requestLocation, 400);
+    });
+  </script>
 </body>
+
 </html>

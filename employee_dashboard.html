@@ -11,33 +11,39 @@
     rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
-      --bg-base:        #0A0A0B;
-      --glass:          rgba(255,255,255,0.045);
-      --glass-strong:   rgba(255,255,255,0.08);
-      --glass-border:   rgba(255,255,255,0.09);
-      --glass-blur:     20px;
-      --text-primary:   #F4F4F5;
-      --text-muted:     #A1A1AA;
-      --text-dim:       #6B7280;
-      --accent:         #A8AFC4;
-      --accent-glow:    #D4D9E6;
-      --success:        #34D399;
-      --warning:        #FBBF24;
-      --danger:         #F87171;
-      --purple:         #C084FC;
-      --radius:         16px;
-      --radius-sm:      10px;
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent: #A8AFC4;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --warning: #FBBF24;
+      --danger: #F87171;
+      --purple: #C084FC;
+      --radius: 16px;
+      --radius-sm: 10px;
     }
 
     body {
       font-family: 'Inter', sans-serif;
       background: var(--bg-base);
       background-image:
-        radial-gradient(circle at 12% -10%, rgba(255,255,255,0.05), transparent 45%),
-        radial-gradient(circle at 90% 0%, rgba(255,255,255,0.03), transparent 40%);
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
       background-attachment: fixed;
       color: var(--text-primary);
       min-height: 100vh;
@@ -46,7 +52,7 @@
     /* ── Top Navbar (no sidebar on this page) ── */
     .top-navbar {
       height: 64px;
-      background: rgba(16,16,18,0.65);
+      background: rgba(16, 16, 18, 0.65);
       backdrop-filter: blur(var(--glass-blur)) saturate(140%);
       -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
       border-bottom: 1px solid var(--glass-border);
@@ -60,24 +66,41 @@
       gap: 16px;
     }
 
-    .navbar-logo { display: flex; align-items: center; gap: 10px; }
+    .navbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .navbar-logo-icon {
-      width: 34px; height: 34px;
+      width: 34px;
+      height: 34px;
       background: linear-gradient(135deg, #2A2A30, #404048);
-      border: 1px solid rgba(255,255,255,0.10);
+      border: 1px solid rgba(255, 255, 255, 0.10);
       border-radius: 9px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 16px;
       flex-shrink: 0;
     }
+
     .navbar-logo-text {
       font-family: 'Space Grotesk', sans-serif;
       font-weight: 700;
       font-size: 16px;
     }
-    .navbar-logo-text span { color: var(--accent-glow); font-weight: 500; }
 
-    .navbar-actions { display: flex; align-items: center; gap: 10px; }
+    .navbar-logo-text span {
+      color: var(--accent-glow);
+      font-weight: 500;
+    }
+
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
     .nav-btn {
       background: var(--glass);
@@ -96,14 +119,37 @@
       font-family: 'Inter', sans-serif;
       white-space: nowrap;
     }
-    .nav-btn:hover { background: var(--glass-strong); border-color: rgba(255,255,255,0.18); transform: translateY(-1px); }
-    .nav-btn.logout { color: #FC9999; border-color: rgba(248,113,113,0.18); background: rgba(248,113,113,0.06); }
-    .nav-btn.logout:hover { background: rgba(248,113,113,0.12); }
 
-    .navbar-mobile-toggle { display: none; font-size: 20px; cursor: pointer; color: var(--text-muted); background: none; border: none; }
+    .nav-btn:hover {
+      background: var(--glass-strong);
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .nav-btn.logout {
+      color: #FC9999;
+      border-color: rgba(248, 113, 113, 0.18);
+      background: rgba(248, 113, 113, 0.06);
+    }
+
+    .nav-btn.logout:hover {
+      background: rgba(248, 113, 113, 0.12);
+    }
+
+    .navbar-mobile-toggle {
+      display: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+    }
 
     /* ── Navbar dropdown Menu (ID Card / Bank & Docs / Password) ── */
-    .nav-menu-wrap { position: relative; }
+    .nav-menu-wrap {
+      position: relative;
+    }
+
     .nav-menu-dropdown {
       display: none;
       flex-direction: column;
@@ -112,16 +158,20 @@
       top: calc(100% + 8px);
       right: 0;
       min-width: 200px;
-      background: rgba(18,18,20,0.97);
+      background: rgba(18, 18, 20, 0.97);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
       backdrop-filter: blur(24px) saturate(160%);
       -webkit-backdrop-filter: blur(24px) saturate(160%);
-      box-shadow: 0 18px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
       padding: 6px;
       z-index: 150;
     }
-    .nav-menu-dropdown.open { display: flex; }
+
+    .nav-menu-dropdown.open {
+      display: flex;
+    }
+
     .nav-menu-item {
       background: transparent;
       border: none;
@@ -136,18 +186,28 @@
       transition: background 0.15s;
       white-space: nowrap;
     }
-    .nav-menu-item:hover { background: var(--glass-strong); }
+
+    .nav-menu-item:hover {
+      background: var(--glass-strong);
+    }
 
     @media (max-width: 760px) {
-      .navbar-actions.desktop-actions { display: none; }
-      .navbar-mobile-toggle { display: block; }
+      .navbar-actions.desktop-actions {
+        display: none;
+      }
+
+      .navbar-mobile-toggle {
+        display: block;
+      }
     }
 
     .mobile-actions-sheet {
       display: none;
       position: fixed;
-      top: 64px; right: 0; left: 0;
-      background: rgba(14,14,16,0.97);
+      top: 64px;
+      right: 0;
+      left: 0;
+      background: rgba(14, 14, 16, 0.97);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--glass-border);
       flex-direction: column;
@@ -155,7 +215,10 @@
       padding: 14px;
       z-index: 99;
     }
-    .mobile-actions-sheet.open { display: flex; }
+
+    .mobile-actions-sheet.open {
+      display: flex;
+    }
 
     /* ── Page shell ── */
     .page-content {
@@ -163,7 +226,12 @@
       margin: 0 auto;
       padding: 28px 24px 60px;
     }
-    @media (max-width: 600px) { .page-content { padding: 18px 14px 50px; } }
+
+    @media (max-width: 600px) {
+      .page-content {
+        padding: 18px 14px 50px;
+      }
+    }
 
     .glass-card {
       background: var(--glass);
@@ -193,23 +261,29 @@
       flex-wrap: wrap;
       margin-bottom: 22px;
     }
+
     .profile-avatar {
-      width: 68px; height: 68px;
+      width: 68px;
+      height: 68px;
       border-radius: 50%;
       background: linear-gradient(135deg, #2A2A32, #3A3A44);
-      border: 2px solid rgba(255,255,255,0.10);
-      display: flex; align-items: center; justify-content: center;
+      border: 2px solid rgba(255, 255, 255, 0.10);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-family: 'Space Grotesk', sans-serif;
       font-size: 22px;
       font-weight: 700;
       color: var(--accent-glow);
       flex-shrink: 0;
     }
+
     .profile-meta h2 {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 20px;
       font-weight: 700;
     }
+
     .profile-meta .meta-line {
       font-size: 13.5px;
       color: var(--text-muted);
@@ -218,7 +292,12 @@
       flex-wrap: wrap;
       gap: 6px 14px;
     }
-    .profile-meta .meta-line span { display: inline-flex; align-items: center; gap: 5px; }
+
+    .profile-meta .meta-line span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
 
     /* ── Section 2: Stats Row ── */
     .stats-row {
@@ -227,18 +306,55 @@
       gap: 16px;
       margin-bottom: 22px;
     }
-    @media (max-width: 760px) { .stats-row { grid-template-columns: 1fr; } }
+
+    @media (max-width: 760px) {
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+    }
 
     .stat-card {
       padding: 18px 20px;
       transition: border-color 0.2s, transform 0.2s;
     }
-    .stat-card:hover { border-color: rgba(255,255,255,0.18); transform: translateY(-2px); }
-    .stat-card .stat-icon-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .stat-card .stat-icon { font-size: 20px; opacity: 0.85; }
-    .stat-card .stat-title { font-size: 11.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-    .stat-card .stat-main { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 700; color: var(--text-primary); }
-    .stat-card .stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+    .stat-card:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-2px);
+    }
+
+    .stat-card .stat-icon-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .stat-card .stat-icon {
+      font-size: 20px;
+      opacity: 0.85;
+    }
+
+    .stat-card .stat-title {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .stat-card .stat-main {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-card .stat-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
 
     .weekly-off-select {
       width: 100%;
@@ -253,7 +369,10 @@
       outline: none;
       cursor: pointer;
     }
-    .weekly-off-select option { background: #18181B; }
+
+    .weekly-off-select option {
+      background: #18181B;
+    }
 
     /* ── Section 3: Info Cards ── */
     .info-row {
@@ -262,16 +381,51 @@
       gap: 14px;
       margin-bottom: 22px;
     }
-    @media (max-width: 900px) { .info-row { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 480px) { .info-row { grid-template-columns: 1fr; } }
 
-    .info-card { padding: 16px 18px; }
-    .info-card .info-label { font-size: 10.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 6px; }
-    .info-card .info-value { font-size: 14.5px; font-weight: 600; color: var(--text-primary); overflow-wrap: break-word; }
-    .info-card .info-sub { font-size: 11.5px; color: var(--accent-glow); margin-top: 3px; }
+    @media (max-width: 900px) {
+      .info-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .info-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .info-card {
+      padding: 16px 18px;
+    }
+
+    .info-card .info-label {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .info-card .info-value {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      overflow-wrap: break-word;
+    }
+
+    .info-card .info-sub {
+      font-size: 11.5px;
+      color: var(--accent-glow);
+      margin-top: 3px;
+    }
 
     /* ── Section 4: Attendance Calendar ── */
-    .calendar-card { padding: 20px; margin-bottom: 22px; }
+    .calendar-card {
+      padding: 20px;
+      margin-bottom: 22px;
+    }
+
     .calendar-header {
       display: flex;
       justify-content: space-between;
@@ -280,8 +434,18 @@
       flex-wrap: wrap;
       gap: 10px;
     }
-    .calendar-month-label { font-family: 'Space Grotesk', sans-serif; font-size: 15.5px; font-weight: 600; }
-    .calendar-nav { display: flex; gap: 8px; }
+
+    .calendar-month-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15.5px;
+      font-weight: 600;
+    }
+
+    .calendar-nav {
+      display: flex;
+      gap: 8px;
+    }
+
     .btn-cal-nav {
       background: var(--glass-strong);
       border: 1px solid var(--glass-border);
@@ -292,18 +456,44 @@
       cursor: pointer;
       transition: background 0.15s;
     }
-    .btn-cal-nav:hover { background: rgba(255,255,255,0.14); }
-    .btn-cal-nav:disabled { opacity: 0.35; cursor: not-allowed; }
 
-    .calendar-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; font-size: 11.5px; color: var(--text-muted); }
-    .legend-dot { display: inline-flex; align-items: center; gap: 5px; }
-    .legend-dot span { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+    .btn-cal-nav:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .btn-cal-nav:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .calendar-legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .legend-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-dot span {
+      width: 9px;
+      height: 9px;
+      border-radius: 3px;
+      display: inline-block;
+    }
 
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 6px;
     }
+
     .cal-weekday {
       text-align: center;
       font-size: 11px;
@@ -313,6 +503,7 @@
       padding-bottom: 4px;
       font-weight: 600;
     }
+
     .cal-cell {
       aspect-ratio: 1;
       border-radius: 8px;
@@ -325,35 +516,136 @@
       position: relative;
       min-height: 36px;
     }
-    .cal-cell.empty { background: transparent; }
-    .cal-present  { background: rgba(52,211,153,0.16);  color: #6EE7B7; border-color: rgba(52,211,153,0.25); }
-    .cal-absent   { background: rgba(248,113,113,0.16);  color: #FCA5A5; border-color: rgba(248,113,113,0.25); }
-    .cal-late     { background: rgba(251,191,36,0.16);   color: #FCD34D; border-color: rgba(251,191,36,0.25); }
-    .cal-leave    { background: rgba(192,132,252,0.16);  color: #D8B4FE; border-color: rgba(192,132,252,0.25); }
-    .cal-off      { background: rgba(161,161,170,0.08);  color: var(--text-dim); border-color: rgba(255,255,255,0.04); }
-    .cal-future   { background: rgba(255,255,255,0.02);  color: var(--text-dim); }
+
+    .cal-cell.empty {
+      background: transparent;
+    }
+
+    .cal-present {
+      background: rgba(52, 211, 153, 0.16);
+      color: #6EE7B7;
+      border-color: rgba(52, 211, 153, 0.25);
+    }
+
+    .cal-absent {
+      background: rgba(248, 113, 113, 0.16);
+      color: #FCA5A5;
+      border-color: rgba(248, 113, 113, 0.25);
+    }
+
+    .cal-late {
+      background: rgba(251, 191, 36, 0.16);
+      color: #FCD34D;
+      border-color: rgba(251, 191, 36, 0.25);
+    }
+
+    .cal-leave {
+      background: rgba(192, 132, 252, 0.16);
+      color: #D8B4FE;
+      border-color: rgba(192, 132, 252, 0.25);
+    }
+
+    .cal-off {
+      background: rgba(161, 161, 170, 0.08);
+      color: var(--text-dim);
+      border-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .cal-future {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-dim);
+    }
 
     /* ── Section 5: Tasks ── */
-    .tasks-section { margin-bottom: 22px; }
-    .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
-    .task-card { padding: 16px 18px; }
-    .task-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
-    .task-title { font-size: 14px; font-weight: 600; color: var(--text-primary); line-height: 1.4; }
-    .task-due { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
-    .task-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .tasks-section {
+      margin-bottom: 22px;
+    }
 
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-    .badge-high     { background: rgba(248,113,113,0.12); color: #FCA5A5; }
-    .badge-medium   { background: rgba(251,191,36,0.12);  color: #FCD34D; }
-    .badge-low      { background: rgba(161,161,170,0.12); color: #A1A1AA; }
-    .badge-pending   { background: rgba(251,191,36,0.12); color: #FCD34D; }
-    .badge-completed { background: rgba(52,211,153,0.12); color: #6EE7B7; }
-    .badge-approved   { background: rgba(52,211,153,0.12); color: #6EE7B7; }
-    .badge-rejected   { background: rgba(248,113,113,0.12); color: #FCA5A5; }
+    .task-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .task-card {
+      padding: 16px 18px;
+    }
+
+    .task-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .task-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .task-due {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .task-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-high {
+      background: rgba(248, 113, 113, 0.12);
+      color: #FCA5A5;
+    }
+
+    .badge-medium {
+      background: rgba(251, 191, 36, 0.12);
+      color: #FCD34D;
+    }
+
+    .badge-low {
+      background: rgba(161, 161, 170, 0.12);
+      color: #A1A1AA;
+    }
+
+    .badge-pending {
+      background: rgba(251, 191, 36, 0.12);
+      color: #FCD34D;
+    }
+
+    .badge-completed {
+      background: rgba(52, 211, 153, 0.12);
+      color: #6EE7B7;
+    }
+
+    .badge-approved {
+      background: rgba(52, 211, 153, 0.12);
+      color: #6EE7B7;
+    }
+
+    .badge-rejected {
+      background: rgba(248, 113, 113, 0.12);
+      color: #FCA5A5;
+    }
 
     .btn-done {
-      background: rgba(52,211,153,0.12);
-      border: 1px solid rgba(52,211,153,0.25);
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.25);
       color: #34D399;
       border-radius: 8px;
       padding: 5px 12px;
@@ -363,21 +655,64 @@
       font-family: 'Inter', sans-serif;
       transition: background 0.18s, transform 0.15s;
     }
-    .btn-done:hover { background: rgba(52,211,153,0.2); transform: translateY(-1px); }
 
-    .empty-note { padding: 26px; text-align: center; color: var(--text-dim); font-size: 13px; }
+    .btn-done:hover {
+      background: rgba(52, 211, 153, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .empty-note {
+      padding: 26px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
 
     /* ── Section 6: Leave Request ── */
-    .leave-section { margin-bottom: 22px; }
-    .leave-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 18px; align-items: start; }
-    @media (max-width: 860px) { .leave-grid { grid-template-columns: 1fr; } }
-    .modal-card .leave-grid { grid-template-columns: 1fr; }
+    .leave-section {
+      margin-bottom: 22px;
+    }
 
-    .leave-form-card { padding: 20px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 13px; }
-    .form-group label { font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
-    .form-group input, .form-group select, .form-group textarea {
-      background: rgba(255,255,255,0.04);
+    .leave-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      .leave-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .modal-card .leave-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .leave-form-card {
+      padding: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 13px;
+    }
+
+    .form-group label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
       padding: 9px 12px;
@@ -388,17 +723,36 @@
       transition: border-color 0.18s, background 0.18s;
       resize: none;
     }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-      border-color: rgba(255,255,255,0.22);
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: rgba(255, 255, 255, 0.22);
       background: var(--glass-strong);
     }
-    .form-group select option { background: #18181B; }
-    .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    @media (max-width: 900px) { .form-group input, .form-group select, .form-group textarea { font-size: 16px; } }
+
+    .form-group select option {
+      background: #18181B;
+    }
+
+    .date-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 900px) {
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        font-size: 16px;
+      }
+    }
 
     .btn-submit-leave {
       width: 100%;
-      background: rgba(244,244,245,0.92);
+      background: rgba(244, 244, 245, 0.92);
       color: #0A0A0B;
       border: none;
       border-radius: var(--radius-sm);
@@ -410,36 +764,114 @@
       transition: all 0.2s;
       margin-top: 2px;
     }
-    .btn-submit-leave:hover { background: #fff; transform: translateY(-1px); }
-    .btn-submit-leave:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .my-leaves-card { padding: 20px; }
+    .btn-submit-leave:hover {
+      background: #fff;
+      transform: translateY(-1px);
+    }
+
+    .btn-submit-leave:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .my-leaves-card {
+      padding: 20px;
+    }
+
     .leave-row-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 11px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       gap: 10px;
       flex-wrap: wrap;
     }
-    .leave-row-item:last-child { border-bottom: none; }
-    .leave-row-left .leave-type-text { font-size: 13.5px; font-weight: 600; }
-    .leave-row-left .leave-dates-text { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .leave-row-item:last-child {
+      border-bottom: none;
+    }
+
+    .leave-row-left .leave-type-text {
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+
+    .leave-row-left .leave-dates-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(1.3);
+      }
+    }
 
     /* ── Section 7: Punch Status (read-only) ── */
-    .punch-status-card { padding: 20px 22px; margin-bottom: 10px; }
-    .punch-status-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-    .punch-status-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-    @media (max-width: 600px) { .punch-status-cols { grid-template-columns: 1fr; } }
-    .punch-col { text-align: center; padding: 14px 10px; background: rgba(255,255,255,0.025); border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.05); }
-    .punch-col-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-    .punch-col-value { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; }
+    .punch-status-card {
+      padding: 20px 22px;
+      margin-bottom: 10px;
+    }
+
+    .punch-status-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .punch-status-cols {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    @media (max-width: 600px) {
+      .punch-status-cols {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .punch-col {
+      text-align: center;
+      padding: 14px 10px;
+      background: rgba(255, 255, 255, 0.025);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .punch-col-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .punch-col-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
     .punch-note {
       margin-top: 14px;
       font-size: 12.5px;
       color: var(--text-muted);
-      background: rgba(255,255,255,0.025);
+      background: rgba(255, 255, 255, 0.025);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
       padding: 10px 14px;
@@ -449,13 +881,15 @@
       gap: 8px;
     }
 
-    #systemToastNotification { font-family: 'Inter', sans-serif; }
+    #systemToastNotification {
+      font-family: 'Inter', sans-serif;
+    }
 
     /* ── Modals shared shell ── */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.68);
+      background: rgba(0, 0, 0, 0.68);
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
       z-index: 2000;
@@ -464,10 +898,13 @@
       justify-content: center;
       padding: 16px;
     }
-    .modal-overlay.open { display: flex; }
+
+    .modal-overlay.open {
+      display: flex;
+    }
 
     .modal-card {
-      background: rgba(18,18,20,0.92);
+      background: rgba(18, 18, 20, 0.92);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius);
       max-width: 480px;
@@ -476,9 +913,12 @@
       overflow-y: auto;
       backdrop-filter: blur(28px) saturate(160%);
       -webkit-backdrop-filter: blur(28px) saturate(160%);
-      box-shadow: 0 24px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
     }
-    .modal-card.wide { max-width: 560px; }
+
+    .modal-card.wide {
+      max-width: 560px;
+    }
 
     .modal-header {
       padding: 18px 22px;
@@ -488,13 +928,18 @@
       align-items: center;
       position: sticky;
       top: 0;
-      background: rgba(18,18,20,0.95);
+      background: rgba(18, 18, 20, 0.95);
       z-index: 1;
     }
-    .modal-header h3 { font-family: 'Space Grotesk', sans-serif; font-size: 16px; }
+
+    .modal-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+    }
+
     .modal-close-btn {
-      background: rgba(248,113,113,0.12);
-      border: 1px solid rgba(248,113,113,0.25);
+      background: rgba(248, 113, 113, 0.12);
+      border: 1px solid rgba(248, 113, 113, 0.25);
       color: #FCA5A5;
       font-size: 13px;
       font-weight: 600;
@@ -505,38 +950,77 @@
       align-items: center;
       gap: 5px;
     }
-    .modal-close-btn:hover { background: rgba(248,113,113,0.2); }
-    .modal-body { padding: 22px; }
+
+    .modal-close-btn:hover {
+      background: rgba(248, 113, 113, 0.2);
+    }
+
+    .modal-body {
+      padding: 22px;
+    }
 
     /* ── ID Card ── */
     .id-card-shell {
-      background: linear-gradient(165deg, rgba(40,40,46,0.55), rgba(10,10,12,0.85));
-      border: 1px solid rgba(108,142,255,0.35);
+      background: linear-gradient(165deg, rgba(40, 40, 46, 0.55), rgba(10, 10, 12, 0.85));
+      border: 1px solid rgba(108, 142, 255, 0.35);
       border-radius: var(--radius);
       padding: 26px 22px;
       text-align: center;
     }
-    .id-card-brand { font-family: 'Space Grotesk', sans-serif; font-size: 19px; font-weight: 700; letter-spacing: 0.3px; }
-    .id-card-brand span { color: #6C8EFF; }
-    .id-card-tagline { font-size: 10.5px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; margin-bottom: 18px; }
+
+    .id-card-brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .id-card-brand span {
+      color: #6C8EFF;
+    }
+
+    .id-card-tagline {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 2px;
+      margin-bottom: 18px;
+    }
 
     .id-card-avatar {
-      width: 84px; height: 84px;
+      width: 84px;
+      height: 84px;
       border-radius: 50%;
       margin: 0 auto 14px;
       background: linear-gradient(135deg, #2A2A32, #3A3A44);
-      border: 2px solid rgba(52,211,153,0.5);
-      display: flex; align-items: center; justify-content: center;
+      border: 2px solid rgba(52, 211, 153, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-family: 'Space Grotesk', sans-serif;
       font-size: 26px;
       font-weight: 700;
       color: #6EE7B7;
     }
-    .id-card-name { font-size: 18px; font-weight: 700; }
-    .id-card-role { font-size: 12.5px; color: #6EE7B7; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 3px; margin-bottom: 18px; }
+
+    .id-card-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .id-card-role {
+      font-size: 12.5px;
+      color: #6EE7B7;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-top: 3px;
+      margin-bottom: 18px;
+    }
 
     .id-card-info {
-      background: rgba(255,255,255,0.03);
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
       padding: 14px 16px;
@@ -544,16 +1028,30 @@
       font-size: 13px;
       margin-bottom: 18px;
     }
-    .id-card-info-row { display: flex; justify-content: space-between; padding: 4px 0; }
-    .id-card-info-row span:first-child { color: var(--text-muted); }
-    .id-card-info-row span:last-child { font-weight: 600; }
+
+    .id-card-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+
+    .id-card-info-row span:first-child {
+      color: var(--text-muted);
+    }
+
+    .id-card-info-row span:last-child {
+      font-weight: 600;
+    }
 
     .id-card-qr-wrap {
       background: #fff;
-      width: 140px; height: 140px;
+      width: 140px;
+      height: 140px;
       margin: 0 auto;
       border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       padding: 8px;
     }
 
@@ -571,10 +1069,19 @@
       font-family: 'Space Grotesk', sans-serif;
       transition: transform 0.18s;
     }
-    .btn-download-pdf:hover { transform: translateY(-1px); }
+
+    .btn-download-pdf:hover {
+      transform: translateY(-1px);
+    }
 
     /* ── Bank & Docs tabs ── */
-    .bd-tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--glass-border); padding: 0 22px; }
+    .bd-tabs {
+      display: flex;
+      gap: 22px;
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0 22px;
+    }
+
     .bd-tab {
       padding: 12px 2px;
       font-size: 13.5px;
@@ -584,13 +1091,23 @@
       border-bottom: 2px solid transparent;
       transition: color 0.15s, border-color 0.15s;
     }
-    .bd-tab.active { color: var(--accent-glow); border-bottom-color: #6C8EFF; }
-    .bd-panel { display: none; }
-    .bd-panel.active { display: block; }
+
+    .bd-tab.active {
+      color: var(--accent-glow);
+      border-bottom-color: #6C8EFF;
+    }
+
+    .bd-panel {
+      display: none;
+    }
+
+    .bd-panel.active {
+      display: block;
+    }
 
     .bd-note {
-      background: rgba(251,191,36,0.08);
-      border: 1px solid rgba(251,191,36,0.22);
+      background: rgba(251, 191, 36, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.22);
       border-left: 3px solid #FBBF24;
       border-radius: 8px;
       padding: 10px 14px;
@@ -599,26 +1116,63 @@
       margin-bottom: 16px;
       line-height: 1.5;
     }
-    .bd-note strong { color: #FCD34D; }
 
-    .bd-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media (max-width: 480px) { .bd-form-grid { grid-template-columns: 1fr; } }
-    .bd-form-grid .form-group.full { grid-column: 1 / -1; }
+    .bd-note strong {
+      color: #FCD34D;
+    }
+
+    .bd-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .bd-form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .bd-form-grid .form-group.full {
+      grid-column: 1 / -1;
+    }
 
     .bd-readonly-card {
-      background: rgba(52,211,153,0.06);
-      border: 1px solid rgba(52,211,153,0.2);
+      background: rgba(52, 211, 153, 0.06);
+      border: 1px solid rgba(52, 211, 153, 0.2);
       border-radius: var(--radius-sm);
       padding: 16px;
     }
-    .bd-readonly-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; }
-    .bd-readonly-row span:first-child { color: var(--text-muted); }
-    .bd-readonly-row span:last-child { font-weight: 600; }
 
-    .doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media (max-width: 480px) { .doc-grid { grid-template-columns: 1fr; } }
+    .bd-readonly-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      font-size: 13px;
+    }
+
+    .bd-readonly-row span:first-child {
+      color: var(--text-muted);
+    }
+
+    .bd-readonly-row span:last-child {
+      font-weight: 600;
+    }
+
+    .doc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .doc-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .doc-tile {
-      background: rgba(255,255,255,0.03);
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
       padding: 18px 14px;
@@ -627,15 +1181,43 @@
       transition: background 0.18s, border-color 0.18s;
       position: relative;
     }
-    .doc-tile:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18); }
-    .doc-tile .doc-icon { font-size: 26px; margin-bottom: 8px; }
-    .doc-tile .doc-label { font-size: 13px; font-weight: 600; }
-    .doc-tile .doc-status { font-size: 10.5px; color: #6EE7B7; margin-top: 4px; }
-    .doc-tile .doc-status.empty { color: var(--text-dim); }
-    .doc-tile input[type="file"] { display: none; }
+
+    .doc-tile:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .doc-tile .doc-icon {
+      font-size: 26px;
+      margin-bottom: 8px;
+    }
+
+    .doc-tile .doc-label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .doc-tile .doc-status {
+      font-size: 10.5px;
+      color: #6EE7B7;
+      margin-top: 4px;
+    }
+
+    .doc-tile .doc-status.empty {
+      color: var(--text-dim);
+    }
+
+    .doc-tile input[type="file"] {
+      display: none;
+    }
 
     /* ── Password modal ── */
-    .pw-strength-hint { font-size: 11.5px; color: var(--text-dim); margin-top: -5px; margin-bottom: 12px; }
+    .pw-strength-hint {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin-top: -5px;
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 
@@ -698,22 +1280,37 @@
         <div class="stat-sub" id="statShiftName">No shift assigned today</div>
       </div>
 
-      <div class="glass-card stat-card">
+      <div class="glass-card stat-card" id="weeklyOffCard">
         <div class="stat-icon-row">
           <div class="stat-title">Weekly Off</div>
-          <div class="stat-icon">📅</div>
+          <div class="stat-icon" id="weeklyOffIcon">📅</div>
         </div>
-        <div class="stat-main" id="statWeeklyOff">Not set</div>
-        <select class="weekly-off-select" id="weeklyOffSelect" onchange="saveWeeklyOff()">
-          <option value="">Select your weekly off day</option>
-          <option value="Sunday">Sunday</option>
-          <option value="Monday">Monday</option>
-          <option value="Tuesday">Tuesday</option>
-          <option value="Wednesday">Wednesday</option>
-          <option value="Thursday">Thursday</option>
-          <option value="Friday">Friday</option>
-          <option value="Saturday">Saturday</option>
-        </select>
+        <!-- State A: Already set — locked display -->
+        <div id="weeklyOffLocked" style="display:none;">
+          <div class="stat-main" id="statWeeklyOff" style="color:var(--success);"></div>
+          <div style="display:flex; align-items:center; gap:5px; margin-top:6px;">
+            <span style="font-size:11px; color:var(--text-dim); background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.18); border-radius:6px; padding:3px 9px;">🔒 Fixed — HR se contact karein to change</span>
+          </div>
+        </div>
+        <!-- State B: Not set yet — one-time selector -->
+        <div id="weeklyOffSetter" style="display:block;">
+          <div class="stat-main" style="font-size:14px; color:var(--text-muted); margin-bottom:8px;">Not set yet</div>
+          <select class="weekly-off-select" id="weeklyOffSelect" onchange="onWeeklyOffChange()">
+            <option value="">— Select your off day —</option>
+            <option value="Sunday">Sunday</option>
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+          </select>
+          <button id="weeklyOffConfirmBtn" onclick="confirmWeeklyOff()"
+            style="display:none; margin-top:8px; width:100%; padding:7px; background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.3); color:#34D399; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:background 0.15s;">
+            ✓ Confirm Weekly Off
+          </button>
+          <p style="font-size:10.5px; color:var(--text-dim); margin-top:6px; line-height:1.4;">⚠️ Ek baar set karne ke baad sirf HR change kar sakta hai.</p>
+        </div>
       </div>
 
       <div class="glass-card stat-card">
@@ -782,26 +1379,45 @@
     </div>
 
     <!-- Section: Punch Status (read-only) -->
-    <div class="glass-card punch-status-card">
+    <div class="glass-card punch-status-card" id="punchStatusCard" style="border-color:rgba(255,255,255,0.09);">
       <div class="punch-status-top">
-        <div class="section-label" style="margin-bottom:0;">✅ Today's Attendance Status</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="section-label" style="margin-bottom:0;">✅ Aaj Ki Attendance</div>
+          <div id="punchLiveBadge"
+            style="display:none; align-items:center; gap:5px; padding:3px 10px; border-radius:99px; font-size:11px; font-weight:600; background:rgba(52,211,153,0.12); color:#34D399; border:1px solid rgba(52,211,153,0.25);">
+            <span
+              style="width:6px; height:6px; border-radius:50%; background:#34D399; display:inline-block; animation:pulse 1.5s ease-in-out infinite;"></span>
+            Punched In
+          </div>
+        </div>
         <div style="font-size:12px; color:var(--text-dim);" id="punchTodayDate">—</div>
       </div>
+
       <div class="punch-status-cols">
-        <div class="punch-col">
-          <div class="punch-col-label">Punch In</div>
-          <div class="punch-col-value" style="color:#6EE7B7;" id="punchInTime">—</div>
+        <div class="punch-col"
+          style="text-align:center; background:rgba(52,211,153,0.05); border-radius:12px; padding:16px 10px; border:1px solid rgba(52,211,153,0.12);">
+          <div style="font-size:22px; margin-bottom:6px;">⬆️</div>
+          <div class="punch-col-label" style="margin-bottom:4px;">Punch IN</div>
+          <div class="punch-col-value" style="color:#6EE7B7; font-size:20px;" id="punchInTime">—</div>
         </div>
-        <div class="punch-col">
-          <div class="punch-col-label">Punch Out</div>
-          <div class="punch-col-value" style="color:#FCA5A5;" id="punchOutTime">—</div>
+        <div class="punch-col"
+          style="text-align:center; background:rgba(248,113,113,0.05); border-radius:12px; padding:16px 10px; border:1px solid rgba(248,113,113,0.12);">
+          <div style="font-size:22px; margin-bottom:6px;">⬇️</div>
+          <div class="punch-col-label" style="margin-bottom:4px;">Punch OUT</div>
+          <div class="punch-col-value" style="color:#FCA5A5; font-size:20px;" id="punchOutTime">—</div>
         </div>
-        <div class="punch-col">
-          <div class="punch-col-label">Hours Worked</div>
-          <div class="punch-col-value" style="color:var(--accent-glow);" id="punchHoursToday">—</div>
+        <div class="punch-col"
+          style="text-align:center; background:rgba(108,142,255,0.05); border-radius:12px; padding:16px 10px; border:1px solid rgba(108,142,255,0.12);">
+          <div style="font-size:22px; margin-bottom:6px;">⏱️</div>
+          <div class="punch-col-label" style="margin-bottom:4px;">Hours Worked</div>
+          <div class="punch-col-value" style="color:var(--accent-glow); font-size:20px;" id="punchHoursToday">—</div>
         </div>
       </div>
-      <div class="punch-note">📷 Attendance QR code scan karke mark hoti hai — apni branch ki QR location par scan karein. Yeh card sirf aaj ka status dikhata hai.</div>
+      <div class="punch-note"
+        style="margin-top:14px; padding:10px 14px; background:rgba(255,255,255,0.025); border-radius:8px; font-size:12px; color:var(--text-muted);">
+        📷 Office mein QR code scan karo → attendance_qr.html page pe aata hai → Punch IN/OUT record hoti hai
+        automatically.
+      </div>
     </div>
 
   </div>
@@ -904,7 +1520,8 @@
         <!-- Tab 1: Bank Details -->
         <div class="bd-panel active" id="bdPanelBank">
           <div id="bankFormWrapper">
-            <div class="bd-note"><strong>Note:</strong> Bank details can only be submitted once. Please ensure the information matches your passbook.</div>
+            <div class="bd-note"><strong>Note:</strong> Bank details can only be submitted once. Please ensure the
+              information matches your passbook.</div>
             <form id="bankDetailsForm" onsubmit="submitBankDetailsForm(event)">
               <div class="bd-form-grid">
                 <div class="form-group">
@@ -943,7 +1560,8 @@
                   <input type="file" id="bdPassbookFile" accept="image/*,application/pdf" />
                 </div>
               </div>
-              <button type="submit" class="btn-submit-leave" id="bdSubmitBtn" style="margin-top:6px;">Submit Bank Details</button>
+              <button type="submit" class="btn-submit-leave" id="bdSubmitBtn" style="margin-top:6px;">Submit Bank
+                Details</button>
             </form>
           </div>
 
@@ -957,7 +1575,8 @@
               <div class="bd-readonly-row"><span>Account Type:</span><span id="roAccType">—</span></div>
               <div class="bd-readonly-row"><span>Submitted On:</span><span id="roSubmittedAt">—</span></div>
             </div>
-            <div class="bd-note" style="margin-top:14px; margin-bottom:0;">Bank details already submit ho chuki hain. Change ke liye HR se contact karein.</div>
+            <div class="bd-note" style="margin-top:14px; margin-bottom:0;">Bank details already submit ho chuki hain.
+              Change ke liye HR se contact karein.</div>
           </div>
         </div>
 
@@ -968,19 +1587,22 @@
               <div class="doc-icon">🖼️</div>
               <div class="doc-label">Profile Photo</div>
               <div class="doc-status empty" id="statusProfilePhoto">Not uploaded</div>
-              <input type="file" id="fileProfilePhoto" accept="image/*" onchange="handleDocUpload('profile_photo', this)" />
+              <input type="file" id="fileProfilePhoto" accept="image/*"
+                onchange="handleDocUpload('profile_photo', this)" />
             </div>
             <div class="doc-tile" onclick="document.getElementById('fileAadhaarPdf').click()">
               <div class="doc-icon">📄</div>
               <div class="doc-label">Aadhar Card (PDF)</div>
               <div class="doc-status empty" id="statusAadhaarPdf">Not uploaded</div>
-              <input type="file" id="fileAadhaarPdf" accept="application/pdf" onchange="handleDocUpload('aadhaar_pdf', this)" />
+              <input type="file" id="fileAadhaarPdf" accept="application/pdf"
+                onchange="handleDocUpload('aadhaar_pdf', this)" />
             </div>
             <div class="doc-tile" onclick="document.getElementById('fileEduExp').click()">
               <div class="doc-icon">🎓</div>
               <div class="doc-label">Education/Experience</div>
               <div class="doc-status empty" id="statusEduExp">Not uploaded</div>
-              <input type="file" id="fileEduExp" accept="image/*,application/pdf" onchange="handleDocUpload('education_experience', this)" />
+              <input type="file" id="fileEduExp" accept="image/*,application/pdf"
+                onchange="handleDocUpload('education_experience', this)" />
             </div>
           </div>
         </div>
@@ -998,7 +1620,8 @@
               <div class="bd-readonly-row"><span>Absent Days:</span><span id="slipAbsent">—</span></div>
               <div class="bd-readonly-row"><span>Gross Salary:</span><span id="slipGross">—</span></div>
               <div class="bd-readonly-row"><span>Deductions:</span><span id="slipDed">—</span></div>
-              <div class="bd-readonly-row" style="border-top:1px solid rgba(255,255,255,0.08); margin-top:6px; padding-top:10px;">
+              <div class="bd-readonly-row"
+                style="border-top:1px solid rgba(255,255,255,0.08); margin-top:6px; padding-top:10px;">
                 <span style="font-weight:700; color:var(--text-primary);">Net Salary:</span>
                 <span id="slipNet" style="color:#6EE7B7; font-size:15px;">—</span>
               </div>
@@ -1041,13 +1664,45 @@
   <script>
     AppSession.protect();
     const TOKEN = AppSession.getToken();
-    const USER  = AppSession.getUser();
+    const USER = AppSession.getUser();
 
     let EMPLOYEE_DATA = null;
-    let CAL_MONTH = new Date().getMonth();
-    let CAL_YEAR  = new Date().getFullYear();
-    const TODAY = new Date();
-    TODAY.setHours(0,0,0,0);
+
+    // ── IST-safe helpers ──────────────────────────────────────
+    // Browser new Date() local timezone use karta hai — lekin agar
+    // user ka device UTC ya koi aur TZ pe hai toh date ek din shift
+    // ho jaati hai. IST (UTC+5:30) explicitly calculate karo.
+    function getISTDate() {
+      const now = new Date();
+      const IST_OFFSET_MS = 330 * 60 * 1000; // 5h 30m
+      return new Date(now.getTime() + IST_OFFSET_MS - now.getTimezoneOffset() * 60 * 1000);
+    }
+
+    // Kisi bhi date/string ko "YYYY-MM-DD" IST string mein convert karo
+    function toISTDateStr(val) {
+      if (!val) return '';
+      // Google Sheets Date object ya ISO string — dono handle karo
+      let d;
+      if (val instanceof Date) {
+        d = val;
+      } else {
+        const str = String(val);
+        // Already YYYY-MM-DD format? Return as-is
+        if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+        d = new Date(str);
+      }
+      if (isNaN(d.getTime())) return String(val).split('T')[0];
+      const IST_OFFSET_MS = 330 * 60 * 1000;
+      const istD = new Date(d.getTime() + IST_OFFSET_MS);
+      return istD.toISOString().split('T')[0];
+    }
+    // ─────────────────────────────────────────────────────────
+
+    const _istNow = getISTDate();
+    let CAL_MONTH = _istNow.getMonth();
+    let CAL_YEAR = _istNow.getFullYear();
+    // TODAY = IST midnight (for future-date comparison in calendar)
+    const TODAY = new Date(_istNow.getFullYear(), _istNow.getMonth(), _istNow.getDate());
 
     document.addEventListener('DOMContentLoaded', () => {
       if (!USER || !USER.employee_id) { window.location.href = 'index.html'; return; }
@@ -1093,7 +1748,7 @@
     function openIdCardModal() {
       if (!EMPLOYEE_DATA) { showToast('Profile data abhi load ho rahi hai, ek second mein try karein.'); return; }
       const emp = EMPLOYEE_DATA;
-      const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() : 'EE';
+      const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'EE';
 
       document.getElementById('idCardAvatar').textContent = initials;
       document.getElementById('idCardName').textContent = emp.name || 'Employee';
@@ -1101,7 +1756,7 @@
       document.getElementById('idCardEmpId').textContent = emp.emp_id || '—';
       document.getElementById('idCardDept').textContent = emp.department_id || '—';
       document.getElementById('idCardJoin').textContent = emp.joining_date
-        ? new Date(emp.joining_date).toLocaleDateString('en-IN', { day:'numeric', month:'numeric', year:'numeric' })
+        ? new Date(emp.joining_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'numeric', year: 'numeric' })
         : '—';
       document.getElementById('idCardMobile').textContent = emp.mobile || '—';
 
@@ -1191,7 +1846,7 @@
       document.getElementById('roBranchName').textContent = d.branch_name || '—';
       document.getElementById('roAccType').textContent = d.account_type || '—';
       document.getElementById('roSubmittedAt').textContent = d.submitted_at
-        ? new Date(d.submitted_at).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })
+        ? new Date(d.submitted_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
         : '—';
     }
 
@@ -1313,12 +1968,12 @@
           wrapper.innerHTML = '<div class="empty-note">Koi salary slip generate nahi hui abhi.</div>';
           return;
         }
-        const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         wrapper.innerHTML = slips.map(s => `
           <div class="leave-row-item" style="cursor:pointer;" onclick="openSlipDetail('${s.slip_id}')">
             <div class="leave-row-left">
-              <div class="leave-type-text">${monthNames[(parseInt(s.month)||1)-1]} ${s.year}</div>
-              <div class="leave-dates-text">Net Pay: ₹${parseFloat(s.net_salary||0).toLocaleString('en-IN', {minimumFractionDigits:2})}</div>
+              <div class="leave-type-text">${monthNames[(parseInt(s.month) || 1) - 1]} ${s.year}</div>
+              <div class="leave-dates-text">Net Pay: ₹${parseFloat(s.net_salary || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
             </div>
             <span class="badge badge-completed">View →</span>
           </div>
@@ -1334,13 +1989,13 @@
         const payload = await res.json();
         if (payload.status === 'success') {
           const s = payload.data.slip;
-          const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-          document.getElementById('slipPeriod').textContent = `${monthNames[(parseInt(s.month)||1)-1]} ${s.year}`;
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          document.getElementById('slipPeriod').textContent = `${monthNames[(parseInt(s.month) || 1) - 1]} ${s.year}`;
           document.getElementById('slipPresent').textContent = (s.present_days ?? '—') + ' days';
           document.getElementById('slipAbsent').textContent = (s.absent_days ?? '0') + ' days';
-          document.getElementById('slipGross').textContent = '₹' + parseFloat(s.gross_salary||0).toLocaleString('en-IN', {minimumFractionDigits:2});
-          document.getElementById('slipDed').textContent = '₹' + parseFloat(s.deductions||0).toLocaleString('en-IN', {minimumFractionDigits:2});
-          document.getElementById('slipNet').textContent = '₹' + parseFloat(s.net_salary||0).toLocaleString('en-IN', {minimumFractionDigits:2});
+          document.getElementById('slipGross').textContent = '₹' + parseFloat(s.gross_salary || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+          document.getElementById('slipDed').textContent = '₹' + parseFloat(s.deductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+          document.getElementById('slipNet').textContent = '₹' + parseFloat(s.net_salary || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
 
           document.getElementById('slipsListWrapper').style.display = 'none';
           document.getElementById('slipDetailWrapper').style.display = 'block';
@@ -1405,7 +2060,7 @@
     }
 
     function bindProfile(emp) {
-      const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() : 'EE';
+      const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'EE';
       document.getElementById('profileAvatarInitials').textContent = initials;
       document.getElementById('profileName').textContent = emp.name || 'Employee';
       document.getElementById('profileDesignation').textContent = '💼 ' + (emp.designation_id || 'Staff Regular');
@@ -1419,41 +2074,86 @@
       // Date of joining — backend field is "joining_date" (see appscript_employees.gs)
       if (emp.joining_date) {
         const d = new Date(emp.joining_date);
-        document.getElementById('infoJoinDate').textContent = d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-        const days = Math.floor((TODAY - d) / (1000*60*60*24));
+        document.getElementById('infoJoinDate').textContent = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const days = Math.floor((TODAY - d) / (1000 * 60 * 60 * 24));
         if (days >= 0) document.getElementById('infoJoinDays').textContent = `${days} Days with us`;
       } else {
         document.getElementById('infoJoinDate').textContent = '—';
         document.getElementById('infoJoinDays').textContent = '';
       }
 
-      // Weekly off — employee-set field, may not exist yet
+      // Weekly off — one-time lock logic
       if (emp.weekly_off) {
+        // Already set — show locked state
         document.getElementById('statWeeklyOff').textContent = emp.weekly_off;
-        document.getElementById('weeklyOffSelect').value = emp.weekly_off;
+        document.getElementById('weeklyOffLocked').style.display = 'block';
+        document.getElementById('weeklyOffSetter').style.display = 'none';
+        document.getElementById('weeklyOffIcon').textContent = '🔒';
       } else {
-        document.getElementById('statWeeklyOff').textContent = 'Not set';
+        // Not set yet — show selector
+        document.getElementById('weeklyOffLocked').style.display = 'none';
+        document.getElementById('weeklyOffSetter').style.display = 'block';
+        document.getElementById('weeklyOffIcon').textContent = '📅';
       }
     }
 
-    /* ── Weekly Off picker ── */
-    async function saveWeeklyOff() {
+    /* ── Weekly Off — one-time selection ── */
+    function onWeeklyOffChange() {
+      const val = document.getElementById('weeklyOffSelect').value;
+      const confirmBtn = document.getElementById('weeklyOffConfirmBtn');
+      confirmBtn.style.display = val ? 'block' : 'none';
+    }
+
+    function confirmWeeklyOff() {
       const val = document.getElementById('weeklyOffSelect').value;
       if (!val) return;
+
+      const confirmed = window.confirm(
+        `Weekly Off: "${val}" set karna chahte ho?\n\n` +
+        `⚠️ Yeh ek baar set ho jayega. Baad mein change karne ke liye HR se request karni hogi.`
+      );
+      if (!confirmed) return;
+
+      saveWeeklyOff(val);
+    }
+
+    async function saveWeeklyOff(day) {
+      const confirmBtn = document.getElementById('weeklyOffConfirmBtn');
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Saving...';
+
       try {
         const res = await fetch(API_URL, {
           method: 'POST',
-          body: JSON.stringify({ token: TOKEN, action: 'updateEmployee', emp_id: USER.employee_id, weekly_off: val })
+          body: JSON.stringify({
+            token: TOKEN,
+            action: 'setMyWeeklyOff',  // dedicated route — employee allowed
+            weekly_off: day
+          })
         });
         const out = await res.json();
         if (out.status === 'success') {
-          document.getElementById('statWeeklyOff').textContent = val;
-          showToast('Weekly off set to ' + val + '!');
+          showToast(`✅ Weekly off "${day}" set ho gaya! Sheet mein save ho gaya.`);
+
+          // Switch to locked state immediately
+          document.getElementById('statWeeklyOff').textContent = day;
+          document.getElementById('weeklyOffLocked').style.display = 'block';
+          document.getElementById('weeklyOffSetter').style.display = 'none';
+          document.getElementById('weeklyOffIcon').textContent = '🔒';
+
+          // Refresh calendar to reflect off day
+          if (EMPLOYEE_DATA) EMPLOYEE_DATA.weekly_off = day;
           loadCalendar();
         } else {
-          showToast(out.message || 'Could not save weekly off.');
+          showToast(out.message || 'Weekly off save nahi hua, dobara try karo.');
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = '✓ Confirm Weekly Off';
         }
-      } catch (e) { showToast('Network error saving weekly off.'); }
+      } catch (e) {
+        showToast('Network error — weekly off save nahi hua.');
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = '✓ Confirm Weekly Off';
+      }
     }
 
     /* ── Section 2: Shift + Monthly Hours ── */
@@ -1477,7 +2177,7 @@
       // Monthly hours from attendance
       try {
         const firstDay = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH, 1));
-        const lastDay  = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH + 1, 0));
+        const lastDay = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH + 1, 0));
         const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&emp_id=${USER.employee_id}&from_date=${firstDay}&to_date=${lastDay}&limit=200`);
         const payload = await res.json();
         if (payload.status === 'success') {
@@ -1508,33 +2208,36 @@
 
     function diffMinutes(inTime, outTime) {
       const toMins = (t) => {
-        const str = String(t);
-        let h = 0, m = 0;
-        if (str.includes('T')) { const p = str.split('T')[1].split(':'); h = +p[0]; m = +p[1]; }
-        else if (str.includes(':')) { const p = str.split(':'); h = +p[0]; m = +p[1]; }
-        return h * 60 + m;
+        const str = String(t).trim();
+        if (str.includes('T')) { const p = str.split('T')[1].split(':'); return +p[0] * 60 + +p[1]; }
+        if (str.includes(':'))  { const p = str.split(':'); return +p[0] * 60 + +p[1]; }
+        if (!isNaN(parseFloat(str))) {
+          // Google Sheets decimal time: 0.4847 = 11:38
+          return Math.round(parseFloat(str) * 24 * 60);
+        }
+        return 0;
       };
       const diff = toMins(outTime) - toMins(inTime);
       return diff > 0 ? diff : 0;
     }
 
     function formatDateYMD(d) {
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
+      // d is a JS Date object — convert to IST "YYYY-MM-DD"
+      const IST_OFFSET_MS = 330 * 60 * 1000;
+      const ist = new Date(d.getTime() + IST_OFFSET_MS);
+      return ist.toISOString().split('T')[0];
     }
 
     /* ── Section 4: Attendance Calendar ── */
     async function loadCalendar() {
-      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
       document.getElementById('calendarMonthLabel').textContent = `${monthNames[CAL_MONTH]} ${CAL_YEAR}`;
 
       const now = new Date();
       document.getElementById('btnCalNext').disabled = (CAL_YEAR === now.getFullYear() && CAL_MONTH === now.getMonth());
 
       const firstDay = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH, 1));
-      const lastDay  = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH + 1, 0));
+      const lastDay = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH + 1, 0));
       const daysInMonth = new Date(CAL_YEAR, CAL_MONTH + 1, 0).getDate();
       const startWeekday = new Date(CAL_YEAR, CAL_MONTH, 1).getDay();
 
@@ -1548,7 +2251,7 @@
         if (payload.status === 'success') {
           const logs = (payload.data && payload.data.data) || [];
           logs.filter(l => l.emp_id === USER.employee_id).forEach(l => {
-            const dateKey = String(l.date).split('T')[0];
+            const dateKey = toISTDateStr(l.date);
             attendanceMap[dateKey] = l;
           });
         }
@@ -1571,15 +2274,15 @@
         const res = await fetch(`${API_URL}?action=getHolidays&token=${TOKEN}&year=${CAL_YEAR}&_ts=${Date.now()}`, { cache: 'no-store' });
         const payload = await res.json();
         if (payload.status === 'success') {
-          (payload.data || []).forEach(h => holidaySet.add(String(h.date).split('T')[0]));
+          (payload.data || []).forEach(h => holidaySet.add(toISTDateStr(h.date)));
         }
       } catch (e) { /* ignore */ }
 
       const weeklyOff = (EMPLOYEE_DATA && EMPLOYEE_DATA.weekly_off) || null;
-      const weekdayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
       let html = '';
-      ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(w => html += `<div class="cal-weekday">${w}</div>`);
+      ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(w => html += `<div class="cal-weekday">${w}</div>`);
       for (let i = 0; i < startWeekday; i++) html += `<div class="cal-cell empty"></div>`;
 
       for (let day = 1; day <= daysInMonth; day++) {
@@ -1604,7 +2307,14 @@
           cls += ' cal-absent';
         }
 
-        html += `<div class="${cls}" title="${dateKey}">${day}</div>`;
+        let tipText = dateKey;
+        if (attendanceMap[dateKey]) {
+          const log = attendanceMap[dateKey];
+          const inT = log.in_time ? log.in_time : '—';
+          const outT = log.out_time ? log.out_time : '—';
+          tipText = `${dateKey}\nIN: ${inT}  OUT: ${outT}`;
+        }
+        html += `<div class="${cls}" title="${tipText}">${day}</div>`;
       }
 
       document.getElementById('calendarGrid').innerHTML = html;
@@ -1643,20 +2353,20 @@
     }
 
     function renderTaskCard(t) {
-      const dueDate = t.due_date ? new Date(t.due_date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+      const dueDate = t.due_date ? new Date(t.due_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
       return `
         <div class="glass-card task-card">
           <div class="task-top">
             <div class="task-title">${t.title}</div>
-            <span class="badge ${priorityClass[t.priority] || 'badge-low'}">${(t.priority||'').toUpperCase()}</span>
+            <span class="badge ${priorityClass[t.priority] || 'badge-low'}">${(t.priority || '').toUpperCase()}</span>
           </div>
           <div class="task-due">📅 Due: ${dueDate}</div>
           <div class="task-footer">
             <span class="badge ${t.status === 'completed' ? 'badge-completed' : 'badge-pending'}">${t.status}</span>
             ${t.status !== 'completed'
-              ? `<button class="btn-done" onclick="completeMyTask('${t.task_id}')">Mark Complete ✓</button>`
-              : '<span style="color:var(--text-dim); font-size:12px;">Done</span>'
-            }
+          ? `<button class="btn-done" onclick="completeMyTask('${t.task_id}')">Mark Complete ✓</button>`
+          : '<span style="color:var(--text-dim); font-size:12px;">Done</span>'
+        }
           </div>
         </div>
       `;
@@ -1678,7 +2388,7 @@
     function calcLeaveDays(fromStr, toStr) {
       if (!fromStr || !toStr) return 1;
       const from = new Date(fromStr), to = new Date(toStr);
-      const diff = Math.round((to - from) / (1000*60*60*24)) + 1;
+      const diff = Math.round((to - from) / (1000 * 60 * 60 * 24)) + 1;
       return diff > 0 ? diff : 1;
     }
 
@@ -1730,8 +2440,8 @@
           }
           const badgeClass = { approved: 'badge-approved', rejected: 'badge-rejected', pending: 'badge-pending' };
           document.getElementById('myLeavesList').innerHTML = mine.slice(0, 8).map(l => {
-            const from = l.from_date ? new Date(l.from_date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' }) : '—';
-            const to = l.to_date ? new Date(l.to_date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' }) : '—';
+            const from = l.from_date ? new Date(l.from_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—';
+            const to = l.to_date ? new Date(l.to_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—';
             return `
               <div class="leave-row-item">
                 <div class="leave-row-left">
@@ -1749,25 +2459,66 @@
     /* ── Section 7: Punch Status (read-only) ── */
     async function loadTodayPunchStatus() {
       const todayStr = formatDateYMD(new Date());
-      document.getElementById('punchTodayDate').textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', day:'2-digit', month:'short', year:'numeric' });
+      document.getElementById('punchTodayDate').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' });
 
       try {
         const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&emp_id=${USER.employee_id}&date=${todayStr}&limit=5`);
         const payload = await res.json();
         if (payload.status === 'success') {
           const logs = (payload.data && payload.data.data) || [];
-          const mine = logs.find(l => l.emp_id === USER.employee_id && String(l.date).split('T')[0] === todayStr);
+          const mine = logs.find(l => l.emp_id === USER.employee_id && toISTDateStr(l.date) === todayStr);
           if (mine) {
-            document.getElementById('punchInTime').textContent = formatTime12Hour(mine.in_time);
-            document.getElementById('punchOutTime').textContent = formatTime12Hour(mine.out_time);
+            document.getElementById('punchInTime').textContent = mine.in_time ? formatTime12Hour(mine.in_time) : '—';
+            document.getElementById('punchOutTime').textContent = mine.out_time ? formatTime12Hour(mine.out_time) : '—';
+
+            // Live badge — show if punched in but not yet out
+            const badge = document.getElementById('punchLiveBadge');
+            if (mine.in_time && !mine.out_time) {
+              badge.style.display = 'inline-flex';
+              badge.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#34D399;display:inline-block;animation:pulse 1.5s ease-in-out infinite;"></span> Punched In';
+            } else if (mine.in_time && mine.out_time) {
+              badge.style.display = 'inline-flex';
+              badge.style.background = 'rgba(108,142,255,0.12)';
+              badge.style.color = '#818CF8';
+              badge.style.borderColor = 'rgba(108,142,255,0.25)';
+              badge.innerHTML = '✓ Day Complete';
+            }
+
+            // Hours worked
             if (mine.in_time && mine.out_time) {
               const mins = diffMinutes(mine.in_time, mine.out_time);
-              document.getElementById('punchHoursToday').textContent = `${Math.floor(mins/60)}h ${mins%60}m`;
+              document.getElementById('punchHoursToday').textContent = `${Math.floor(mins / 60)}h ${mins % 60}m`;
             } else if (mine.in_time) {
-              document.getElementById('punchHoursToday').textContent = 'In progress';
+              // Calculate live hours since punch in
+              // Handle both "HH:MM" string and Google Sheets decimal (0.4847 = 11:38)
+              const now = new Date();
+              let inMins = 0;
+              const inStr = String(mine.in_time).trim();
+              if (!isNaN(parseFloat(inStr)) && !inStr.includes(':')) {
+                inMins = Math.round(parseFloat(inStr) * 24 * 60);
+              } else {
+                const parts = inStr.split(':');
+                inMins = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+              }
+              const nowMins = now.getHours() * 60 + now.getMinutes();
+              const worked = nowMins - inMins;
+              if (worked > 0) {
+                document.getElementById('punchHoursToday').textContent = `${Math.floor(worked / 60)}h ${worked % 60}m (live)`;
+              } else {
+                document.getElementById('punchHoursToday').textContent = 'In progress';
+              }
+            } else {
+              document.getElementById('punchHoursToday').textContent = '—';
             }
+
+            // Highlight card border green if punched in
+            if (mine.in_time) {
+              const card = document.getElementById('punchStatusCard');
+              if (card) card.style.borderColor = 'rgba(52,211,153,0.3)';
+            }
+
           } else {
-            document.getElementById('punchInTime').textContent = '—';
+            document.getElementById('punchInTime').textContent = 'Not punched';
             document.getElementById('punchOutTime').textContent = '—';
             document.getElementById('punchHoursToday').textContent = '—';
           }

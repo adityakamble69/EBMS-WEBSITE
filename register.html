@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher / Employee Registration — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:      #0A0A0B;
+      --card-bg:      #15151A;
+      --glass-border: rgba(255,255,255,0.10);
+      --text-primary: #F4F4F5;
+      --text-muted:   #A1A1AA;
+      --text-dim:     #6B7280;
+      --accent:       #A8AFC4;
+      --accent-glow:  #D4D9E6;
+      --error:        #F87171;
+      --success:      #34D399;
+      --radius:       22px;
+      --radius-sm:    10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0A0A0B
+        radial-gradient(circle at 12% -10%, rgba(255,255,255,0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255,255,255,0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    @media (max-width: 600px) { body { padding: 20px 10px; } }
+
+    .form-shell {
+      width: 100%; max-width: 560px;
+      border-radius: var(--radius);
+      padding: 1px;
+      background: linear-gradient(160deg, rgba(255,255,255,0.16), rgba(255,255,255,0.03));
+      height: fit-content;
+    }
+
+    .form-card {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: calc(var(--radius) - 1px);
+      padding: 36px 32px 28px;
+    }
+
+    @media (max-width: 480px) { .form-card { padding: 28px 20px 22px; } }
+
+    /* ---- Brand ---- */
+    .brand-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; margin-bottom: 6px;
+    }
+    .brand-logo-mark { width: 30px; height: 30px; flex-shrink: 0; }
+    .brand-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700; font-size: 26px;
+      letter-spacing: 0.5px; color: var(--text-primary);
+    }
+    .form-subtitle {
+      text-align: center; font-size: 12px; font-weight: 600;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: 28px;
+    }
+
+    /* ---- Section divider ---- */
+    .section-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 28px 0 20px;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: var(--glass-border);
+    }
+    .section-divider span {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 12.5px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--accent-glow); white-space: nowrap;
+    }
+
+    /* ---- Fields ---- */
+    .field-group { margin-bottom: 20px; }
+    .field-group label {
+      display: block; font-size: 12px; font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      color: #D4D4D8; margin-bottom: 8px;
+    }
+    .field-group label .req-star { color: var(--error); margin-left: 2px; }
+    .field-group input[type="text"],
+    .field-group input[type="tel"],
+    .field-group input[type="email"],
+    .field-group input[type="date"],
+    .field-group select,
+    .field-group textarea {
+      width: 100%; background: transparent; border: none;
+      border-bottom: 1.5px solid var(--glass-border);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif; font-size: 15px;
+      padding: 6px 2px 10px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .field-group select { cursor: pointer; }
+    .field-group select option { background: #18181B; color: #fff; }
+    .field-group input::placeholder,
+    .field-group textarea::placeholder { color: #52525B; }
+    .field-group input:focus,
+    .field-group select:focus,
+    .field-group textarea:focus { border-color: var(--accent-glow); }
+    .field-group input.field-invalid,
+    .field-group select.field-invalid { border-color: var(--error); }
+
+    .field-hint {
+      font-size: 11px; color: var(--text-dim);
+      margin-top: 6px; text-align: right;
+    }
+    .field-error-msg {
+      font-size: 11.5px; color: var(--error);
+      margin-top: 6px; display: none;
+    }
+    .field-error-msg.show { display: block; }
+
+    /* ---- File upload ---- */
+    .file-upload-row {
+      display: flex; align-items: center;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .file-upload-btn {
+      background: #3F3F46; color: #fff; border: none;
+      padding: 9px 16px; border-radius: 7px;
+      font-size: 13.5px; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
+      transition: background 0.18s;
+    }
+    .file-upload-btn:hover { background: #52525B; }
+    .file-upload-row input[type="file"],
+    input[type="file"] { display: none; }
+    .file-chosen-name {
+      font-size: 13px; color: var(--text-dim);
+      overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap; flex: 1; min-width: 0;
+    }
+    .file-chosen-name.has-file { color: var(--success); }
+    .file-preview-thumb {
+      width: 40px; height: 40px; border-radius: 8px;
+      object-fit: cover; border: 1px solid var(--glass-border);
+      flex-shrink: 0; display: none;
+    }
+
+    /* ---- Submit ---- */
+    .submit-btn {
+      width: 100%; margin-top: 8px;
+      background: rgba(255,255,255,0.92);
+      color: #0A0A0B; border: none; padding: 15px;
+      border-radius: 100px; font-size: 15px; font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s, background 0.18s;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-1px); background: #ffffff;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+    }
+    .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .footer-note {
+      text-align: center; font-size: 11.5px;
+      color: var(--text-dim); margin-top: 18px;
+    }
+
+    /* ---- Status overlay ---- */
+    .status-overlay {
+      position: fixed; inset: 0;
+      background: rgba(5,5,6,0.85); backdrop-filter: blur(6px);
+      display: none; align-items: center;
+      justify-content: center; z-index: 999; padding: 24px;
+    }
+    .status-overlay.show { display: flex; }
+    .status-card {
+      background: var(--card-bg); border: 1px solid var(--glass-border);
+      border-radius: var(--radius); padding: 36px 32px;
+      text-align: center; max-width: 380px; width: 100%;
+    }
+    .status-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 18px; font-size: 26px;
+    }
+    .status-icon.loading {
+      border: 3px solid var(--glass-border);
+      border-top-color: var(--accent-glow);
+      animation: spin 0.8s linear infinite;
+    }
+    .status-icon.success {
+      background: rgba(52,211,153,0.14); color: var(--success);
+      border: 1px solid rgba(52,211,153,0.3);
+    }
+    .status-icon.error {
+      background: rgba(244,113,113,0.14); color: var(--error);
+      border: 1px solid rgba(244,113,113,0.3);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 17px; font-weight: 700; margin-bottom: 8px;
+    }
+    .status-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
+    .status-id {
+      margin-top: 14px; font-size: 12.5px; color: var(--accent-glow);
+      font-family: 'Space Grotesk', sans-serif;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px; padding: 6px 12px; display: inline-block;
+    }
+    .status-card .submit-btn { margin-top: 22px; }
+  </style>
+</head>
+<body>
+  <div class="form-shell">
+    <div class="form-card">
+
+      <div class="brand-row">
+        <svg class="brand-logo-mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="16,2 28,9 28,23 16,30 4,23 4,9"
+            fill="none" stroke="url(#logoGrad)" stroke-width="2.4"/>
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#E4E4E7"/>
+              <stop offset="100%" stop-color="#71717A"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="brand-name">CODELINE.AI</div>
+      </div>
+      <div class="form-subtitle">Teacher / Employee Registration</div>
+
+      <form id="registrationForm" onsubmit="handleFormSubmit(event)" novalidate>
+
+        <!-- ---- Personal Information ---- -->
+        <div class="section-divider"><span>Personal Information</span></div>
+
+        <div class="field-group">
+          <label>Full Name<span class="req-star">*</span></label>
+          <input type="text" id="fName" placeholder="Enter full name" required />
+          <div class="field-error-msg" id="errName">Full name is required.</div>
+        </div>
+
+        <div class="field-group">
+          <label>Date of Birth<span class="req-star">*</span></label>
+          <input type="date" id="fDob" required />
+          <div class="field-error-msg" id="errDob">Date of birth is required.</div>
+        </div>
+
+        <div class="field-group">
+          <label>Gender<span class="req-star">*</span></label>
+          <select id="fGender" required>
+            <option value="" selected disabled>-- Select Gender --</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+          <div class="field-error-msg" id="errGender">Please select a gender.</div>
+        </div>
+
+        <div class="field-group">
+          <label>Contact Number<span class="req-star">*</span></label>
+          <input type="tel" id="fMobile" placeholder="e.g. 9876543210" maxlength="10" required />
+          <div class="field-error-msg" id="errMobile">Enter a valid 10-digit mobile number.</div>
+        </div>
+
+        <div class="field-group">
+          <label>Email ID<span class="req-star">*</span></label>
+          <input type="email" id="fEmail" placeholder="example@gmail.com" required />
+          <div class="field-error-msg" id="errEmail">Enter a valid email address.</div>
+        </div>
+
+        <div class="field-group">
+          <label>Current Address<span class="req-star">*</span></label>
+          <input type="text" id="fCurrentAddress" placeholder="Enter current address" required />
+          <div class="field-error-msg" id="errCurrentAddress">Current address is required.</div>
+        </div>
+
+        <div class="field-group">
+          <label>Permanent Address</label>
+          <input type="text" id="fPermanentAddress" placeholder="Enter permanent address (if different)" />
+        </div>
+
+        <!-- ---- Professional Details ---- -->
+        <div class="section-divider"><span>Professional Details</span></div>
+
+        <div class="field-group">
+          <label>Role / Designation<span class="req-star">*</span></label>
+          <select id="fRole" required>
+            <option value="" selected disabled>-- Select Role --</option>
+            <option value="Teacher">Teacher</option>
+            <option value="Admin">Admin</option>
+            <option value="Accountant">Accountant</option>
+            <option value="Office Staff">Office Staff</option>
+          </select>
+          <div class="field-error-msg" id="errRole">Please select a role.</div>
+        </div>
+
+        <div class="field-group">
+          <label>Department<span class="req-star">*</span></label>
+          <select id="fDepartment" required>
+            <option value="" selected disabled>-- Select Department --</option>
+            <option value="IT">IT</option>
+            <option value="Non-IT">Non-IT</option>
+            <option value="Technical">Technical</option>
+            <option value="Back Office / Admin">Back Office / Admin</option>
+            <option value="Other">Other</option>
+          </select>
+          <div class="field-error-msg" id="errDepartment">Please select a department.</div>
+        </div>
+
+        <div class="field-group">
+          <label>Highest Qualification<span class="req-star">*</span></label>
+          <input type="text" id="fQualification" placeholder="e.g. B.Ed, M.Tech, PhD" required />
+          <div class="field-error-msg" id="errQualification">Qualification is required.</div>
+        </div>
+
+        <!-- ---- Document Uploads ---- -->
+        <div class="section-divider"><span>Documents Upload</span></div>
+
+        <div class="field-group">
+          <label>Profile Picture<span class="req-star">*</span></label>
+          <div class="file-upload-row">
+            <button type="button" class="file-upload-btn"
+              onclick="document.getElementById('fPhoto').click()">Choose File</button>
+            <img class="file-preview-thumb" id="thumbPhoto" alt="" />
+            <span class="file-chosen-name" id="namePhoto">No file chosen</span>
+          </div>
+          <input type="file" id="fPhoto" accept="image/*"
+            onchange="handleFileSelect(this, 'photo')" />
+          <div class="field-hint">Size: 300 KB to 4 MB</div>
+          <div class="field-error-msg" id="errPhoto"></div>
+        </div>
+
+        <div class="field-group">
+          <label>Signature Upload<span class="req-star">*</span></label>
+          <div class="file-upload-row">
+            <button type="button" class="file-upload-btn"
+              onclick="document.getElementById('fSignature').click()">Choose File</button>
+            <img class="file-preview-thumb" id="thumbSignature" alt="" />
+            <span class="file-chosen-name" id="nameSignature">No file chosen</span>
+          </div>
+          <input type="file" id="fSignature" accept="image/*"
+            onchange="handleFileSelect(this, 'signature')" />
+          <div class="field-hint">Size: 300 KB to 4 MB</div>
+          <div class="field-error-msg" id="errSignature"></div>
+        </div>
+
+        <div class="field-group">
+          <label>Aadhar Card (PDF)<span class="req-star">*</span></label>
+          <div class="file-upload-row">
+            <button type="button" class="file-upload-btn"
+              onclick="document.getElementById('fAadhar').click()">Choose File</button>
+            <span class="file-chosen-name" id="nameAadhar">No file chosen</span>
+          </div>
+          <input type="file" id="fAadhar" accept="application/pdf"
+            onchange="handleFileSelect(this, 'aadhar')" />
+          <div class="field-hint">Format: PDF | Size: 300 KB to 4 MB</div>
+          <div class="field-error-msg" id="errAadhar"></div>
+        </div>
+
+        <div class="field-group">
+          <label>Experience Letter / Degree (PDF)<span class="req-star">*</span></label>
+          <div class="file-upload-row">
+            <button type="button" class="file-upload-btn"
+              onclick="document.getElementById('fExperience').click()">Choose File</button>
+            <span class="file-chosen-name" id="nameExperience">No file chosen</span>
+          </div>
+          <input type="file" id="fExperience" accept="application/pdf"
+            onchange="handleFileSelect(this, 'experience_doc')" />
+          <div class="field-hint">Format: PDF | Size: 300 KB to 4 MB</div>
+          <div class="field-error-msg" id="errExperience"></div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">Register Employee</button>
+      </form>
+
+      <div class="footer-note">© 2026 Codeline.AI | All Rights Reserved</div>
+    </div>
+  </div>
+
+  <!-- Submission status overlay -->
+  <div class="status-overlay" id="statusOverlay">
+    <div class="status-card" id="statusCard"></div>
+  </div>
+
+  <script>
+    // ============================================================
+    // CONFIG
+    // ============================================================
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwzYZmxZ3AQCBdXRDgg5p442mW-THoHvR4YI2eA1G2ERICPS052J1oM5CXPYc83w0wnvw/exec';
+
+    const MIN_FILE_BYTES = 300 * 1024;
+    const MAX_FILE_BYTES = 4 * 1024 * 1024;
+
+    // Stores selected files as { filename, mimeType, base64 }
+    const selectedFiles = {
+      photo:          null,
+      signature:      null,
+      aadhar:         null,
+      experience_doc: null
+    };
+
+    const FILE_ERROR_IDS = {
+      photo:          'errPhoto',
+      signature:      'errSignature',
+      aadhar:         'errAadhar',
+      experience_doc: 'errExperience'
+    };
+
+    const FILE_NAME_IDS = {
+      photo:          'namePhoto',
+      signature:      'nameSignature',
+      aadhar:         'nameAadhar',
+      experience_doc: 'nameExperience'
+    };
+
+    // ---- Error helpers ----
+    function showErr(id, msg) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+
+    function clearErr(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = '';
+      el.classList.remove('show');
+    }
+
+    // ---- File selection handler ----
+    function handleFileSelect(inputEl, key) {
+      const file  = inputEl.files && inputEl.files[0];
+      const errId  = FILE_ERROR_IDS[key];
+      const nameId = FILE_NAME_IDS[key];
+
+      clearErr(errId);
+      selectedFiles[key] = null;
+
+      if (!file) {
+        document.getElementById(nameId).textContent = 'No file chosen';
+        document.getElementById(nameId).classList.remove('has-file');
+        return;
+      }
+
+      if (file.size < MIN_FILE_BYTES || file.size > MAX_FILE_BYTES) {
+        showErr(errId, 'File must be between 300 KB and 4 MB.');
+        inputEl.value = '';
+        document.getElementById(nameId).textContent = 'No file chosen';
+        document.getElementById(nameId).classList.remove('has-file');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        selectedFiles[key] = {
+          filename: file.name,
+          mimeType: file.type || 'application/octet-stream',
+          base64:   reader.result.split(',')[1]
+        };
+        document.getElementById(nameId).textContent = file.name;
+        document.getElementById(nameId).classList.add('has-file');
+
+        // Image preview for photo / signature
+        const thumbKey   = key.charAt(0).toUpperCase() + key.slice(1).replace('_doc', 'Doc');
+        const thumbId    = 'thumb' + thumbKey;
+        const thumb      = document.getElementById(thumbId);
+        if (thumb && file.type.startsWith('image/')) {
+          thumb.src = reader.result;
+          thumb.style.display = 'block';
+        }
+      };
+      reader.onerror = function () {
+        showErr(errId, 'Could not read this file — please try again.');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ---- Text field validators ----
+    function validateField(id, errId, testFn, msg) {
+      const val = document.getElementById(id).value.trim();
+      const ok  = testFn(val);
+      if (ok) clearErr(errId); else showErr(errId, msg);
+      return ok;
+    }
+
+    function validateAll() {
+      let ok = true;
+
+      ok = validateField('fName', 'errName',
+        v => v.length > 0, 'Full name is required.') && ok;
+
+      ok = validateField('fDob', 'errDob',
+        v => v.length > 0, 'Date of birth is required.') && ok;
+
+      ok = validateField('fGender', 'errGender',
+        v => v.length > 0, 'Please select a gender.') && ok;
+
+      ok = validateField('fMobile', 'errMobile',
+        v => /^[0-9]{10}$/.test(v), 'Enter a valid 10-digit mobile number.') && ok;
+
+      ok = validateField('fEmail', 'errEmail',
+        v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'Enter a valid email address.') && ok;
+
+      ok = validateField('fCurrentAddress', 'errCurrentAddress',
+        v => v.length > 0, 'Current address is required.') && ok;
+
+      ok = validateField('fRole', 'errRole',
+        v => v.length > 0, 'Please select a role.') && ok;
+
+      ok = validateField('fDepartment', 'errDepartment',
+        v => v.length > 0, 'Please select a department.') && ok;
+
+      ok = validateField('fQualification', 'errQualification',
+        v => v.length > 0, 'Qualification is required.') && ok;
+
+      // File uploads
+      Object.keys(selectedFiles).forEach(function (key) {
+        if (!selectedFiles[key]) {
+          showErr(FILE_ERROR_IDS[key], 'This file is required.');
+          ok = false;
+        }
+      });
+
+      return ok;
+    }
+
+    // ---- Status overlay ----
+    function showStatusOverlay(state, opts) {
+      opts = opts || {};
+      const card = document.getElementById('statusCard');
+
+      if (state === 'loading') {
+        card.innerHTML = `
+          <div class="status-icon loading"></div>
+          <div class="status-title">Submitting your details…</div>
+          <div class="status-desc">Please wait while we upload your documents and save your registration.</div>
+        `;
+      } else if (state === 'success') {
+        card.innerHTML = `
+          <div class="status-icon success">✓</div>
+          <div class="status-title">Registration Successful!</div>
+          <div class="status-desc">${opts.message || 'Your details have been saved.'}</div>
+          ${opts.candidateId ? `<div class="status-id">Reference ID: ${opts.candidateId}</div>` : ''}
+          <button type="button" class="submit-btn" onclick="window.location.reload()">Submit Another Response</button>
+        `;
+      } else if (state === 'error') {
+        card.innerHTML = `
+          <div class="status-icon error">✕</div>
+          <div class="status-title">Submission Failed</div>
+          <div class="status-desc">${opts.message || 'Something went wrong. Please try again.'}</div>
+          <button type="button" class="submit-btn" onclick="closeStatusOverlay()">Try Again</button>
+        `;
+      }
+
+      document.getElementById('statusOverlay').classList.add('show');
+    }
+
+    function closeStatusOverlay() {
+      document.getElementById('statusOverlay').classList.remove('show');
+    }
+
+    function setSubmitting(on) {
+      const btn = document.getElementById('submitBtn');
+      btn.disabled    = on;
+      btn.textContent = on ? 'Submitting…' : 'Register Employee';
+    }
+
+    // ---- Main submit handler ----
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+
+      if (!validateAll()) return;
+
+      const payload = {
+        action:            'registerCandidate',
+        name:              document.getElementById('fName').value.trim(),
+        dob:               document.getElementById('fDob').value,
+        gender:            document.getElementById('fGender').value,
+        mobile:            document.getElementById('fMobile').value.trim(),
+        email:             document.getElementById('fEmail').value.trim(),
+        current_address:   document.getElementById('fCurrentAddress').value.trim(),
+        permanent_address: document.getElementById('fPermanentAddress').value.trim(),
+        role:              document.getElementById('fRole').value,
+        department:        document.getElementById('fDepartment').value,
+        qualification:     document.getElementById('fQualification').value.trim(),
+        photo:             selectedFiles.photo,
+        signature:         selectedFiles.signature,
+        aadhar:            selectedFiles.aadhar,
+        experience_doc:    selectedFiles.experience_doc
+      };
+
+      setSubmitting(true);
+      showStatusOverlay('loading');
+
+      try {
+        const res = await fetch(API_URL, {
+          method:  'POST',
+          body:    JSON.stringify(payload)
+          // NOTE: No Content-Type header — Apps Script requires
+          // the request NOT to be pre-flighted with CORS headers.
+        });
+
+        const out = await res.json();
+
+        if (out.status === 'success') {
+          showStatusOverlay('success', {
+            message:     out.message,
+            candidateId: out.data && out.data.candidate_id
+          });
+        } else {
+          showStatusOverlay('error', {
+            message: out.message || 'Please check your details and try again.'
+          });
+          setSubmitting(false);
+        }
+      } catch (err) {
+        showStatusOverlay('error', {
+          message: 'Network error — please check your connection and try again.'
+        });
+        setSubmitting(false);
+      }
+    }
+
+    // Inline validation on blur for mobile
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('fMobile').addEventListener('blur', function () {
+        validateField('fMobile', 'errMobile',
+          function (v) { return /^[0-9]{10}$/.test(v); },
+          'Enter a valid 10-digit mobile number.'
+        );
+      });
+      document.getElementById('fEmail').addEventListener('blur', function () {
+        validateField('fEmail', 'errEmail',
+          function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); },
+          'Enter a valid email address.'
+        );
+      });
+    });
+  </script>
+</body>
+</html>

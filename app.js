@@ -67,16 +67,28 @@ function showToast(message) {
 }
 
 function formatTime12Hour(timeValue) {
-  if (!timeValue) return '—';
+  if (!timeValue && timeValue !== 0) return '—';
   const str = String(timeValue).trim();
   let h = 0, m = 0;
+
   if (str.includes('T')) {
+    // ISO datetime string: "2026-06-27T11:38:00.000Z"
     const parts = str.split('T')[1].split(':');
     h = parseInt(parts[0], 10); m = parseInt(parts[1], 10);
   } else if (str.includes(':')) {
+    // Plain time string: "11:38" or "11:38:00"
     const parts = str.split(':');
     h = parseInt(parts[0], 10); m = parseInt(parts[1], 10);
-  } else { return str; }
+  } else if (!isNaN(parseFloat(str))) {
+    // Google Sheets decimal time: 0.4847... = 11:38
+    // Sheets stores time as fraction of a day (1.0 = 24 hours)
+    const totalMinutes = Math.round(parseFloat(str) * 24 * 60);
+    h = Math.floor(totalMinutes / 60) % 24;
+    m = totalMinutes % 60;
+  } else {
+    return str; // Unknown format — return as-is
+  }
+
   const ampm = h >= 12 ? 'PM' : 'AM';
   h = h % 12; h = h ? h : 12;
   return (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m) + ' ' + ampm;

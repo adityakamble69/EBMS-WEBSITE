@@ -191,6 +191,7 @@
         }
 
         @media (max-width: 900px) {
+
             .search-input-box,
             .dropdown-select {
                 font-size: 16px;
@@ -321,6 +322,23 @@
             cursor: not-allowed;
         }
 
+        .btn-secondary {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--glass-blur));
+            color: #fff;
+            padding: 9px 16px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.18s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--glass-strong);
+        }
+
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -408,10 +426,344 @@
         }
 
         @media (max-width: 900px) {
+
             .form-group input,
             .form-group select {
                 font-size: 16px;
             }
+        }
+
+        /* ============================================================
+           PROFILE DRAWER — slide-in panel (replaces employee_profile.html)
+           ============================================================ */
+        .profile-drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(4px);
+            z-index: 1200;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.28s ease;
+        }
+
+        .profile-drawer-overlay.open {
+            display: block;
+            opacity: 1;
+        }
+
+        .profile-drawer-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            width: 480px;
+            max-width: 100%;
+            background: rgba(15, 15, 17, 0.92);
+            border-left: 1px solid var(--glass-border);
+            backdrop-filter: blur(28px) saturate(160%);
+            -webkit-backdrop-filter: blur(28px) saturate(160%);
+            box-shadow: -24px 0 60px rgba(0, 0, 0, 0.5);
+            z-index: 1201;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .profile-drawer-panel.open {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 560px) {
+            .profile-drawer-panel {
+                width: 100%;
+            }
+        }
+
+        .pd-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--glass-border);
+            flex-shrink: 0;
+        }
+
+        .pd-header-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pd-close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            margin: -8px;
+            border-radius: 8px;
+            line-height: 1;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .pd-close-btn:hover {
+            background: var(--glass-strong);
+            color: #fff;
+        }
+
+        .pd-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 22px 32px;
+        }
+
+        .pd-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .pd-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+        }
+
+        .pd-loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            color: var(--text-dim);
+            font-size: 13.5px;
+            gap: 12px;
+        }
+
+        .pd-spinner {
+            width: 26px;
+            height: 26px;
+            border: 2.5px solid var(--glass-border);
+            border-top-color: var(--accent-glow);
+            border-radius: 50%;
+            animation: pd-spin 0.8s linear infinite;
+        }
+
+        @keyframes pd-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* --- Identity hero --- */
+        .pd-hero {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .pd-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(168, 175, 196, 0.32), rgba(212, 217, 230, 0.12));
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent-glow);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .pd-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .pd-hero-info h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .pd-hero-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+            flex-wrap: wrap;
+        }
+
+        .pd-id-chip {
+            font-size: 12px;
+            color: var(--accent-glow);
+            font-family: 'Space Grotesk', sans-serif;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 2px 8px;
+        }
+
+        .pd-status-pill {
+            font-size: 10.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 2.5px 9px;
+            border-radius: 100px;
+        }
+
+        .pd-status-pill.active {
+            background: rgba(52, 211, 153, 0.14);
+            color: var(--success);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .pd-status-pill.inactive {
+            background: rgba(244, 113, 113, 0.14);
+            color: #F87171;
+            border: 1px solid rgba(244, 113, 113, 0.3);
+        }
+
+        /* --- Section cards --- */
+        .pd-section {
+            margin-bottom: 22px;
+        }
+
+        .pd-section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .pd-section-title .pd-edit-trigger {
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--accent-glow);
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .pd-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+        }
+
+        .pd-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 20px;
+        }
+
+        .pd-field label {
+            font-size: 10.5px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .pd-field .pd-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .pd-field .pd-value.muted {
+            color: var(--text-muted);
+        }
+
+        .pd-field .pd-input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 7px 9px;
+            color: #fff;
+            font-size: 13.5px;
+            width: 100%;
+            display: none;
+            outline: none;
+            font-family: inherit;
+            transition: border-color 0.18s, background 0.18s;
+        }
+
+        .pd-field .pd-input:focus {
+            border-color: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .pd-field.full {
+            grid-column: 1 / -1;
+        }
+
+        .pd-weekly-off-setter {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 6px;
+        }
+
+        .pd-weekly-off-setter select {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 7px;
+            padding: 6px 8px;
+            color: #fff;
+            font-size: 12.5px;
+            outline: none;
+        }
+
+        .pd-weekly-off-setter button {
+            font-size: 11.5px;
+            padding: 5px 11px;
+            white-space: nowrap;
+        }
+
+        .pd-footer {
+            display: none;
+            gap: 10px;
+            justify-content: flex-end;
+            padding: 16px 22px;
+            border-top: 1px solid var(--glass-border);
+            flex-shrink: 0;
+        }
+
+        .pd-footer.open {
+            display: flex;
+        }
+
+        .pd-error-state {
+            text-align: center;
+            color: var(--text-dim);
+            padding: 60px 20px;
+            font-size: 13.5px;
         }
     </style>
 </head>
@@ -482,7 +834,8 @@
         <div class="modal-card">
             <div class="modal-header">
                 <h3>➕ Add New Employee</h3>
-                <button style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer; padding:10px; margin:-10px; border-radius:8px; line-height:1;"
+                <button
+                    style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer; padding:10px; margin:-10px; border-radius:8px; line-height:1;"
                     onclick="toggleModal(false)">×</button>
             </div>
             <div class="modal-body">
@@ -559,7 +912,9 @@
         <div class="modal-card" style="max-width:380px; text-align:center;">
             <div class="modal-header" style="justify-content:space-between;">
                 <h3>🔲 Employee QR Card</h3>
-                <button style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:10px;margin:-10px;border-radius:8px;line-height:1;" onclick="closeQrModal()">×</button>
+                <button
+                    style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:10px;margin:-10px;border-radius:8px;line-height:1;"
+                    onclick="closeQrModal()">×</button>
             </div>
             <div style="padding:28px 24px;">
                 <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;" id="qrEmpName">—</div>
@@ -569,14 +924,40 @@
                     <canvas id="qrActualCanvas" style="border-radius:12px; background:#fff; padding:12px;"></canvas>
                 </div>
                 <div style="font-size:11px; color:var(--text-dim); margin-bottom:16px; line-height:1.6;">
-                    Yeh QR Attendance Console pe scan karo<br/>Punch In / Punch Out automatically register hoga
+                    Yeh QR Attendance Console pe scan karo<br />Punch In / Punch Out automatically register hoga
                 </div>
-                <button onclick="downloadQrCard()" style="background:rgba(255,255,255,0.09);border:1px solid var(--glass-border);color:#fff;padding:9px 22px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:600;font-family:'Inter',sans-serif;width:100%;transition:background 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.09)'">
+                <button onclick="downloadQrCard()"
+                    style="background:rgba(255,255,255,0.09);border:1px solid var(--glass-border);color:#fff;padding:9px 22px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:600;font-family:'Inter',sans-serif;width:100%;transition:background 0.18s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.15)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.09)'">
                     ⬇️ QR Download Karo
                 </button>
             </div>
         </div>
     </div>
+    <!-- ============================================================
+         PROFILE DRAWER — slide-in employee profile panel
+         ============================================================ -->
+    <div class="profile-drawer-overlay" id="profileDrawerOverlay" onclick="closeProfileDrawer()"></div>
+    <div class="profile-drawer-panel" id="profileDrawerPanel">
+        <div class="pd-header">
+            <div class="pd-header-title">👤 Employee Profile</div>
+            <button class="pd-close-btn" onclick="closeProfileDrawer()">×</button>
+        </div>
+        <div class="pd-body" id="pdBody">
+            <div class="pd-loading-state">
+                <div class="pd-spinner"></div>
+                Loading profile…
+            </div>
+        </div>
+        <div class="pd-footer" id="pdFooter">
+            <button type="button" class="btn-secondary" onclick="setProfileEditMode(false)">Cancel</button>
+            <button type="button" class="btn-action" onclick="saveProfileChanges()"
+                style="background: linear-gradient(135deg, #34D399 0%, #059669 100%); border: none;">Save
+                Changes</button>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="app.js"></script>
     <script>
@@ -705,9 +1086,9 @@
           <td>${emp.designation_id || 'Staff Regular'}</td>
           <td>${emp.mobile || '—'}</td>
           <td><span class="status-pill ${emp.status === 'active' ? 'pill-active' : 'pill-inactive'}">${emp.status === 'active' ? 'Active' : 'Inactive'}</span></td>
-          <td><a class="link-profile" href="employee_profile.html?emp_id=${emp.emp_id}">View Profile →</a>
+          <td><a class="link-profile" href="javascript:void(0)" onclick="openProfileDrawer('${emp.emp_id}')">View Profile →</a>
             &nbsp;
-            <button onclick="showQrModal('${emp.emp_id}','${emp.name.replace(/'/g,"\\'")}','${emp.branch_id||''}')" style="background:rgba(52,211,153,0.10);border:1px solid rgba(52,211,153,0.22);color:#6EE7B7;padding:6px 12px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;white-space:nowrap;">🔲 QR</button>
+            <button onclick="showQrModal('${emp.emp_id}','${emp.name.replace(/'/g, "\\'")}','${emp.branch_id || ''}')" style="background:rgba(52,211,153,0.10);border:1px solid rgba(52,211,153,0.22);color:#6EE7B7;padding:6px 12px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;white-space:nowrap;">🔲 QR</button>
           </td>
         </tr>
       `;
@@ -758,6 +1139,247 @@
             } catch (err) {
                 showToast('Network error updating architecture stream.');
             }
+        }
+
+        // ════════════════════════════════════════════════════════════
+        // PROFILE DRAWER — slide-in panel replacing employee_profile.html
+        // ════════════════════════════════════════════════════════════
+        let pdCurrentEmpId = null;
+        let pdCacheData = null;
+        let pdDepartmentsMap = {};
+        let pdDesignationsMap = {};
+        let pdLookupsLoaded = false;
+
+        function openProfileDrawer(empId) {
+            pdCurrentEmpId = empId;
+            document.getElementById('profileDrawerOverlay').classList.add('open');
+            document.getElementById('profileDrawerPanel').classList.add('open');
+            document.getElementById('pdFooter').classList.remove('open');
+            document.getElementById('pdBody').innerHTML = `
+                <div class="pd-loading-state">
+                    <div class="pd-spinner"></div>
+                    Loading profile…
+                </div>`;
+            document.body.style.overflow = 'hidden';
+
+            if (!pdLookupsLoaded) loadProfileLookups();
+            fetchEmployeeProfile(empId);
+        }
+
+        function closeProfileDrawer() {
+            document.getElementById('profileDrawerOverlay').classList.remove('open');
+            document.getElementById('profileDrawerPanel').classList.remove('open');
+            document.getElementById('pdFooter').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('profileDrawerPanel').classList.contains('open')) {
+                closeProfileDrawer();
+            }
+        });
+
+        async function loadProfileLookups() {
+            try {
+                const [deptRes, desigRes] = await Promise.all([
+                    fetch(`${API_URL}?action=getDepartments&token=${SESSION_TOKEN_VERIFIER}`),
+                    fetch(`${API_URL}?action=getDesignations&token=${SESSION_TOKEN_VERIFIER}`)
+                ]);
+                const deptPayload = await deptRes.json();
+                const desigPayload = await desigRes.json();
+
+                if (deptPayload.status === 'success') {
+                    (deptPayload.data || []).forEach(d => {
+                        pdDepartmentsMap[d.department_id] = d.name || d.department_name || d.department_id;
+                    });
+                }
+                if (desigPayload.status === 'success') {
+                    (desigPayload.data || []).forEach(d => {
+                        pdDesignationsMap[d.designation_id] = d.name || d.designation_name || d.designation_id;
+                    });
+                }
+                pdLookupsLoaded = true;
+                if (pdCacheData) renderProfileDrawer(pdCacheData);
+            } catch (e) { /* non-critical — fields just fall back to raw IDs */ }
+        }
+
+        async function fetchEmployeeProfile(empId) {
+            try {
+                const res = await fetch(`${API_URL}?action=getEmployee&token=${SESSION_TOKEN_VERIFIER}&emp_id=${empId}`);
+                const payload = await res.json();
+                if (payload.status === 'success') {
+                    pdCacheData = payload.data;
+                    renderProfileDrawer(pdCacheData);
+                } else {
+                    document.getElementById('pdBody').innerHTML = `<div class="pd-error-state">${payload.message || 'Could not load this profile.'}</div>`;
+                }
+            } catch (e) {
+                document.getElementById('pdBody').innerHTML = `<div class="pd-error-state">Connection error — please try again.</div>`;
+            }
+        }
+
+        function pdFormatJoiningDate(value) {
+            if (!value) return '—';
+            const d = new Date(value);
+            if (isNaN(d.getTime())) return String(value);
+            return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function renderProfileDrawer(node) {
+            const initials = (node.name || '?').trim().split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase();
+            const isActive = String(node.status).toLowerCase() === 'active';
+            const deptLabel = pdDepartmentsMap[node.department_id] || node.department_id || '—';
+            const desigLabel = pdDesignationsMap[node.designation_id] || node.designation_id || 'Staff Regular';
+
+            const sessionUser = AppSession.getUser();
+            const isOwnProfile = sessionUser && sessionUser.employee_id === node.emp_id;
+            const weeklyOffUnset = !node.weekly_off || String(node.weekly_off).trim() === '';
+            const showWeeklyOffSetter = isOwnProfile && weeklyOffUnset;
+
+            document.getElementById('pdBody').innerHTML = `
+                <div class="pd-hero">
+                    <div class="pd-avatar">${node.photo_url ? `<img src="${node.photo_url}" alt="${node.name}" />` : initials || '?'}</div>
+                    <div class="pd-hero-info">
+                        <h2>${node.name || '—'}</h2>
+                        <div class="pd-hero-meta">
+                            <span class="pd-id-chip">${node.emp_id}</span>
+                            <span class="pd-status-pill ${isActive ? 'active' : 'inactive'}">${node.status || '—'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pd-section">
+                    <div class="pd-section-title">🔒 Identity &amp; Records</div>
+                    <div class="pd-card">
+                        <div class="pd-grid">
+                            <div class="pd-field"><label>Email</label><div class="pd-value muted">${node.email || '—'}</div></div>
+                            <div class="pd-field"><label>Joining Date</label><div class="pd-value muted">${pdFormatJoiningDate(node.joining_date)}</div></div>
+                            <div class="pd-field"><label>Aadhaar Number</label><div class="pd-value muted">${node.aadhaar || '—'}</div></div>
+                            <div class="pd-field"><label>PAN Number</label><div class="pd-value muted">${node.pan || '—'}</div></div>
+                            <div class="pd-field full">
+                                <label>Weekly Off</label>
+                                <div class="pd-value muted">${node.weekly_off || 'Not set'}</div>
+                                ${showWeeklyOffSetter ? `
+                                <div class="pd-weekly-off-setter">
+                                    <select id="pdWeeklyOffSelect">
+                                        <option value="Sunday">Sunday</option>
+                                        <option value="Monday">Monday</option>
+                                        <option value="Tuesday">Tuesday</option>
+                                        <option value="Wednesday">Wednesday</option>
+                                        <option value="Thursday">Thursday</option>
+                                        <option value="Friday">Friday</option>
+                                        <option value="Saturday">Saturday</option>
+                                    </select>
+                                    <button type="button" class="btn-secondary" onclick="setMyWeeklyOffDrawer()">Set (one-time)</button>
+                                </div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pd-section">
+                    <div class="pd-section-title">
+                        Role &amp; Contact Details
+                        <button type="button" class="pd-edit-trigger" id="pdEditTrigger" onclick="setProfileEditMode(true)">✏️ Edit</button>
+                    </div>
+                    <div class="pd-card">
+                        <div class="pd-grid">
+                            <div class="pd-field">
+                                <label>Branch Code</label>
+                                <div class="pd-value" id="pdLblBranch">${node.branch_id || '—'}</div>
+                                <input type="text" id="pdInputBranch" class="pd-input" value="${node.branch_id || ''}" />
+                            </div>
+                            <div class="pd-field">
+                                <label>Department</label>
+                                <div class="pd-value" id="pdLblDepartment">${deptLabel}</div>
+                                <input type="text" id="pdInputDepartment" class="pd-input" value="${node.department_id || ''}" />
+                            </div>
+                            <div class="pd-field">
+                                <label>Designation</label>
+                                <div class="pd-value" id="pdLblDesignation">${desigLabel}</div>
+                                <input type="text" id="pdInputDesignation" class="pd-input" value="${node.designation_id || ''}" />
+                            </div>
+                            <div class="pd-field">
+                                <label>Employment Type</label>
+                                <div class="pd-value" id="pdLblEmploymentType">${node.employment_type || 'Full-time'}</div>
+                                <select id="pdInputEmploymentType" class="pd-input">
+                                    <option value="Full-time">Full-time</option>
+                                    <option value="Part-time">Part-time</option>
+                                    <option value="Contract">Contract</option>
+                                    <option value="Intern">Intern</option>
+                                </select>
+                            </div>
+                            <div class="pd-field full">
+                                <label>Mobile</label>
+                                <div class="pd-value" id="pdLblMobile">${node.mobile || '—'}</div>
+                                <input type="tel" id="pdInputMobile" class="pd-input" value="${node.mobile || ''}" />
+                            </div>
+                            <div class="pd-field full">
+                                <label>Residential Address</label>
+                                <div class="pd-value" id="pdLblAddress">${node.address || '—'}</div>
+                                <input type="text" id="pdInputAddress" class="pd-input" value="${node.address || ''}" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('pdInputEmploymentType').value = node.employment_type || 'Full-time';
+            // Initial paint is always in "view" mode — toggle visibility directly
+            // here instead of calling setProfileEditMode(false), which would
+            // re-render and recurse.
+            document.querySelectorAll('#pdBody .pd-value').forEach(n => n.style.display = 'block');
+            document.querySelectorAll('#pdBody .pd-input').forEach(n => n.style.display = 'none');
+            document.getElementById('pdFooter').classList.remove('open');
+        }
+
+        function setProfileEditMode(on) {
+            document.querySelectorAll('#pdBody .pd-value').forEach(n => n.style.display = on ? 'none' : 'block');
+            document.querySelectorAll('#pdBody .pd-input').forEach(n => n.style.display = on ? 'block' : 'none');
+            document.getElementById('pdFooter').classList.toggle('open', on);
+            const trigger = document.getElementById('pdEditTrigger');
+            if (trigger) trigger.style.visibility = on ? 'hidden' : 'visible';
+            // Cancelling an edit: discard unsaved changes by re-rendering from cache
+            if (!on && pdCacheData) renderProfileDrawer(pdCacheData);
+        }
+
+        async function saveProfileChanges() {
+            const payload = {
+                token: SESSION_TOKEN_VERIFIER, action: 'updateEmployee', emp_id: pdCurrentEmpId,
+                branch_id: document.getElementById('pdInputBranch').value,
+                department_id: document.getElementById('pdInputDepartment').value,
+                designation_id: document.getElementById('pdInputDesignation').value,
+                employment_type: document.getElementById('pdInputEmploymentType').value,
+                mobile: document.getElementById('pdInputMobile').value,
+                address: document.getElementById('pdInputAddress').value
+            };
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const out = await res.json();
+                if (out.status === 'success') {
+                    showToast('Profile updated successfully!');
+                    fetchEmployeeProfile(pdCurrentEmpId);
+                    loadEmployeesData();
+                } else {
+                    showToast(out.message || 'Could not save changes.');
+                }
+            } catch (err) { showToast('Sync error — please try again.'); }
+        }
+
+        async function setMyWeeklyOffDrawer() {
+            const day = document.getElementById('pdWeeklyOffSelect').value;
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ token: SESSION_TOKEN_VERIFIER, action: 'setMyWeeklyOff', weekly_off: day })
+                });
+                const out = await res.json();
+                if (out.status === 'success') {
+                    showToast('Weekly off set: ' + day);
+                    fetchEmployeeProfile(pdCurrentEmpId);
+                } else {
+                    showToast(out.message || 'Could not set weekly off.');
+                }
+            } catch (err) { showToast('Sync error.'); }
         }
     </script>
 </body>

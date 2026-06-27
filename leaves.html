@@ -534,6 +534,7 @@
             <th>To</th>
             <th>Days</th>
             <th>Reason</th>
+            <th>Applied On</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -603,45 +604,80 @@
     const USER = AppSession.getUser();
 
     let allLeaves = [];
+    let empNameMap = {}; // emp_id -> name lookup
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Employees apna hi leave apply kar sakte hain
+      // Employees apna hi leave apply kar sakte hain — emp_id field hide karo
       if (USER.role === 'employee') {
         const empIdGroup = document.getElementById('empIdGroup');
         if (empIdGroup) empIdGroup.style.display = 'none';
       }
-      loadLeaves();
+      // Pehle employees load karo naam mapping ke liye, phir leaves
+      loadEmployeeNames().then(() => loadLeaves());
     });
+
+    // ── Employee naam preload karo (emp_id → name map) ──────────────────
+    async function loadEmployeeNames() {
+      try {
+        const res = await fetch(`${API_URL}?action=getEmployees&token=${TOKEN}&limit=500`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          const arr = (payload.data && payload.data.data) || payload.data || [];
+          arr.forEach(emp => {
+            if (emp.emp_id) empNameMap[emp.emp_id] = emp.name || emp.emp_id;
+          });
+        }
+      } catch (e) { /* naam nahi mila toh emp_id fallback chalega */ }
+    }
 
     function toggleLeaveModal(on) {
       document.getElementById('leaveModal').style.display = on ? 'flex' : 'none';
       if (!on) document.getElementById('newLeaveForm').reset();
     }
 
+    // ── Leaves fetch — limit=200 taaki sab records aayein ───────────────
     async function loadLeaves() {
+      const tbody = document.getElementById('leavesRowsContainer');
+      tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="empty-icon" style="animation:spin 1s linear infinite;display:inline-block;">⏳</div><p>Loading leave requests...</p></div></td></tr>`;
       try {
-        const res = await fetch(`${API_URL}?action=getLeaves&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const res = await fetch(`${API_URL}?action=getLeaves&token=${TOKEN}&limit=200&page=1&_ts=${Date.now()}`, { cache: 'no-store' });
         const payload = await res.json();
 
         if (payload.status === 'success') {
-          // Backend sends a paginated wrapper: { data: { data: [...], total, page, ... } }
-          // so the actual leave records are nested one level deeper.
           allLeaves = (payload.data && payload.data.data) || [];
           updateStats(allLeaves);
-          renderRows(allLeaves);
+
+          // Default: pending tab dikhao taaki admin turant action le sake
+          const filterStatus = document.getElementById('filterStatus');
+          if (USER.role !== 'employee' && filterStatus.value === '') {
+            const hasPending = allLeaves.some(l => l.status === 'pending');
+            if (hasPending) filterStatus.value = 'pending';
+          }
+
+          applyFilters();
         } else {
-          showToast(payload.message || 'Error occurred while fetching leaves.');
+          showToast(payload.message || 'Leaves fetch mein error.');
+          tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">⚠️</div><p>${payload.message || 'Error loading leaves.'}</p></div></td></tr>`;
         }
       } catch (e) {
-        showToast('Network error — leaves could not be loaded.');
+        showToast('Network error — leaves load nahi hue.');
+        tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📡</div><p>Network error. Retry karo.</p></div></td></tr>`;
       }
     }
 
     function updateStats(data) {
       document.getElementById('statTotal').textContent = data.length;
-      document.getElementById('statPending').textContent = data.filter(l => l.status === 'pending').length;
+      const pendingCount = data.filter(l => l.status === 'pending').length;
+      document.getElementById('statPending').textContent = pendingCount;
       document.getElementById('statApproved').textContent = data.filter(l => l.status === 'approved').length;
       document.getElementById('statRejected').textContent = data.filter(l => l.status === 'rejected').length;
+
+      // Pending count highlight — admin ko dikhe
+      const pendingCard = document.getElementById('statPending').closest('.stat-card');
+      if (pendingCount > 0 && pendingCard) {
+        pendingCard.style.border = '1px solid rgba(251,191,36,0.35)';
+        pendingCard.style.background = 'rgba(251,191,36,0.05)';
+      }
     }
 
     function applyFilters() {
@@ -657,10 +693,10 @@
       const tbody = document.getElementById('leavesRowsContainer');
       if (!data || data.length === 0) {
         tbody.innerHTML = `
-        <tr><td colspan="9">
+        <tr><td colspan="10">
           <div class="empty-state">
             <div class="empty-icon">📭</div>
-            <p>No leave requests found.</p>
+            <p>Koi leave request nahi mili.</p>
           </div>
         </td></tr>`;
         return;
@@ -670,33 +706,53 @@
 
       tbody.innerHTML = data.map(l => {
         const from = l.from_date ? new Date(l.from_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—';
-        const to = l.to_date ? new Date(l.to_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—';
+        const to   = l.to_date   ? new Date(l.to_date).toLocaleDateString('en-IN',   { day: '2-digit', month: 'short' }) : '—';
         const days = l.days || '—';
+
+        // Employee ka naam dikhao, fallback emp_id
+        const empName = empNameMap[l.emp_id] || l.emp_id || '—';
+
+        // Applied on date
+        const appliedOn = l.applied_on
+          ? new Date(l.applied_on).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })
+          : '—';
 
         const badgeClass =
           l.status === 'approved' ? 'badge-approved' :
-            l.status === 'rejected' ? 'badge-rejected' : 'badge-pending';
+          l.status === 'rejected' ? 'badge-rejected' : 'badge-pending';
 
         const actions = (isManager && l.status === 'pending')
           ? `<div style="display:flex;gap:6px;flex-wrap:wrap;">
-             <button class="btn-approve" onclick="updateLeaveStatus('${l.leave_id}','approved')">✓ Approve</button>
-             <button class="btn-reject"  onclick="updateLeaveStatus('${l.leave_id}','rejected')">✕ Reject</button>
-           </div>`
-          : `<span style="color:var(--text-dim); font-size:12px;">—</span>`;
+               <button class="btn-approve" onclick="confirmLeaveAction('${l.leave_id}','approved','${empName}')">✓ Approve</button>
+               <button class="btn-reject"  onclick="confirmLeaveAction('${l.leave_id}','rejected','${empName}')">✕ Reject</button>
+             </div>`
+          : `<span style="color:var(--text-dim); font-size:12px;">${l.approved_by ? '👤 ' + (empNameMap[l.approved_by] || l.approved_by) : '—'}</span>`;
 
         return `
         <tr>
-          <td><code style="font-size:12px; color:var(--text-dim);">${l.leave_id}</code></td>
-          <td><strong style="color:var(--accent-glow);">${l.emp_id}</strong></td>
+          <td><code style="font-size:11px; color:var(--text-dim);">${l.leave_id}</code></td>
+          <td>
+            <div style="font-weight:600; color:var(--text-primary); font-size:13.5px;">${empName}</div>
+            <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${l.emp_id}</div>
+          </td>
           <td><span class="type-pill">${l.leave_type || '—'}</span></td>
           <td style="font-size:13px;">${from}</td>
           <td style="font-size:13px;">${to}</td>
           <td style="font-weight:600; color:var(--text-primary);">${days}</td>
-          <td style="font-size:13px; color:var(--text-muted); max-width:160px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${l.reason || '—'}</td>
+          <td style="font-size:13px; color:var(--text-muted); max-width:160px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${l.reason || ''}">${l.reason || '—'}</td>
+          <td style="font-size:12px; color:var(--text-dim);">${appliedOn}</td>
           <td><span class="badge ${badgeClass}">${l.status}</span></td>
           <td>${actions}</td>
         </tr>`;
       }).join('');
+    }
+
+    // ── Confirm dialog before approve/reject ────────────────────────────
+    function confirmLeaveAction(leaveId, newStatus, empName) {
+      const actionLabel = newStatus === 'approved' ? '✅ Approve' : '❌ Reject';
+      const msg = `${empName} ki leave request ko ${actionLabel} karna chahte ho?`;
+      if (!window.confirm(msg)) return;
+      updateLeaveStatus(leaveId, newStatus);
     }
 
     async function updateLeaveStatus(leaveId, newStatus) {
@@ -708,10 +764,10 @@
         });
         const out = await res.json();
         if (out.status === 'success') {
-          showToast(`Leave ${newStatus} successfully!`);
+          showToast(newStatus === 'approved' ? '✅ Leave approved!' : '❌ Leave rejected.');
           loadLeaves();
         } else {
-          showToast(out.message || 'Error occurred while updating leave status.');
+          showToast(out.message || 'Status update mein error.');
         }
       } catch (e) {
         showToast('Network error.');
@@ -732,30 +788,38 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submitting...';
 
+      // BUG FIX: USER.employee_id use karo, USER.emp_id nahi
       const empId = USER.role === 'employee'
-        ? USER.emp_id
+        ? (USER.employee_id || USER.emp_id)
         : (document.getElementById('lEmpId').value.trim());
 
       const fromDateVal = document.getElementById('lFrom').value;
-      const toDateVal = document.getElementById('lTo').value;
-      const daysCount = calculateLeaveDays(fromDateVal, toDateVal);
+      const toDateVal   = document.getElementById('lTo').value;
+      const daysCount   = calculateLeaveDays(fromDateVal, toDateVal);
+
+      if (!empId) {
+        showToast('Employee ID missing — please enter emp_id.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Leave Request';
+        return;
+      }
 
       const payload = {
-        token: TOKEN,
-        action: 'applyLeave',
-        emp_id: empId,
+        token:      TOKEN,
+        action:     'applyLeave',
+        emp_id:     empId,
         leave_type: document.getElementById('lType').value,
-        from_date: fromDateVal,
-        to_date: toDateVal,
-        days: daysCount,
-        reason: document.getElementById('lReason').value
+        from_date:  fromDateVal,
+        to_date:    toDateVal,
+        days:       daysCount,
+        reason:     document.getElementById('lReason').value
       };
 
       try {
         const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
         const out = await res.json();
         if (out.status === 'success') {
-          showToast('Leave request submit ho gayi!');
+          showToast('✅ Leave request submit ho gayi!');
           toggleLeaveModal(false);
           loadLeaves();
         } else {
