@@ -572,7 +572,11 @@
           localStorage.setItem('ebms_user',  JSON.stringify(data.data.user));
           localStorage.setItem('ebms_role',  data.data.user.role);
           showAlert('Login successful! Redirecting...', 'success');
-          const destination = (data.data.user.role === 'employee') ? 'employee_dashboard.html' : 'dashboard.html';
+          // Backend decides admin-panel eligibility (is_admin_panel_user),
+          // so role renaming/typos on frontend can't accidentally let an
+          // employee land on the admin dashboard.
+          const isAdminPanelUser = data.data.is_admin_panel_user === true;
+          const destination = isAdminPanelUser ? 'dashboard.html' : 'employee_dashboard.html';
           setTimeout(() => { window.location.href = destination; }, 700);
         } else {
           showAlert(data.message || 'Login fail hua. Dobara try karein.');

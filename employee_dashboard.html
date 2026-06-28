@@ -1289,7 +1289,9 @@
         <div id="weeklyOffLocked" style="display:none;">
           <div class="stat-main" id="statWeeklyOff" style="color:var(--success);"></div>
           <div style="display:flex; align-items:center; gap:5px; margin-top:6px;">
-            <span style="font-size:11px; color:var(--text-dim); background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.18); border-radius:6px; padding:3px 9px;">🔒 Fixed — HR se contact karein to change</span>
+            <span
+              style="font-size:11px; color:var(--text-dim); background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.18); border-radius:6px; padding:3px 9px;">🔒
+              Fixed — HR se contact karein to change</span>
           </div>
         </div>
         <!-- State B: Not set yet — one-time selector -->
@@ -1309,7 +1311,8 @@
             style="display:none; margin-top:8px; width:100%; padding:7px; background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.3); color:#34D399; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:background 0.15s;">
             ✓ Confirm Weekly Off
           </button>
-          <p style="font-size:10.5px; color:var(--text-dim); margin-top:6px; line-height:1.4;">⚠️ Ek baar set karne ke baad sirf HR change kar sakta hai.</p>
+          <p style="font-size:10.5px; color:var(--text-dim); margin-top:6px; line-height:1.4;">⚠️ Ek baar set karne ke
+            baad sirf HR change kar sakta hai.</p>
         </div>
       </div>
 
@@ -1354,6 +1357,34 @@
       <div class="section-label" style="margin-top:20px; font-size:13.5px;">🗂️ Previous Tasks</div>
       <div class="task-grid" id="taskGridPrevious">
         <div class="glass-card empty-note">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Submit Work Modal -->
+    <div class="modal-overlay" id="submitWorkModal" style="z-index:300;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>📤 Submit Work</h3>
+          <button class="modal-close-btn" onclick="closeSubmitModal()">✕ Close</button>
+        </div>
+        <div class="modal-body">
+          <div id="submitWorkTaskTitle"
+            style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">
+          </div>
+          <div id="submitWorkTaskId" style="font-size:11.5px; color:var(--text-dim); margin-bottom:18px;"></div>
+          <div class="form-group">
+            <label>Google Drive Link *</label>
+            <input type="url" id="submitWorkLink" placeholder="https://drive.google.com/..." required />
+          </div>
+          <div class="form-group">
+            <label>Note (Optional)</label>
+            <textarea id="submitWorkNote" rows="3" placeholder="Koi note ya instructions..."></textarea>
+          </div>
+          <div style="font-size:11.5px; color:var(--text-dim); margin-bottom:14px; line-height:1.5;">
+            💡 Drive link share karo — make sure file "Anyone with link can view" pe set ho.
+          </div>
+          <button class="btn-submit-leave" id="submitWorkBtn" onclick="doSubmitWork()">Submit Work 📤</button>
+        </div>
       </div>
     </div>
 
@@ -2210,7 +2241,7 @@
       const toMins = (t) => {
         const str = String(t).trim();
         if (str.includes('T')) { const p = str.split('T')[1].split(':'); return +p[0] * 60 + +p[1]; }
-        if (str.includes(':'))  { const p = str.split(':'); return +p[0] * 60 + +p[1]; }
+        if (str.includes(':')) { const p = str.split(':'); return +p[0] * 60 + +p[1]; }
         if (!isNaN(parseFloat(str))) {
           // Google Sheets decimal time: 0.4847 = 11:38
           return Math.round(parseFloat(str) * 24 * 60);
@@ -2329,6 +2360,7 @@
 
     /* ── Section 5: Tasks ── */
     const priorityClass = { high: 'badge-high', medium: 'badge-medium', low: 'badge-low' };
+    let _submitWorkTaskId = null;
 
     async function loadTasks() {
       try {
@@ -2337,6 +2369,7 @@
         if (payload.status === 'success') {
           const arr = ((payload.data && payload.data.data) || []).filter(t => t.assigned_to === USER.employee_id);
 
+          // Active = not completed; in_review shows as submitted
           const active = arr.filter(t => t.status !== 'completed');
           const previous = arr.filter(t => t.status === 'completed')
             .sort((a, b) => new Date(b.due_date || 0) - new Date(a.due_date || 0));
@@ -2354,22 +2387,97 @@
 
     function renderTaskCard(t) {
       const dueDate = t.due_date ? new Date(t.due_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+      const isOverdue = t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed';
+      const isCompleted = t.status === 'completed';
+      const isInReview = t.status === 'in_review';
+      const isInProgress = t.status === 'in_progress' || (t.status === 'pending' && t.assigned_to);
+      const isRejected = t.submission_status === 'rejected';
+      const isAccepted = t.submission_status === 'accepted';
+      const isTodo = t.status === 'todo' || (t.status === 'pending' && !t.assigned_to);
+
+      // Status badge label
+      let statusLabel = t.status;
+      let statusBadge = 'badge-pending';
+      if (isCompleted) { statusLabel = 'completed'; statusBadge = 'badge-completed'; }
+      if (isInReview) { statusLabel = 'in review'; statusBadge = 'badge-pending'; }
+      if (isInProgress) { statusLabel = 'in progress'; statusBadge = 'badge-pending'; }
+      if (isTodo) { statusLabel = 'not started'; statusBadge = 'badge-low'; }
+
+      let footerAction = '';
+      if (isAccepted) {
+        footerAction = `<span style="color:var(--success);font-size:12px;font-weight:600;">✓ Accepted by Admin</span>`;
+      } else if (isRejected) {
+        footerAction = `
+          <div style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.22);border-radius:8px;padding:8px 10px;font-size:11.5px;color:#F87171;margin-bottom:6px;">
+            ✕ Rejected: ${t.review_note || 'Reason not given'}
+          </div>
+          <button class="btn-done" onclick="openSubmitModal('${t.task_id}', '${(t.title || '').replace(/'/g, "\\'")}')">Re-Submit 📤</button>`;
+      } else if (isInReview) {
+        footerAction = `<span style="color:#FCD34D;font-size:12px;font-weight:600;">⏳ Under Review</span>`;
+      } else if (isCompleted) {
+        footerAction = `<span style="color:var(--text-dim);font-size:12px;">✓ Done</span>`;
+      } else if (isInProgress) {
+        footerAction = `
+          <button class="btn-done" onclick="openSubmitModal('${t.task_id}', '${(t.title || '').replace(/'/g, "\\'")}')">Submit Work 📤</button>`;
+      } else {
+        // todo / not yet assigned — no action for employee
+        footerAction = `<span style="color:var(--text-dim);font-size:12px;">Waiting for assignment</span>`;
+      }
+
       return `
         <div class="glass-card task-card">
           <div class="task-top">
             <div class="task-title">${t.title}</div>
             <span class="badge ${priorityClass[t.priority] || 'badge-low'}">${(t.priority || '').toUpperCase()}</span>
           </div>
-          <div class="task-due">📅 Due: ${dueDate}</div>
+          ${t.description ? `<div style="font-size:11.5px;color:var(--text-dim);margin:4px 0;">${t.description.slice(0, 80)}${t.description.length > 80 ? '…' : ''}</div>` : ''}
+          <div class="task-due" ${isOverdue ? 'style="color:var(--danger);"' : ''}>📅 Due: ${dueDate}${isOverdue ? ' ⚠️' : ''}</div>
           <div class="task-footer">
-            <span class="badge ${t.status === 'completed' ? 'badge-completed' : 'badge-pending'}">${t.status}</span>
-            ${t.status !== 'completed'
-          ? `<button class="btn-done" onclick="completeMyTask('${t.task_id}')">Mark Complete ✓</button>`
-          : '<span style="color:var(--text-dim); font-size:12px;">Done</span>'
-        }
+            <span class="badge ${statusBadge}">${statusLabel}</span>
+            ${footerAction}
           </div>
         </div>
       `;
+    }
+
+    function openSubmitModal(taskId, taskTitle) {
+      _submitWorkTaskId = taskId;
+      document.getElementById('submitWorkTaskTitle').textContent = taskTitle;
+      document.getElementById('submitWorkTaskId').textContent = '🆔 ' + taskId;
+      document.getElementById('submitWorkLink').value = '';
+      document.getElementById('submitWorkNote').value = '';
+      document.getElementById('submitWorkModal').classList.add('open');
+    }
+
+    function closeSubmitModal() {
+      document.getElementById('submitWorkModal').classList.remove('open');
+      _submitWorkTaskId = null;
+    }
+
+    async function doSubmitWork() {
+      const link = document.getElementById('submitWorkLink').value.trim();
+      if (!link) { showToast('Drive link enter karo!'); return; }
+      const btn = document.getElementById('submitWorkBtn');
+      btn.disabled = true; btn.textContent = 'Submitting...';
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            token: TOKEN,
+            action: 'submitTask',
+            task_id: _submitWorkTaskId,
+            submission_link: link,
+            submission_note: document.getElementById('submitWorkNote').value.trim()
+          })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Kaam submit ho gaya! Admin review karega. ✓');
+          closeSubmitModal();
+          loadTasks();
+        } else { showToast(out.message || 'Error aaya.'); }
+      } catch (e) { showToast('Network error.'); }
+      finally { btn.disabled = false; btn.textContent = 'Submit Work 📤'; }
     }
 
     async function completeMyTask(taskId) {
