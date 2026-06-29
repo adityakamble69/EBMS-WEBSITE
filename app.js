@@ -6,6 +6,124 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbwzYZmxZ3AQCBdXRDgg5p442mW-THoHvR4YI2eA1G2ERICPS052J1oM5CXPYc83w0wnvw/exec';
 
 // ============================================================
+// GLOBAL PAGE LOADER — full-screen overlay
+//
+// Shown during:
+//   1. Cross-page navigation (sidebar links, quick-action cards)
+//      so there's no blank flash while the next HTML/JS loads.
+//   2. Any fetch() routed through fetchWithLoader() — useful for
+//      the initial data load on a page (e.g. loadEmployeesData()).
+//
+// Plain fetch() calls are left untouched, so per-button "Saving..."
+// UX (disabled button + inline text) keeps working without a
+// double overlay on top of it.
+// ============================================================
+let _loaderActiveCount = 0; // supports overlapping calls without flicker
+
+function _ensureLoaderDom() {
+  if (document.getElementById('ebmsPageLoader')) return;
+
+  if (!document.getElementById('ebms-loader-styles')) {
+    const style = document.createElement('style');
+    style.id = 'ebms-loader-styles';
+    style.innerHTML = `
+      #ebmsPageLoader {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 16px;
+        background: rgba(8,8,9,0.72);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        opacity: 0;
+        transition: opacity 0.18s ease;
+      }
+      #ebmsPageLoader.show {
+        display: flex;
+        opacity: 1;
+      }
+      #ebmsPageLoader .ebms-loader-ring {
+        width: 42px;
+        height: 42px;
+        border: 3px solid rgba(255,255,255,0.14);
+        border-top-color: #D4D9E6;
+        border-radius: 50%;
+        animation: ebmsLoaderSpin 0.7s linear infinite;
+      }
+      #ebmsPageLoader .ebms-loader-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 13.5px;
+        color: #D4D9E6;
+        letter-spacing: 0.2px;
+      }
+      @keyframes ebmsLoaderSpin { to { transform: rotate(360deg); } }
+    `;
+    document.head.appendChild(style);
+  }
+
+  const overlay = document.createElement('div');
+  overlay.id = 'ebmsPageLoader';
+  overlay.innerHTML = `
+    <div class="ebms-loader-ring"></div>
+    <div class="ebms-loader-text" id="ebmsPageLoaderText">Loading...</div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function showPageLoader(message) {
+  _ensureLoaderDom();
+  _loaderActiveCount++;
+  const overlay = document.getElementById('ebmsPageLoader');
+  const textEl  = document.getElementById('ebmsPageLoaderText');
+  if (textEl) textEl.textContent = message || 'Loading...';
+  overlay.classList.add('show');
+}
+
+function hidePageLoader() {
+  _loaderActiveCount = Math.max(0, _loaderActiveCount - 1);
+  if (_loaderActiveCount === 0) {
+    const overlay = document.getElementById('ebmsPageLoader');
+    if (overlay) overlay.classList.remove('show');
+  }
+}
+
+// Force-hide regardless of count — useful right before navigation,
+// where the page is about to unload anyway, or for emergency reset.
+function forceHidePageLoader() {
+  _loaderActiveCount = 0;
+  const overlay = document.getElementById('ebmsPageLoader');
+  if (overlay) overlay.classList.remove('show');
+}
+
+// Wrapper around fetch() that shows the overlay for the duration of
+// the request. Use this for data-loading calls where a blank/stale
+// screen would otherwise be visible (e.g. the first fetch on page
+// load). Falls back to hiding the loader even if the request throws.
+async function fetchWithLoader(url, options, loaderMessage) {
+  showPageLoader(loaderMessage);
+  try {
+    const res = await fetch(url, options);
+    return res;
+  } finally {
+    hidePageLoader();
+  }
+}
+
+// Show the loader immediately, then navigate. Used for sidebar/nav
+// links so there's no blank flash between unload and the next page's
+// first paint + first fetch. Safety timeout auto-hides the overlay if
+// navigation is somehow cancelled (e.g. user hits back mid-flight).
+function navigateWithLoader(url) {
+  showPageLoader('Loading...');
+  setTimeout(forceHidePageLoader, 8000);
+  window.location.href = url;
+}
+
+// ============================================================
 // QR Attendance — shared checksum util
 // IMPORTANT: This exact secret + function must also exist in your
 // Apps Script backend (appscript_attendance.gs) so it can verify
@@ -152,7 +270,47 @@ async function injectSidebar() {
         item.classList.add('active');
       }
     });
+
+    attachNavLoaderIntercept();
   } catch (err) { console.error('Sidebar layout sync failure:', err); }
+}
+
+// ============================================================
+// NAV LOADER INTERCEPT
+// Catches clicks on same-tab internal links (sidebar items, quick
+// action cards on dashboard, "View All" panel links, etc.) and
+// shows the full-screen loader immediately instead of waiting for
+// the browser to start painting the next page. Excludes anything
+// that should NOT trigger a full navigation: external links,
+// new-tab links, in-page anchors, buttons with onclick handlers,
+// and the logout link (which clears storage first).
+// ============================================================
+function attachNavLoaderIntercept() {
+  if (document.body.dataset.navLoaderAttached === '1') return;
+  document.body.dataset.navLoaderAttached = '1';
+
+  document.addEventListener('click', function (e) {
+    const link = e.target.closest('a[href]');
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+
+    // Skip: empty/hash links, explicit new-tab, external URLs, mailto/tel,
+    // logout (handled by its own onclick which clears storage first),
+    // and anything marked to opt out.
+    if (!href || href === '#' || href.startsWith('javascript:')) return;
+    if (link.target === '_blank') return;
+    if (/^(https?:)?\/\//i.test(href)) return;
+    if (href.startsWith('mailto:') || href.startsWith('tel:')) return;
+    if (link.hasAttribute('data-no-loader')) return;
+    if (link.classList.contains('btn-logout')) return;
+
+    // Only intercept plain left-clicks (let ctrl/cmd/shift-click open in new tab normally)
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+
+    e.preventDefault();
+    navigateWithLoader(href);
+  });
 }
 
 // FIX: Now uses '.open' class to match sidebar.html's own CSS & script
@@ -169,4 +327,17 @@ function closeSidebar() {
   if(mask) mask.classList.remove('open');
 }
 
-document.addEventListener('DOMContentLoaded', injectSidebar);
+document.addEventListener('DOMContentLoaded', function () {
+  injectSidebar();
+  // Pages without a sidebar (e.g. employee_dashboard.html, which has
+  // its own top navbar) still have internal links — attach the
+  // intercept regardless of whether a sidebar exists on this page.
+  attachNavLoaderIntercept();
+});
+
+// Whenever this page actually becomes visible (fresh load, or restored
+// from the browser's back/forward cache), clear any loader that might
+// still be showing from the click that navigated here.
+window.addEventListener('pageshow', function () {
+  forceHidePageLoader();
+});

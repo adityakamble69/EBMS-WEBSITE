@@ -417,9 +417,47 @@
     @media (max-width: 900px) {
       .field input { font-size: 16px; }
     }
+
+    /* ── Full-screen post-login loader ── */
+    #loginLoaderOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      background: rgba(8,8,9,0.82);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+    #loginLoaderOverlay.show { display: flex; opacity: 1; }
+    #loginLoaderOverlay .login-loader-ring {
+      width: 42px; height: 42px;
+      border: 3px solid rgba(255,255,255,0.14);
+      border-top-color: #D4D9E6;
+      border-radius: 50%;
+      animation: loginLoaderSpin 0.7s linear infinite;
+    }
+    #loginLoaderOverlay .login-loader-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      color: #D4D9E6;
+      letter-spacing: 0.2px;
+    }
+    @keyframes loginLoaderSpin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
+
+  <!-- Full-screen loader shown right after a successful login, while we redirect -->
+  <div id="loginLoaderOverlay">
+    <div class="login-loader-ring"></div>
+    <div class="login-loader-text" id="loginLoaderText">Signing in...</div>
+  </div>
 
   <!-- Left branding panel (desktop only) -->
   <div class="left-panel">
@@ -553,6 +591,17 @@
       box.className = 'alert alert-' + type + ' show';
     }
 
+    function showLoginLoader(message) {
+      const overlay = document.getElementById('loginLoaderOverlay');
+      const textEl  = document.getElementById('loginLoaderText');
+      if (textEl) textEl.textContent = message || 'Signing in...';
+      overlay.classList.add('show');
+    }
+
+    function hideLoginLoader() {
+      document.getElementById('loginLoaderOverlay').classList.remove('show');
+    }
+
     async function doLogin() {
       const email    = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
@@ -561,6 +610,7 @@
       const btn = document.getElementById('loginBtn');
       btn.disabled = true;
       btn.textContent = 'Signing in...';
+      showLoginLoader('Signing in...');
 
       try {
         const url = `${API_URL}?action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
@@ -572,18 +622,23 @@
           localStorage.setItem('ebms_user',  JSON.stringify(data.data.user));
           localStorage.setItem('ebms_role',  data.data.user.role);
           showAlert('Login successful! Redirecting...', 'success');
+          showLoginLoader('Taking you to your dashboard...');
           // Backend decides admin-panel eligibility (is_admin_panel_user),
           // so role renaming/typos on frontend can't accidentally let an
           // employee land on the admin dashboard.
           const isAdminPanelUser = data.data.is_admin_panel_user === true;
           const destination = isAdminPanelUser ? 'dashboard.html' : 'employee_dashboard.html';
-          setTimeout(() => { window.location.href = destination; }, 700);
+          // Loader is already up — navigate directly rather than via
+          // navigateWithLoader() (which would just re-show it).
+          window.location.href = destination;
         } else {
+          hideLoginLoader();
           showAlert(data.message || 'Login fail hua. Dobara try karein.');
           btn.disabled = false;
           btn.textContent = 'Sign in to EBMS';
         }
       } catch (err) {
+        hideLoginLoader();
         showAlert('Network error. Connection check karein.');
         btn.disabled = false;
         btn.textContent = 'Sign in to EBMS';
@@ -591,6 +646,10 @@
     }
 
     document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+    // If the user lands back here (e.g. browser back button after logout),
+    // make sure no stale loader is left showing.
+    window.addEventListener('pageshow', hideLoginLoader);
   </script>
 </body>
 </html>

@@ -42,7 +42,6 @@
     body {
       font-family: 'Inter', sans-serif;
       background: var(--bg);
-      /* Subtle grid overlay */
       background-image:
         linear-gradient(rgba(108, 142, 255, 0.025) 1px, transparent 1px),
         linear-gradient(90deg, rgba(108, 142, 255, 0.025) 1px, transparent 1px),
@@ -59,7 +58,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Card ────────────────────────────────── */
     .card {
       width: 100%;
       max-width: 400px;
@@ -68,14 +66,11 @@
       border-radius: 24px;
       backdrop-filter: blur(32px) saturate(160%);
       -webkit-backdrop-filter: blur(32px) saturate(160%);
-      box-shadow:
-        0 32px 80px rgba(0, 0, 0, 0.65),
-        inset 0 1px 0 rgba(255, 255, 255, 0.07),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
       overflow: hidden;
     }
 
-    /* ── Header ─────────────────────────────── */
+    /* ── Header ── */
     .hdr {
       padding: 20px 24px 18px;
       border-bottom: 1px solid var(--border);
@@ -112,7 +107,6 @@
       margin-top: 3px;
     }
 
-    /* Live clock badge in header */
     .hdr-clock {
       margin-left: auto;
       text-align: right;
@@ -132,12 +126,11 @@
       margin-top: 1px;
     }
 
-    /* ── Body ───────────────────────────────── */
+    /* ── Steps ── */
     .body {
       padding: 26px 24px 28px;
     }
 
-    /* ── Steps ──────────────────────────────── */
     .step {
       display: none;
     }
@@ -146,7 +139,7 @@
       display: block;
     }
 
-    /* ── Progress dots ─────────────────────── */
+    /* 2-dot progress */
     .progress-dots {
       display: flex;
       align-items: center;
@@ -174,7 +167,7 @@
       border-radius: 3px;
     }
 
-    /* ── Icon ring ──────────────────────────── */
+    /* ── Icon ring ── */
     .icon-ring {
       width: 72px;
       height: 72px;
@@ -190,16 +183,6 @@
       background: var(--accent-dim);
       border: 1.5px solid rgba(108, 142, 255, 0.28);
       animation: pulse-b 2.2s ease-in-out infinite;
-    }
-
-    .ring-green {
-      background: var(--success-dim);
-      border: 1.5px solid rgba(52, 211, 153, 0.28);
-    }
-
-    .ring-yellow {
-      background: var(--warning-dim);
-      border: 1.5px solid rgba(251, 191, 36, 0.28);
     }
 
     @keyframes pulse-b {
@@ -232,7 +215,7 @@
       margin-bottom: 22px;
     }
 
-    /* ── Status pill ────────────────────────── */
+    /* ── Pills ── */
     .pill {
       display: inline-flex;
       align-items: center;
@@ -281,7 +264,7 @@
       background: var(--danger);
     }
 
-    /* ── Info box ───────────────────────────── */
+    /* ── Info / Error boxes ── */
     .info-box {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -297,7 +280,6 @@
       color: var(--text);
     }
 
-    /* ── Error banner ───────────────────────── */
     .err {
       background: var(--danger-dim);
       border: 1px solid rgba(248, 113, 113, 0.22);
@@ -310,46 +292,7 @@
       line-height: 1.5;
     }
 
-    /* ── Form ───────────────────────────────── */
-    .fg {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      margin-bottom: 13px;
-    }
-
-    .fg label {
-      font-size: 10.5px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .fg input {
-      background: rgba(255, 255, 255, 0.042);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 11px 13px;
-      color: var(--text);
-      font-size: 14px;
-      font-family: 'Inter', sans-serif;
-      outline: none;
-      width: 100%;
-      transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
-    }
-
-    .fg input::placeholder {
-      color: var(--dim);
-    }
-
-    .fg input:focus {
-      border-color: rgba(108, 142, 255, 0.42);
-      background: rgba(108, 142, 255, 0.04);
-      box-shadow: 0 0 0 3px rgba(108, 142, 255, 0.09);
-    }
-
-    /* ── Buttons ────────────────────────────── */
+    /* ── Buttons ── */
     .btn {
       width: 100%;
       padding: 13px;
@@ -414,7 +357,7 @@
       transform: none !important;
     }
 
-    /* ── Time chips row ─────────────────────── */
+    /* ── Time tiles ── */
     .time-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -452,7 +395,7 @@
       color: var(--warning);
     }
 
-    /* ── Emp meta line ──────────────────────── */
+    /* ── Employee meta ── */
     .emp-meta {
       text-align: center;
       margin-bottom: 18px;
@@ -467,7 +410,7 @@
       margin-bottom: 3px;
     }
 
-    /* ── Success ────────────────────────────── */
+    /* ── Success detail ── */
     .success-detail {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -489,7 +432,35 @@
       font-size: 12px;
     }
 
-    /* ── Spinner ────────────────────────────── */
+    /* ── Complete banner ── */
+    .complete-banner {
+      background: linear-gradient(135deg, rgba(52, 211, 153, 0.1), rgba(52, 211, 153, 0.05));
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      border-radius: var(--r-sm);
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .complete-banner .cb-icon {
+      font-size: 26px;
+      margin-bottom: 8px;
+    }
+
+    .complete-banner .cb-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--success);
+      margin-bottom: 4px;
+    }
+
+    .complete-banner .cb-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── Spinner ── */
     .spin {
       width: 15px;
       height: 15px;
@@ -512,23 +483,10 @@
       }
     }
 
-    /* ── Divider ─────────────────────────────── */
     .divider {
       height: 1px;
       background: linear-gradient(90deg, transparent, var(--border), transparent);
       margin: 20px 0;
-    }
-
-    /* ── No-QR warning ──────────────────────── */
-    .no-qr-notice {
-      background: var(--warning-dim);
-      border: 1px solid rgba(251, 191, 36, 0.22);
-      border-radius: var(--r-sm);
-      padding: 10px 13px;
-      font-size: 12.5px;
-      color: var(--warning);
-      margin-bottom: 16px;
-      text-align: center;
     }
   </style>
 </head>
@@ -537,7 +495,6 @@
 
   <div class="card">
 
-    <!-- Header with live clock -->
     <div class="hdr">
       <div class="hdr-icon">⚡</div>
       <div>
@@ -552,89 +509,53 @@
 
     <div class="body">
 
-      <!-- Progress dots (3 steps) -->
       <div class="progress-dots">
         <div class="dot-step cur" id="dp1"></div>
         <div class="dot-step" id="dp2"></div>
-        <div class="dot-step" id="dp3"></div>
       </div>
 
-      <!-- ══ STEP 1 : Location ══════════════════ -->
+      <!-- ══ STEP 1 : Location ══════════════════════════ -->
       <div class="step active" id="s1">
         <div class="step-center">
           <div style="display:flex;justify-content:center;">
             <div class="icon-ring ring-blue">📍</div>
           </div>
           <div class="step-title">Location Verify</div>
-          <div class="step-sub">Punch karne ke liye aapko office ke andar hona zaroori hai. Pehle location allow karein.
-          </div>
+          <div class="step-sub">Office boundary ke andar hona zaroori hai punch karne ke liye.</div>
           <div class="pill pill-waiting" id="locPill">
-            <span class="pdot pdot-y"></span> Location check ho rahi hai…
+            <span class="pdot pdot-y"></span>
+            <span id="locPillText">Branch location load ho rahi hai…</span>
           </div>
         </div>
 
         <div class="info-box">
           <strong>📌 Office Boundary:</strong><br />
-          GPS se verify hoga ki aap <strong id="radiusLabel">150m</strong> ke radius mein hain ya nahi. Bahar hain toh
-          punch block rahega.
+          GPS se verify hoga ki aap <strong id="branchLabel">—</strong> ke
+          <strong id="radiusLabel">…</strong> radius mein hain ya nahi.
         </div>
 
         <div class="err" id="errLoc"></div>
 
-        <button class="btn btn-blue" id="btnLoc" onclick="requestLocation()">
-          📍 &nbsp;Location Allow Karein
+        <button class="btn btn-blue" id="btnLoc" onclick="requestLocation()" disabled>
+          📍 &nbsp;<span id="btnLocText">Branch location load ho rahi hai…</span>
         </button>
       </div>
 
-      <!-- ══ STEP 2 : Employee Details ══════════ -->
+      <!-- ══ STEP 2 : Punch IN / OUT ════════════════════ -->
       <div class="step" id="s2">
 
-        <div id="noQrNotice" class="no-qr-notice" style="display:none;">
-          ⚠️ QR code se nahi aaye — Employee ID manually bharen
-        </div>
-
-        <!-- Location ok pill -->
-        <div style="display:flex;justify-content:center;margin-bottom:18px;">
+        <div style="display:flex;justify-content:center;margin-bottom:16px;">
           <div class="pill pill-ok">
             <span class="pdot pdot-g"></span>
             <span id="distLabel">Location Verified ✓</span>
           </div>
         </div>
 
-        <div class="err" id="errDet"></div>
-
-        <!-- Only show emp_id field if NOT from QR -->
-        <div class="fg" id="fgEmpId" style="display:none;">
-          <label>Employee ID *</label>
-          <input type="text" id="manualEmpId" placeholder="e.g. EMP004" autocomplete="off" />
-        </div>
-
-        <div class="fg">
-          <label>Full Name *</label>
-          <input type="text" id="empName" placeholder="Apna poora naam likhein" autocomplete="name" />
-        </div>
-        <div class="fg">
-          <label>Phone Number *</label>
-          <input type="tel" id="empPhone" placeholder="10-digit mobile number" autocomplete="tel" maxlength="13" />
-        </div>
-        <div class="fg">
-          <label>Email Address <span style="color:var(--dim);font-size:10px;">(optional)</span></label>
-          <input type="email" id="empEmail" placeholder="yourname@company.com" autocomplete="email" />
-        </div>
-
-        <button class="btn btn-blue" onclick="goToPunch()">Continue →</button>
-      </div>
-
-      <!-- ══ STEP 3 : Punch ══════════════════════ -->
-      <div class="step" id="s3">
-
-        <!-- Employee banner -->
         <div class="emp-meta">
           <strong id="showName">—</strong>
-          <span id="showPhone" style="font-size:11.5px; color:var(--dim);">—</span>
+          <span id="showEmpId" style="font-size:11.5px;color:var(--dim);">—</span>
         </div>
 
-        <!-- Today's timings -->
         <div class="time-row">
           <div class="tc tc-in">
             <div class="tc-label">⬆ Punch IN</div>
@@ -646,9 +567,16 @@
           </div>
         </div>
 
+        <!-- Shown when both IN+OUT already done today -->
+        <div class="complete-banner" id="completeBanner" style="display:none;">
+          <div class="cb-icon">✅</div>
+          <div class="cb-title">Aaj ki attendance complete ho gayi!</div>
+          <div class="cb-sub">IN aur OUT dono record ho chuke hain.</div>
+        </div>
+
         <div class="err" id="errPunch"></div>
 
-        <button class="btn btn-in" id="btnIn" onclick="doPunch('in')">
+        <button class="btn btn-in" id="btnIn" onclick="doPunch('in')" style="display:none;">
           <span class="spin" id="spIn"></span> ✅ &nbsp;Punch IN
         </button>
         <button class="btn btn-out" id="btnOut" onclick="doPunch('out')" style="display:none;">
@@ -656,8 +584,8 @@
         </button>
       </div>
 
-      <!-- ══ STEP 4 : Success ════════════════════ -->
-      <div class="step" id="s4">
+      <!-- ══ STEP 3 : Success ═══════════════════════════ -->
+      <div class="step" id="s3">
         <div class="step-center">
           <div style="display:flex;justify-content:center;">
             <div class="icon-ring" id="successRing"
@@ -683,7 +611,6 @@
           <span id="finalDate">—</span>
         </div>
 
-        <!-- Reset button so another employee can punch from same device -->
         <button class="btn btn-blue" onclick="resetFlow()">↩ &nbsp;Done / Next Employee</button>
       </div>
 
@@ -692,76 +619,105 @@
 
   <script>
     // ═══════════════════════════════════════════════════
-    //  CONFIG — update these before deploying
+    //  CONFIG
     // ═══════════════════════════════════════════════════
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwzYZmxZ3AQCBdXRDgg5p442mW-THoHvR4YI2eA1G2ERICPS052J1oM5CXPYc83w0wnvw/exec';
-    const OFFICE_LAT = 21.115480;    // ← apni office ki latitude
-    const OFFICE_LNG = 79.011733;    // ← apni office ki longitude
-    const OFFICE_RADIUS = 150;       // ← metres, adjust as needed
-    const QR_SECRET = 'CDLN-EBMS-2025-SECURE'; // must match app.js + backend
-    // ═══════════════════════════════════════════════════
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyUp8iouhK5Bu6A7hSq0tgDDRAxmm7Am0HLhHSxe4vb1NmtZCW9rJAlsAGd8jWE16xQnw/exec';
+    const QR_SECRET = 'CDLN-EBMS-2025-SECURE';
 
-    document.getElementById('radiusLabel').textContent = OFFICE_RADIUS + 'm';
+    let OFFICE_LAT = null, OFFICE_LNG = null, OFFICE_RADIUS = null;
+    let OFFICE_BRANCH_ID = null, OFFICE_BRANCH_NAME = null;
+    let branchLocationReady = false;
 
-    // Parse URL params (QR code se milte hain)
     const urlP = new URLSearchParams(window.location.search);
     const EMP_ID = urlP.get('emp') || '';
-    const QR_CS = urlP.get('cs') || '';   // optional checksum from QR
-    const isQR = EMP_ID.length > 0;
+    const QR_CS = urlP.get('cs') || '';
 
-    // ── Token resolution ──────────────────────────────
-    // Priority: URL param ?token=... (kiosk use) → localStorage (logged-in employee)
+    // Branch resolution priority:
+    // 1. ?branch=BR003 in URL (QR code se ya manual override)
+    // 2. localStorage mein saved branch (login ke time set hota hai)
+    // 3. Empty — backend employee record se fallback karega
+    const _savedUser = JSON.parse(localStorage.getItem('ebms_user') || '{}');
+    const URL_BRANCH_ID = urlP.get('branch') || _savedUser.branch_id || '';
+
+    const isQR = EMP_ID.length > 0;
     const SESSION_TOKEN = urlP.get('token') || localStorage.getItem('ebms_token') || '';
 
-    // QR Checksum generator (must match app.js + backend)
-    function generateQrChecksum(empId, secretKey) {
-      const str = String(empId) + '::' + secretKey;
-      let hash = 0;
-      for (let i = 0; i < str.length; i++) {
-        hash = ((hash << 5) - hash) + str.charCodeAt(i);
-        hash |= 0;
-      }
-      return Math.abs(hash).toString(16).toUpperCase().padStart(8, '0').slice(0, 8);
-    }
-
-    let userLat = null;
-    let userLng = null;
-    let lastPunch = null;   // 'in' | 'out' | null
-    let todayIn = '—';
-    let todayOut = '—';
+    let userLat = null, userLng = null;
+    let lastPunch = null;   // null | 'in' | 'both'
+    let todayIn = '—', todayOut = '—';
     let empInfo = {};
+
+    // ── QR checksum ───────────────────────────────────
+    function generateQrChecksum(empId, secret) {
+      const str = String(empId) + '::' + secret;
+      let h = 0;
+      for (let i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
+      return Math.abs(h).toString(16).toUpperCase().padStart(8, '0').slice(0, 8);
+    }
 
     // ── Live clock ────────────────────────────────────
     function tick() {
       const n = new Date();
-      const t = n.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-      const d = n.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
-      document.getElementById('hdrClock').textContent = t;
-      document.getElementById('hdrDate').textContent = d;
+      document.getElementById('hdrClock').textContent =
+        n.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      document.getElementById('hdrDate').textContent =
+        n.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
     }
     tick(); setInterval(tick, 1000);
 
-    // ── Progress dots ─────────────────────────────────
+    // ── Progress (2 dots only) ────────────────────────
     function setProgress(step) {
-      for (let i = 1; i <= 3; i++) {
+      for (let i = 1; i <= 2; i++) {
         const el = document.getElementById('dp' + i);
         el.className = 'dot-step' + (i < step ? ' done' : i === step ? ' cur' : '');
       }
     }
-
-    // ── Show step ─────────────────────────────────────
     function showStep(n) {
       document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
       document.getElementById('s' + n).classList.add('active');
-      setProgress(Math.min(n, 3));
+      setProgress(Math.min(n, 2));
     }
 
-    // ── Haversine distance (metres) ───────────────────
+    // ── Haversine ─────────────────────────────────────
     function haversine(la1, lo1, la2, lo2) {
       const R = 6371000, rad = Math.PI / 180;
       const dLa = (la2 - la1) * rad, dLo = (lo2 - lo1) * rad;
       const a = Math.sin(dLa / 2) ** 2 + Math.cos(la1 * rad) * Math.cos(la2 * rad) * Math.sin(dLo / 2) ** 2;
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // ── Fetch branch geofence ─────────────────────────
+    async function fetchBranchLocation() {
+      const errEl = document.getElementById('errLoc');
+      const pillText = document.getElementById('locPillText');
+      if (!SESSION_TOKEN) {
+        pillText.textContent = 'Session token nahi mila'; return;
+      }
+      try {
+        // Priority: ?branch= URL param → localStorage branch_id → getEmployee se fetched override
+        const effectiveBranch = URL_BRANCH_ID || window.__branchOverride || '';
+        const bp = effectiveBranch ? `&branch_id=${encodeURIComponent(effectiveBranch)}` : '';
+        const res = await fetch(`${API_URL}?action=getBranchLocation&token=${encodeURIComponent(SESSION_TOKEN)}${bp}`);
+        const out = await res.json();
+        if (out.status === 'success') {
+          OFFICE_LAT = out.data.latitude; OFFICE_LNG = out.data.longitude;
+          OFFICE_RADIUS = out.data.radius;
+          OFFICE_BRANCH_ID = out.data.branch_id; OFFICE_BRANCH_NAME = out.data.branch_name;
+          branchLocationReady = true;
+          document.getElementById('radiusLabel').textContent = OFFICE_RADIUS + 'm';
+          document.getElementById('branchLabel').textContent = OFFICE_BRANCH_NAME || OFFICE_BRANCH_ID;
+          document.getElementById('btnLocText').textContent = 'Location Allow Karein';
+          document.getElementById('btnLoc').disabled = false;
+          pillText.textContent = 'Location check ho rahi hai…';
+          if (navigator.geolocation) setTimeout(requestLocation, 300);
+        } else {
+          showErr(errEl, '⚠️ ' + (out.message || 'Branch location nahi mil saki.'));
+          pillText.textContent = 'Branch location error';
+        }
+      } catch (e) {
+        showErr(errEl, '⚠️ Network error — branch location load nahi ho saki. Internet check karke reload karein.');
+        pillText.textContent = 'Network error';
+      }
     }
 
     // ── STEP 1 : Location ─────────────────────────────
@@ -774,6 +730,10 @@
       pill.innerHTML = '<span class="pdot pdot-y"></span> GPS fetch ho raha hai…';
       btn.disabled = true;
 
+      if (!branchLocationReady) {
+        showErr(errEl, 'Branch location abhi load nahi hui. Thoda wait karein ya page reload karein.');
+        return;
+      }
       if (!navigator.geolocation) {
         showErr(errEl, 'Browser mein geolocation support nahi hai. Kisi aur device se try karein.');
         btn.disabled = false; return;
@@ -781,19 +741,13 @@
 
       navigator.geolocation.getCurrentPosition(
         pos => {
-          userLat = pos.coords.latitude;
-          userLng = pos.coords.longitude;
+          userLat = pos.coords.latitude; userLng = pos.coords.longitude;
           const dist = Math.round(haversine(userLat, userLng, OFFICE_LAT, OFFICE_LNG));
-
           if (dist <= OFFICE_RADIUS) {
             pill.className = 'pill pill-ok';
             pill.innerHTML = '<span class="pdot pdot-g"></span> Office area verified ✓ (' + dist + 'm)';
             document.getElementById('distLabel').textContent = 'Office se sirf ' + dist + 'm — Verified ✓';
-            // If no QR, show emp_id field
-            if (!isQR) document.getElementById('fgEmpId').style.display = 'flex';
-            else document.getElementById('noQrNotice').style.display = 'none';
-            fetchLastPunch();
-            setTimeout(() => showStep(2), 700);
+            fetchEmployeeAndPunch();
           } else {
             pill.className = 'pill pill-denied';
             pill.innerHTML = '<span class="pdot pdot-r"></span> Office ke bahar (' + dist + 'm away)';
@@ -802,7 +756,7 @@
           }
         },
         err => {
-          const m = { 1: 'Location permission deny hua. Browser settings mein allow karein.', 2: 'GPS signal nahi mila. WiFi on karein aur bahar jaayein.', 3: 'Location timeout hua. Dobara try karein.' };
+          const m = { 1: 'Location permission deny hua. Browser settings mein allow karein.', 2: 'GPS signal nahi mila. WiFi on karein.', 3: 'Location timeout. Dobara try karein.' };
           showErr(errEl, m[err.code] || 'Location error: ' + err.message);
           pill.className = 'pill pill-denied';
           pill.innerHTML = '<span class="pdot pdot-r"></span> Location Error';
@@ -812,87 +766,101 @@
       );
     }
 
-    // (Auto-location request handled below after token check)
+    // ── Fetch employee info + today's punch state ─────
+    async function fetchEmployeeAndPunch() {
+      const errEl = document.getElementById('errLoc');
 
-    // ── Fetch last punch state from backend ───────────
-    async function fetchLastPunch() {
-      const empId = isQR ? EMP_ID : (document.getElementById('manualEmpId')?.value.trim() || '');
-      if (!empId || !SESSION_TOKEN) return;
+      // Resolve employee identity
+      if (isQR) {
+        // From QR: EMP_ID is in the URL; try saved profile from localStorage
+        const saved = JSON.parse(localStorage.getItem('ebms_user') || '{}');
+        empInfo = {
+          emp_id: EMP_ID,
+          name: (saved.employee_id === EMP_ID && saved.name) ? saved.name : EMP_ID,
+        };
+      } else {
+        // Web portal without QR: resolve from session token
+        try {
+          const r = await fetch(`${API_URL}?action=getProfile&token=${encodeURIComponent(SESSION_TOKEN)}`);
+          const d = await r.json();
+          if (d.status === 'success' && d.data) {
+            empInfo = { emp_id: d.data.employee_id || d.data.emp_id, name: d.data.name || d.data.employee_id };
+          } else {
+            // Fallback: use token as identity signal — show a generic label
+            empInfo = { emp_id: 'EMP', name: 'Employee' };
+          }
+        } catch (e) {
+          empInfo = { emp_id: 'EMP', name: 'Employee' };
+        }
+      }
+
+      document.getElementById('showName').textContent = empInfo.name;
+      document.getElementById('showEmpId').textContent = empInfo.emp_id;
+
+      // Fetch today's attendance
       try {
-        const todayStr = (() => { const IST = new Date(Date.now() + 330*60*1000); return IST.toISOString().split('T')[0]; })();
-        const r = await fetch(`${API_URL}?action=getAttendance&token=${encodeURIComponent(SESSION_TOKEN)}&emp_id=${encodeURIComponent(empId)}&date=${todayStr}&limit=5`);
+        const todayStr = istDateStr();
+        const r = await fetch(`${API_URL}?action=getAttendance&token=${encodeURIComponent(SESSION_TOKEN)}&emp_id=${encodeURIComponent(empInfo.emp_id)}&date=${todayStr}&limit=5`);
         const d = await r.json();
         if (d.status === 'success') {
           const logs = (d.data && d.data.data) || [];
-          const mine = logs.find(l => l.emp_id === empId);
+          const mine = logs.find(l => l.emp_id === empInfo.emp_id);
           if (mine) {
             todayIn = mine.in_time || '—';
             todayOut = mine.out_time || '—';
-            // lastPunch: 'in' = punched in only, 'out' = both done
-            if (mine.in_time && mine.out_time) lastPunch = 'out';
+            if (mine.in_time && mine.out_time) lastPunch = 'both';
             else if (mine.in_time) lastPunch = 'in';
             else lastPunch = null;
           } else {
             lastPunch = null; todayIn = '—'; todayOut = '—';
           }
-          document.getElementById('inDisp').textContent = todayIn !== '—' ? fmt12(todayIn) : '—';
-          document.getElementById('outDisp').textContent = todayOut !== '—' ? fmt12(todayOut) : '—';
         }
-      } catch (e) { /* silent */ }
-    }
+      } catch (e) { /* silent — still show punch screen */ }
 
-    // ── STEP 2 : Details → proceed ────────────────────
-    function goToPunch() {
-      const name = document.getElementById('empName').value.trim();
-      const phone = document.getElementById('empPhone').value.trim();
-      const errEl = document.getElementById('errDet');
+      document.getElementById('inDisp').textContent = todayIn !== '—' ? fmt12(todayIn) : '—';
+      document.getElementById('outDisp').textContent = todayOut !== '—' ? fmt12(todayOut) : '—';
 
-      if (!isQR) {
-        const mid = document.getElementById('manualEmpId').value.trim();
-        if (!mid) return showErr(errEl, 'Employee ID likhein.');
+      // Decide which button(s) to show
+      const btnIn = document.getElementById('btnIn');
+      const btnOut = document.getElementById('btnOut');
+      const banner = document.getElementById('completeBanner');
+
+      if (lastPunch === 'both') {
+        // Both done — show completion banner, no buttons
+        banner.style.display = 'block';
+        btnIn.style.display = 'none';
+        btnOut.style.display = 'none';
+      } else if (lastPunch === 'in') {
+        // IN done — show OUT button
+        banner.style.display = 'none';
+        btnIn.style.display = 'none';
+        btnOut.style.display = 'flex';
+      } else {
+        // Nothing done — show IN button
+        banner.style.display = 'none';
+        btnIn.style.display = 'flex';
+        btnOut.style.display = 'none';
       }
-      if (!name) return showErr(errEl, 'Naam likhna zaroori hai.');
-      if (!phone) return showErr(errEl, 'Phone number zaroori hai.');
-      const digits = phone.replace(/\D/g, '').slice(-10);
-      if (!/^[6-9]\d{9}$/.test(digits)) return showErr(errEl, 'Valid 10-digit Indian mobile number likhein (6-9 se start).');
-      errEl.style.display = 'none';
 
-      empInfo = {
-        emp_id: isQR ? EMP_ID : document.getElementById('manualEmpId').value.trim(),
-        name,
-        phone: digits,
-        email: document.getElementById('empEmail').value.trim()
-      };
-
-      document.getElementById('showName').textContent = name;
-      document.getElementById('showPhone').textContent = phone;
-
-      // Decide IN / OUT button
-      const showOut = lastPunch === 'in';
-      document.getElementById('btnIn').style.display = showOut ? 'none' : 'flex';
-      document.getElementById('btnOut').style.display = showOut ? 'flex' : 'none';
-
-      showStep(3);
+      setTimeout(() => showStep(2), 600);
     }
 
-    // ── STEP 3 : Punch ────────────────────────────────
+    // ── STEP 2 : Punch ────────────────────────────────
     async function doPunch(type) {
       const errEl = document.getElementById('errPunch');
       errEl.style.display = 'none';
 
       if (!SESSION_TOKEN) {
-        showErr(errEl, '⚠️ Session token nahi mila. Please login karke dobara try karein, ya admin se QR link check karwayein.');
-        return;
+        showErr(errEl, '⚠️ Session token nahi mila. Login karke dobara try karein.'); return;
       }
 
       const sp = document.getElementById(type === 'in' ? 'spIn' : 'spOut');
       const btn = document.getElementById(type === 'in' ? 'btnIn' : 'btnOut');
-      sp.style.display = 'inline-block';
-      btn.disabled = true;
+      sp.style.display = 'inline-block'; btn.disabled = true;
 
       const now = new Date();
       const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-      const dateStr = (() => { const IST = new Date(Date.now() + 330*60*1000); return IST.toISOString().split('T')[0]; })();
+      const dateStr = istDateStr();
 
       const payload = {
         action: 'markAttendance',
@@ -905,23 +873,15 @@
         longitude: userLng,
         remarks: type === 'in' ? 'QR Punch-In' : 'QR Punch-Out'
       };
-
-      // QR scan hai toh checksum bhi bhejo for backend verification
-      if (isQR) {
-        payload.qr_checksum = generateQrChecksum(empInfo.emp_id, QR_SECRET);
-      }
+      if (isQR) payload.qr_checksum = generateQrChecksum(empInfo.emp_id, QR_SECRET);
 
       try {
         const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
         const data = await res.json();
 
         if (data.status === 'success') {
-          // Refresh today's timings from response or local time
-          if (type === 'in') {
-            todayIn = data.data && data.data.in_time ? data.data.in_time : timeStr;
-          } else {
-            todayOut = data.data && data.data.out_time ? data.data.out_time : timeStr;
-          }
+          if (type === 'in') todayIn = (data.data && data.data.in_time) ? data.data.in_time : timeStr;
+          else todayOut = (data.data && data.data.out_time) ? data.data.out_time : timeStr;
 
           document.getElementById('finalIn').textContent = todayIn !== '—' ? fmt12(todayIn) : '—';
           document.getElementById('finalOut').textContent = todayOut !== '—' ? fmt12(todayOut) : '—';
@@ -931,88 +891,92 @@
           const ring = document.getElementById('successRing');
           const title = document.getElementById('successTitle');
           const msg = document.getElementById('successMsg');
-
           if (type === 'in') {
-            ring.style.background = 'var(--success-dim)';
-            ring.style.border = '1.5px solid rgba(52,211,153,0.3)';
+            ring.style.cssText = 'background:var(--success-dim);border:1.5px solid rgba(52,211,153,0.3);';
             ring.textContent = '✅';
             title.textContent = 'Punch IN Ho Gaya!';
             msg.textContent = 'Aapki IN timing record ho gayi. Good morning! 🌅';
           } else {
-            ring.style.background = 'var(--warning-dim)';
-            ring.style.border = '1.5px solid rgba(251,191,36,0.28)';
+            ring.style.cssText = 'background:var(--warning-dim);border:1.5px solid rgba(251,191,36,0.28);';
             ring.textContent = '🕐';
             title.textContent = 'Punch OUT Ho Gaya!';
             msg.textContent = 'Aapki OUT timing record ho gayi. Have a nice evening! 🌇';
           }
 
-          showStep(4);
+          showStep(3);
         } else {
           showErr(errEl, data.message || 'Punch record nahi hua. Dobara try karein.');
           sp.style.display = 'none'; btn.disabled = false;
         }
       } catch (e) {
-        showErr(errEl, 'Network error aaya. Internet check karein aur dobara try karein.');
+        showErr(errEl, 'Network error. Internet check karein aur dobara try karein.');
         sp.style.display = 'none'; btn.disabled = false;
       }
     }
 
-    // ── Reset flow (next employee same device) ────────
+    // ── Reset (next employee on same device) ──────────
     function resetFlow() {
       lastPunch = null; todayIn = '—'; todayOut = '—'; empInfo = {};
-      ['empName', 'empPhone', 'empEmail'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('inDisp').textContent = '—';
       document.getElementById('outDisp').textContent = '—';
-      // Go back to step 2 (location already granted for this session)
+      document.getElementById('completeBanner').style.display = 'none';
+      document.getElementById('btnIn').style.display = 'none';
+      document.getElementById('btnOut').style.display = 'none';
       showStep(2);
+      fetchEmployeeAndPunch();
     }
 
     // ── Helpers ───────────────────────────────────────
     function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
 
+    function istDateStr() {
+      const IST = new Date(Date.now() + 330 * 60 * 1000);
+      return IST.toISOString().split('T')[0];
+    }
+
     function fmt12(val) {
       if (!val || val === '—') return '—';
       const s = String(val).trim();
       let h = 0, m = 0;
-      if (s.includes('T')) {
-        const p = s.split('T')[1].split(':');
-        h = parseInt(p[0]); m = parseInt(p[1]);
-      } else if (s.includes(':')) {
-        const p = s.split(':');
-        h = parseInt(p[0]); m = parseInt(p[1]);
-      } else if (!isNaN(parseFloat(s))) {
-        // Google Sheets decimal time: e.g. 0.4847 = 11:38
-        const totalMins = Math.round(parseFloat(s) * 24 * 60);
-        h = Math.floor(totalMins / 60) % 24; m = totalMins % 60;
-      } else return s;
+      if (s.includes('T')) { const p = s.split('T')[1].split(':'); h = parseInt(p[0]); m = parseInt(p[1]); }
+      else if (s.includes(':')) { const p = s.split(':'); h = parseInt(p[0]); m = parseInt(p[1]); }
+      else if (!isNaN(parseFloat(s))) { const t = Math.round(parseFloat(s) * 24 * 60); h = Math.floor(t / 60) % 24; m = t % 60; }
+      else return s;
       const ap = h >= 12 ? 'PM' : 'AM';
       h = h % 12 || 12;
       return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ' ' + ap;
     }
 
-    // ── If no QR, show notice on step 2 ──────────────
-    if (!isQR) document.getElementById('noQrNotice').style.display = 'block';
-
-    // ── If no token, warn on step 1 ──────────────────
+    // ── Boot ──────────────────────────────────────────
     window.addEventListener('load', () => {
       if (!SESSION_TOKEN) {
         const errLoc = document.getElementById('errLoc');
-        errLoc.textContent = '⚠️ Session token nahi mila. Kripya pehle login karein, ya admin se token-wala QR link maangein (QR mein ?token=... hona chahiye).';
-        errLoc.style.display = 'block';
+        showErr(errLoc, '⚠️ Session token nahi mila. Kripya pehle login karein, ya admin se token-wala QR link maangein.');
         document.getElementById('btnLoc').disabled = true;
+        document.getElementById('locPillText').textContent = 'Login required';
+        return;
       }
 
-      // If QR mode + logged-in user info available, pre-fill name
-      if (isQR) {
-        const savedUser = JSON.parse(localStorage.getItem('ebms_user') || '{}');
-        if (savedUser && savedUser.employee_id === EMP_ID) {
-          const nameField = document.getElementById('empName');
-          if (nameField && savedUser.name) nameField.value = savedUser.name;
-        }
+      // Agar URL mein ?branch= nahi hai aur localStorage mein bhi branch_id nahi hai,
+      // toh getEmployee API se apna branch_id fetch karke localStorage update karo.
+      if (!URL_BRANCH_ID && SESSION_TOKEN) {
+        fetch(`${API_URL}?action=getEmployee&token=${encodeURIComponent(SESSION_TOKEN)}`)
+          .then(r => r.json())
+          .then(d => {
+            if (d.status === 'success' && d.data && d.data.branch_id) {
+              const saved = JSON.parse(localStorage.getItem('ebms_user') || '{}');
+              saved.branch_id   = d.data.branch_id;
+              saved.employee_id = d.data.emp_id  || saved.employee_id;
+              saved.name        = d.data.name    || saved.name;
+              localStorage.setItem('ebms_user', JSON.stringify(saved));
+              window.__branchOverride = d.data.branch_id;
+            }
+          })
+          .catch(() => {})
+          .finally(() => fetchBranchLocation());
+      } else {
+        fetchBranchLocation();
       }
-
-      // Auto-request location silently (only if token exists)
-      if (SESSION_TOKEN && navigator.geolocation) setTimeout(requestLocation, 400);
     });
   </script>
 </body>
