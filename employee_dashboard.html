@@ -1218,6 +1218,63 @@
       margin-top: -5px;
       margin-bottom: 12px;
     }
+
+    /* ── Full Payslip Card (Employee Dashboard) ── */
+    .slip-card {
+      background: #ffffff;
+      color: #111827;
+      border-radius: 12px;
+      padding: 32px 28px;
+      margin-top: 6px;
+    }
+    .slip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 18px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #E5E7EB;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .slip-brand-name { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; color: #111827; letter-spacing: -0.3px; }
+    .slip-brand-name span { color: #3B82F6; }
+    .slip-brand-sub { font-size: 10px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.7px; margin-top: 3px; }
+    .slip-title-block { text-align: right; }
+    .slip-title-block .slip-title { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: #1E40AF; text-transform: uppercase; letter-spacing: 1px; }
+    .slip-title-block .slip-period { font-size: 11.5px; color: #6B7280; margin-top: 4px; }
+    .slip-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; margin-bottom: 20px; font-size: 13px; line-height: 1.7; }
+    .slip-meta-grid .meta-row { display: flex; gap: 6px; }
+    .slip-meta-grid .meta-label { color: #6B7280; min-width: 100px; }
+    .slip-meta-grid .meta-val { color: #111827; font-weight: 600; }
+    .slip-divider { height: 1px; background: #E5E7EB; margin: 18px 0; }
+    .slip-section-title { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #9CA3AF; margin-bottom: 10px; }
+    .slip-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 18px; }
+    .slip-table th { background: #F9FAFB; color: #374151; padding: 8px 10px; font-weight: 600; text-align: left; border: 1px solid #E5E7EB; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .slip-table td { padding: 8px 10px; border: 1px solid #E5E7EB; color: #1F2937; }
+    .slip-table td:not(:first-child) { text-align: right; }
+    .slip-table th:not(:first-child) { text-align: right; }
+    .net-pay-box { background: #EFF6FF; border: 1.5px dashed #93C5FD; border-radius: 10px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+    .net-pay-label { font-size: 12.5px; font-weight: 600; color: #374151; }
+    .net-pay-amount { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; color: #1E40AF; }
+    .slip-signatures { display: flex; justify-content: space-between; margin-top: 40px; font-size: 11.5px; color: #9CA3AF; }
+    .sig-line { width: 100%; max-width: 150px; border-top: 1px solid #D1D5DB; padding-top: 7px; margin-top: 28px; }
+    .btn-print-slip {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: background 0.15s;
+    }
+    .btn-print-slip:hover { background: rgba(255,255,255,0.16); }
   </style>
 </head>
 
@@ -1292,7 +1349,7 @@
           <div style="display:flex; align-items:center; gap:5px; margin-top:6px;">
             <span
               style="font-size:11px; color:var(--text-dim); background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.18); border-radius:6px; padding:3px 9px;">🔒
-              Fixed — HR se contact karein to change</span>
+              Fixed — contact HR to change</span>
           </div>
         </div>
         <!-- State B: Not set yet — one-time selector -->
@@ -1312,8 +1369,8 @@
             style="display:none; margin-top:8px; width:100%; padding:7px; background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.3); color:#34D399; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:background 0.15s;">
             ✓ Confirm Weekly Off
           </button>
-          <p style="font-size:10.5px; color:var(--text-dim); margin-top:6px; line-height:1.4;">⚠️ Ek baar set karne ke
-            baad sirf HR change kar sakta hai.</p>
+          <p style="font-size:10.5px; color:var(--text-dim); margin-top:6px; line-height:1.4;">⚠️ Once set, only HR can
+            change it.</p>
         </div>
       </div>
 
@@ -1352,7 +1409,7 @@
     <div class="tasks-section">
       <div class="section-label">📋 My Assigned Tasks</div>
       <div class="task-grid" id="taskGridActive">
-        <div class="glass-card empty-note">Tasks load ho rahe hain...</div>
+        <div class="glass-card empty-note">Loading tasks...</div>
       </div>
 
       <div class="section-label" style="margin-top:20px; font-size:13.5px;">🗂️ Previous Tasks</div>
@@ -1379,10 +1436,10 @@
           </div>
           <div class="form-group">
             <label>Note (Optional)</label>
-            <textarea id="submitWorkNote" rows="3" placeholder="Koi note ya instructions..."></textarea>
+            <textarea id="submitWorkNote" rows="3" placeholder="Any note or instructions..."></textarea>
           </div>
           <div style="font-size:11.5px; color:var(--text-dim); margin-bottom:14px; line-height:1.5;">
-            💡 Drive link share karo — make sure file "Anyone with link can view" pe set ho.
+            💡 Share the drive link — make sure the file is set to "Anyone with link can view".
           </div>
           <button class="btn-submit-leave" id="submitWorkBtn" onclick="doSubmitWork()">Submit Work 📤</button>
         </div>
@@ -1406,7 +1463,7 @@
         <span class="legend-dot"><span style="background:#71717A;"></span>Off / Holiday</span>
       </div>
       <div class="calendar-grid" id="calendarGrid">
-        <div class="empty-note" style="grid-column: 1 / -1;">Calendar load ho raha hai...</div>
+        <div class="empty-note" style="grid-column: 1 / -1;">Loading calendar...</div>
       </div>
     </div>
 
@@ -1447,7 +1504,7 @@
       </div>
       <div class="punch-note"
         style="margin-top:14px; padding:10px 14px; background:rgba(255,255,255,0.025); border-radius:8px; font-size:12px; color:var(--text-muted);">
-        📷 Office mein QR code scan karo → attendance_qr.html page pe aata hai → Punch IN/OUT record hoti hai
+        📷 Scan the QR code at the office → it opens the attendance_qr.html page → Punch IN/OUT is recorded
         automatically.
       </div>
     </div>
@@ -1661,8 +1718,8 @@
               <div class="bd-readonly-row"><span>Account Type:</span><span id="roAccType">—</span></div>
               <div class="bd-readonly-row"><span>Submitted On:</span><span id="roSubmittedAt">—</span></div>
             </div>
-            <div class="bd-note" style="margin-top:14px; margin-bottom:0;">Bank details already submit ho chuki hain.
-              Change ke liye HR se contact karein.</div>
+            <div class="bd-note" style="margin-top:14px; margin-bottom:0;">Bank details have already been submitted.
+              Contact HR to change.</div>
           </div>
         </div>
 
@@ -1696,20 +1753,73 @@
         <!-- Tab 3: Salary Slips -->
         <div class="bd-panel" id="bdPanelSlips">
           <div id="slipsListWrapper">
-            <div class="empty-note">Salary slips load ho rahe hain...</div>
+            <div class="empty-note">Loading salary slips...</div>
           </div>
           <div id="slipDetailWrapper" style="display:none;">
-            <button class="nav-btn" style="margin-bottom:14px;" onclick="closeSlipDetail()">← Back to list</button>
-            <div class="bd-readonly-card">
-              <div class="bd-readonly-row"><span>Period:</span><span id="slipPeriod">—</span></div>
-              <div class="bd-readonly-row"><span>Present Days:</span><span id="slipPresent">—</span></div>
-              <div class="bd-readonly-row"><span>Absent Days:</span><span id="slipAbsent">—</span></div>
-              <div class="bd-readonly-row"><span>Gross Salary:</span><span id="slipGross">—</span></div>
-              <div class="bd-readonly-row"><span>Deductions:</span><span id="slipDed">—</span></div>
-              <div class="bd-readonly-row"
-                style="border-top:1px solid rgba(255,255,255,0.08); margin-top:6px; padding-top:10px;">
-                <span style="font-weight:700; color:var(--text-primary);">Net Salary:</span>
-                <span id="slipNet" style="color:#6EE7B7; font-size:15px;">—</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+              <button class="nav-btn" onclick="closeSlipDetail()">← Back to list</button>
+              <button class="btn-print-slip" onclick="printSalarySlip()">🖨️ Print / Save PDF</button>
+            </div>
+
+            <div class="slip-card" id="empSlipCard">
+              <div class="slip-header">
+                <div>
+                  <div class="slip-brand-name">Codeline<span>.AI</span></div>
+                  <div class="slip-brand-sub">Enterprise Business Management System</div>
+                </div>
+                <div class="slip-title-block">
+                  <div class="slip-title">Payslip Statement</div>
+                  <div class="slip-period" id="slipPeriod">—</div>
+                </div>
+              </div>
+
+              <div class="slip-meta-grid">
+                <div>
+                  <div class="meta-row"><span class="meta-label">Employee ID</span><span class="meta-val" id="slipEmpId">—</span></div>
+                  <div class="meta-row"><span class="meta-label">Name</span><span class="meta-val" id="slipEmpName">—</span></div>
+                  <div class="meta-row"><span class="meta-label">Designation</span><span class="meta-val" id="slipDesignation">—</span></div>
+                </div>
+                <div>
+                  <div class="meta-row"><span class="meta-label">Slip ID</span><span class="meta-val" id="slipId">—</span></div>
+                  <div class="meta-row"><span class="meta-label">Generated On</span><span class="meta-val" id="slipGenDate">—</span></div>
+                  <div class="meta-row"><span class="meta-label">Employment</span><span class="meta-val" id="slipEmpType">—</span></div>
+                </div>
+              </div>
+
+              <div class="slip-divider"></div>
+
+              <div class="slip-section-title">Attendance Summary</div>
+              <table class="slip-table" style="margin-bottom:20px;">
+                <thead><tr><th>Description</th><th>Days</th></tr></thead>
+                <tbody>
+                  <tr><td>Total Present Days</td><td id="slipPresent">0</td></tr>
+                  <tr><td>Total Absent Days</td><td id="slipAbsent">0</td></tr>
+                </tbody>
+              </table>
+
+              <div class="slip-section-title">Earnings &amp; Deductions</div>
+              <table class="slip-table">
+                <thead><tr><th>Description</th><th>Earnings (₹)</th><th>Deductions (₹)</th></tr></thead>
+                <tbody>
+                  <tr><td>Base Monthly Salary</td><td id="slipGross">0.00</td><td>—</td></tr>
+                  <tr><td>Absentee Deductions</td><td>—</td><td style="color:#EF4444;" id="slipDed">0.00</td></tr>
+                </tbody>
+              </table>
+
+              <div class="net-pay-box">
+                <div class="net-pay-label">Net Pay Disbursed</div>
+                <div class="net-pay-amount">₹<span id="slipNet">0.00</span></div>
+              </div>
+
+              <div class="slip-signatures">
+                <div>
+                  <div style="color:#6B7280; font-size:11.5px;">Authorised Signatory</div>
+                  <div class="sig-line">HR Department</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="color:#6B7280; font-size:11.5px;">Employee Acknowledgement</div>
+                  <div class="sig-line" style="margin-left:auto;">Signature &amp; Date</div>
+                </div>
               </div>
             </div>
           </div>
@@ -1736,7 +1846,7 @@
             <label>New Password</label>
             <input type="password" id="pwNew" required minlength="6" />
           </div>
-          <div class="pw-strength-hint">Kam se kam 6 characters ka hona chahiye.</div>
+          <div class="pw-strength-hint">Must be at least 6 characters.</div>
           <div class="form-group">
             <label>Confirm New Password</label>
             <input type="password" id="pwConfirm" required minlength="6" />
@@ -1755,19 +1865,19 @@
     let EMPLOYEE_DATA = null;
 
     // ── IST-safe helpers ──────────────────────────────────────
-    // Browser new Date() local timezone use karta hai — lekin agar
-    // user ka device UTC ya koi aur TZ pe hai toh date ek din shift
-    // ho jaati hai. IST (UTC+5:30) explicitly calculate karo.
+    // Browser new Date() uses the local timezone — but if the
+    // user's device is on UTC or another TZ, the date can shift by
+    // a day. Explicitly calculate IST (UTC+5:30).
     function getISTDate() {
       const now = new Date();
       const IST_OFFSET_MS = 330 * 60 * 1000; // 5h 30m
       return new Date(now.getTime() + IST_OFFSET_MS - now.getTimezoneOffset() * 60 * 1000);
     }
 
-    // Kisi bhi date/string ko "YYYY-MM-DD" IST string mein convert karo
+    // Convert any date/string to a "YYYY-MM-DD" IST string
     function toISTDateStr(val) {
       if (!val) return '';
-      // Google Sheets Date object ya ISO string — dono handle karo
+      // Handle both Google Sheets Date object and ISO string
       let d;
       if (val instanceof Date) {
         d = val;
@@ -1840,7 +1950,7 @@
 
     /* ── ID Card Modal ── */
     function openIdCardModal() {
-      if (!EMPLOYEE_DATA) { showToast('Profile data abhi load ho rahi hai, ek second mein try karein.'); return; }
+      if (!EMPLOYEE_DATA) { showToast('Profile data is still loading, please try again in a second.'); return; }
       const emp = EMPLOYEE_DATA;
       const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'EE';
 
@@ -1927,7 +2037,7 @@
           document.getElementById('bankFormWrapper').style.display = 'block';
           document.getElementById('bankReadonlyWrapper').style.display = 'none';
         }
-      } catch (e) { showToast('Bank details load nahi hui.'); }
+      } catch (e) { showToast('Could not load bank details.'); }
     }
 
     function renderBankDetailsReadonly(d) {
@@ -1973,10 +2083,10 @@
         const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
         const out = await res.json();
         if (out.status === 'success') {
-          showToast('Bank details successfully save ho gayi!');
+          showToast('Bank details saved successfully!');
           loadBankDetails();
         } else {
-          showToast(out.message || 'Submission mein error.');
+          showToast(out.message || 'Error during submission.');
         }
       } catch (err) {
         showToast('Network error.');
@@ -2032,7 +2142,7 @@
         });
         const out = await res.json();
         if (out.status === 'success') {
-          showToast('Document upload ho gaya!');
+          showToast('Document uploaded successfully!');
           statusEl.textContent = '✓ Uploaded';
           statusEl.classList.remove('empty');
         } else {
@@ -2052,14 +2162,14 @@
       const wrapper = document.getElementById('slipsListWrapper');
       document.getElementById('slipDetailWrapper').style.display = 'none';
       wrapper.style.display = 'block';
-      wrapper.innerHTML = '<div class="empty-note">Salary slips load ho rahe hain...</div>';
+      wrapper.innerHTML = '<div class="empty-note">Loading salary slips...</div>';
 
       try {
         const res = await fetch(`${API_URL}?action=getSalarySlips&token=${TOKEN}`);
         const payload = await res.json();
         const slips = (payload.data && payload.data.data) || [];
         if (!slips.length) {
-          wrapper.innerHTML = '<div class="empty-note">Koi salary slip generate nahi hui abhi.</div>';
+          wrapper.innerHTML = '<div class="empty-note">No salary slip has been generated yet.</div>';
           return;
         }
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -2073,7 +2183,7 @@
           </div>
         `).join('');
       } catch (e) {
-        wrapper.innerHTML = '<div class="empty-note">Salary slips load nahi hue.</div>';
+        wrapper.innerHTML = '<div class="empty-note">Could not load salary slips.</div>';
       }
     }
 
@@ -2082,21 +2192,46 @@
         const res = await fetch(`${API_URL}?action=getSingleSalarySlip&token=${TOKEN}&slip_id=${slipId}`);
         const payload = await res.json();
         if (payload.status === 'success') {
-          const s = payload.data.slip;
-          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          document.getElementById('slipPeriod').textContent = `${monthNames[(parseInt(s.month) || 1) - 1]} ${s.year}`;
-          document.getElementById('slipPresent').textContent = (s.present_days ?? '—') + ' days';
-          document.getElementById('slipAbsent').textContent = (s.absent_days ?? '0') + ' days';
-          document.getElementById('slipGross').textContent = '₹' + parseFloat(s.gross_salary || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
-          document.getElementById('slipDed').textContent = '₹' + parseFloat(s.deductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
-          document.getElementById('slipNet').textContent = '₹' + parseFloat(s.net_salary || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+          const b = payload.data;
+          const s = b.slip;
+          const monthNamesFull = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+          const period = `${monthNamesFull[parseInt(s.month) || 1] || 'Month ' + s.month} — ${s.year}`;
+
+          document.getElementById('slipPeriod').textContent = `Statement Period: ${period}`;
+          document.getElementById('slipEmpId').textContent = s.emp_id || '—';
+          document.getElementById('slipEmpName').textContent = b.employee_name || (EMPLOYEE_DATA && EMPLOYEE_DATA.name) || '—';
+          document.getElementById('slipDesignation').textContent = b.designation || '—';
+          document.getElementById('slipId').textContent = s.slip_id;
+          document.getElementById('slipGenDate').textContent = s.generated_on
+            ? new Date(s.generated_on).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+            : '—';
+          document.getElementById('slipEmpType').textContent = b.employment_type || '—';
+          document.getElementById('slipPresent').textContent = s.present_days ?? '—';
+          document.getElementById('slipAbsent').textContent = s.absent_days ?? '0';
+          document.getElementById('slipGross').textContent = parseFloat(s.gross_salary || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+          document.getElementById('slipDed').textContent = parseFloat(s.deductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+          document.getElementById('slipNet').textContent = parseFloat(s.net_salary || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
 
           document.getElementById('slipsListWrapper').style.display = 'none';
           document.getElementById('slipDetailWrapper').style.display = 'block';
         } else {
-          showToast(payload.message || 'Slip detail load nahi hui.');
+          showToast(payload.message || 'Could not load slip detail.');
         }
       } catch (e) { showToast('Network error.'); }
+    }
+
+    function printSalarySlip() {
+      const cardEl = document.getElementById('empSlipCard');
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html><head><title>Salary Slip — ${document.getElementById('slipEmpName').textContent}</title>
+        <style>
+          body { font-family: Inter, sans-serif; margin:0; padding:24px; background:#fff; }
+          table { border-collapse: collapse; width: 100%; }
+        </style></head><body>${cardEl.outerHTML}</body></html>
+      `);
+      printWindow.document.close();
+      setTimeout(() => { printWindow.print(); }, 350);
     }
 
     function closeSlipDetail() {
@@ -2116,8 +2251,8 @@
       const newPw = document.getElementById('pwNew').value;
       const confirmPw = document.getElementById('pwConfirm').value;
 
-      if (newPw !== confirmPw) { showToast('New password aur confirm password match nahi karte.'); return; }
-      if (newPw.length < 6) { showToast('New password kam se kam 6 characters ka hona chahiye.'); return; }
+      if (newPw !== confirmPw) { showToast('New password and confirm password do not match.'); return; }
+      if (newPw.length < 6) { showToast('New password must be at least 6 characters.'); return; }
 
       const btn = document.getElementById('pwSubmitBtn');
       btn.disabled = true; btn.textContent = 'Updating...';
@@ -2129,10 +2264,10 @@
         });
         const out = await res.json();
         if (out.status === 'success') {
-          showToast('Password successfully change ho gaya!');
+          showToast('Password changed successfully!');
           closeModal('passwordModal');
         } else {
-          showToast(out.message || 'Password change nahi hua.');
+          showToast(out.message || 'Password change failed.');
         }
       } catch (err) {
         showToast('Network error.');
@@ -2150,7 +2285,7 @@
           EMPLOYEE_DATA = payload.data;
           bindProfile(EMPLOYEE_DATA);
         }
-      } catch (e) { showToast('Profile load nahi hua.'); }
+      } catch (e) { showToast('Could not load profile.'); }
     }
 
     function bindProfile(emp) {
@@ -2203,8 +2338,8 @@
       if (!val) return;
 
       const confirmed = window.confirm(
-        `Weekly Off: "${val}" set karna chahte ho?\n\n` +
-        `⚠️ Yeh ek baar set ho jayega. Baad mein change karne ke liye HR se request karni hogi.`
+        `Set Weekly Off to "${val}"?\n\n` +
+        `⚠️ This can only be set once. To change it later, you will need to request HR.`
       );
       if (!confirmed) return;
 
@@ -2227,7 +2362,7 @@
         });
         const out = await res.json();
         if (out.status === 'success') {
-          showToast(`✅ Weekly off "${day}" set ho gaya! Sheet mein save ho gaya.`);
+          showToast(`✅ Weekly off set to "${day}"! Saved to the sheet.`);
 
           // Switch to locked state immediately
           document.getElementById('statWeeklyOff').textContent = day;
@@ -2239,12 +2374,12 @@
           if (EMPLOYEE_DATA) EMPLOYEE_DATA.weekly_off = day;
           loadCalendar();
         } else {
-          showToast(out.message || 'Weekly off save nahi hua, dobara try karo.');
+          showToast(out.message || 'Weekly off could not be saved, please try again.');
           confirmBtn.disabled = false;
           confirmBtn.textContent = '✓ Confirm Weekly Off';
         }
       } catch (e) {
-        showToast('Network error — weekly off save nahi hua.');
+        showToast('Network error — weekly off could not be saved.');
         confirmBtn.disabled = false;
         confirmBtn.textContent = '✓ Confirm Weekly Off';
       }
@@ -2439,13 +2574,13 @@
 
           document.getElementById('taskGridActive').innerHTML = active.length
             ? active.map(renderTaskCard).join('')
-            : '<div class="glass-card empty-note">Aapko abhi koi active task assign nahi hua.</div>';
+            : '<div class="glass-card empty-note">You have no active task assigned right now.</div>';
 
           document.getElementById('taskGridPrevious').innerHTML = previous.length
             ? previous.map(renderTaskCard).join('')
-            : '<div class="glass-card empty-note">Koi previous task nahi mila.</div>';
+            : '<div class="glass-card empty-note">No previous tasks found.</div>';
         }
-      } catch (e) { showToast('Tasks load nahi ho paye.'); }
+      } catch (e) { showToast('Could not load tasks.'); }
     }
 
     function renderTaskCard(t) {
@@ -2519,7 +2654,7 @@
 
     async function doSubmitWork() {
       const link = document.getElementById('submitWorkLink').value.trim();
-      if (!link) { showToast('Drive link enter karo!'); return; }
+      if (!link) { showToast('Please enter the drive link!'); return; }
       const btn = document.getElementById('submitWorkBtn');
       btn.disabled = true; btn.textContent = 'Submitting...';
       try {
@@ -2535,7 +2670,7 @@
         });
         const out = await res.json();
         if (out.status === 'success') {
-          showToast('Kaam submit ho gaya! Admin review karega. ✓');
+          showToast('Work submitted! Admin will review it. ✓');
           closeSubmitModal();
           loadTasks();
         } else { showToast(out.message || 'Error aaya.'); }
@@ -2586,11 +2721,11 @@
         const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
         const out = await res.json();
         if (out.status === 'success') {
-          showToast('Leave request submit ho gayi!');
+          showToast('Leave request submitted!');
           document.getElementById('quickLeaveForm').reset();
           loadMyLeaves();
         } else {
-          showToast(out.message || 'Submission mein error.');
+          showToast(out.message || 'Error during submission.');
         }
       } catch (err) {
         showToast('Network error.');
@@ -2606,7 +2741,7 @@
         if (payload.status === 'success') {
           const mine = ((payload.data && payload.data.data) || []).filter(l => l.emp_id === USER.employee_id);
           if (mine.length === 0) {
-            document.getElementById('myLeavesList').innerHTML = '<div class="empty-note">Koi leave history nahi hai.</div>';
+            document.getElementById('myLeavesList').innerHTML = '<div class="empty-note">No leave history found.</div>';
             return;
           }
           const badgeClass = { approved: 'badge-approved', rejected: 'badge-rejected', pending: 'badge-pending' };
@@ -2624,7 +2759,7 @@
             `;
           }).join('');
         }
-      } catch (e) { showToast('Leaves load nahi hue.'); }
+      } catch (e) { showToast('Could not load leaves.'); }
     }
 
     /* ── Section 6b: Expense Claims ── */
@@ -2653,7 +2788,7 @@
           document.getElementById('qeDate').value = new Date().toISOString().split('T')[0];
           loadMyExpenses();
         } else {
-          showToast(out.message || 'Submission mein error.');
+          showToast(out.message || 'Error during submission.');
         }
       } catch (err) {
         showToast('Network error.');
@@ -2669,7 +2804,7 @@
         if (payload.status === 'success') {
           const mine = (payload.data || []).filter(x => x.emp_id === USER.employee_id);
           if (mine.length === 0) {
-            document.getElementById('myExpensesList').innerHTML = '<div class="empty-note">Koi expense claim history nahi hai.</div>';
+            document.getElementById('myExpensesList').innerHTML = '<div class="empty-note">No expense claim history found.</div>';
             return;
           }
           const badgeClass = { approved: 'badge-approved', rejected: 'badge-rejected', pending: 'badge-pending' };
@@ -2687,7 +2822,7 @@
             `;
           }).join('');
         }
-      } catch (e) { showToast('Expenses load nahi hue.'); }
+      } catch (e) { showToast('Could not load expenses.'); }
     }
 
     /* ── Section 7: Punch Status (read-only) ── */
