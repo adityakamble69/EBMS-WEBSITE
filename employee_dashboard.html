@@ -1232,6 +1232,7 @@
 
     <div class="navbar-actions desktop-actions">
       <button class="nav-btn" onclick="openLeaveModal()">📅 Leave Requests</button>
+      <button class="nav-btn" onclick="openExpenseModal()">💰 Expenses</button>
       <div class="nav-menu-wrap" id="navMenuWrap">
         <button class="nav-btn" onclick="toggleNavMenu(event)">⋯ Menu</button>
         <div class="nav-menu-dropdown" id="navMenuDropdown">
@@ -1248,7 +1249,7 @@
 
   <div class="mobile-actions-sheet" id="mobileActionsSheet">
     <button class="nav-btn" onclick="openLeaveModal()">📅 Leave Requests</button>
-    <button class="nav-btn" onclick="openIdCardModal()">🪪 Virtual ID Card</button>
+    <button class="nav-btn" onclick="openExpenseModal()">💰 Expenses</button>
     <button class="nav-btn" onclick="openBankDocsModal('bank')">📁 Bank & Docs</button>
     <button class="nav-btn" onclick="openPasswordModal()">🔒 Change Password</button>
     <button class="nav-btn logout" onclick="doLogout()">🚪 Logout</button>
@@ -1532,6 +1533,60 @@
     </div>
   </div>
 
+  <!-- ═══ Expenses Modal ═══ -->
+  <div class="modal-overlay" id="expenseModal">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <h3>💰 Expense Claims</h3>
+        <button class="modal-close-btn" onclick="closeModal('expenseModal')">✕ Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="leave-grid">
+          <div class="glass-card leave-form-card">
+            <form id="quickExpenseForm" onsubmit="submitQuickExpense(event)">
+              <div class="form-group">
+                <label>Category</label>
+                <select id="qeCategory" required>
+                  <option value="Travel">🚗 Travel</option>
+                  <option value="Food">🍽️ Food</option>
+                  <option value="Accommodation">🏨 Accommodation</option>
+                  <option value="Office Supplies">🖇️ Office Supplies</option>
+                  <option value="Other">📦 Other</option>
+                </select>
+              </div>
+              <div class="date-row">
+                <div class="form-group">
+                  <label>Amount (₹)</label>
+                  <input type="number" id="qeAmount" min="1" step="0.01" required placeholder="e.g. 1200" />
+                </div>
+                <div class="form-group">
+                  <label>Expense Date</label>
+                  <input type="date" id="qeDate" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Description</label>
+                <textarea id="qeDescription" rows="2" placeholder="e.g. Client site visit travel cost"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Receipt URL</label>
+                <input type="url" id="qeReceiptUrl" required placeholder="https://drive.google.com/..." />
+              </div>
+              <button type="submit" class="btn-submit-leave" id="qeSubmitBtn">Submit Expense Claim</button>
+            </form>
+          </div>
+
+          <div class="glass-card my-leaves-card">
+            <div class="section-label" style="margin-bottom:10px; font-size:13.5px;">My Recent Expenses</div>
+            <div id="myExpensesList">
+              <div class="empty-note">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══ Bank & Docs Modal (3 tabs: Bank Details | My Documents | Salary Slips) ═══ -->
   <div class="modal-overlay" id="bankDocsModal">
     <div class="modal-card wide">
@@ -1769,6 +1824,14 @@
     function openLeaveModal() {
       document.getElementById('leaveModal').classList.add('open');
       loadMyLeaves();
+    }
+
+    function openExpenseModal() {
+      document.getElementById('expenseModal').classList.add('open');
+      if (!document.getElementById('qeDate').value) {
+        document.getElementById('qeDate').value = new Date().toISOString().split('T')[0];
+      }
+      loadMyExpenses();
     }
 
     function closeModal(id) {
@@ -2562,6 +2625,69 @@
           }).join('');
         }
       } catch (e) { showToast('Leaves load nahi hue.'); }
+    }
+
+    /* ── Section 6b: Expense Claims ── */
+    async function submitQuickExpense(e) {
+      e.preventDefault();
+      const btn = document.getElementById('qeSubmitBtn');
+      btn.disabled = true; btn.textContent = 'Submitting...';
+
+      const payload = {
+        token: TOKEN,
+        action: 'applyExpense',
+        emp_id: USER.employee_id,
+        category: document.getElementById('qeCategory').value,
+        amount: document.getElementById('qeAmount').value,
+        date: document.getElementById('qeDate').value,
+        description: document.getElementById('qeDescription').value.trim(),
+        receipt_url: document.getElementById('qeReceiptUrl').value.trim()
+      };
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Expense claim submitted!');
+          document.getElementById('quickExpenseForm').reset();
+          document.getElementById('qeDate').value = new Date().toISOString().split('T')[0];
+          loadMyExpenses();
+        } else {
+          showToast(out.message || 'Submission mein error.');
+        }
+      } catch (err) {
+        showToast('Network error.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Submit Expense Claim';
+      }
+    }
+
+    async function loadMyExpenses() {
+      try {
+        const res = await fetch(`${API_URL}?action=getExpenses&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          const mine = (payload.data || []).filter(x => x.emp_id === USER.employee_id);
+          if (mine.length === 0) {
+            document.getElementById('myExpensesList').innerHTML = '<div class="empty-note">Koi expense claim history nahi hai.</div>';
+            return;
+          }
+          const badgeClass = { approved: 'badge-approved', rejected: 'badge-rejected', pending: 'badge-pending' };
+          document.getElementById('myExpensesList').innerHTML = mine.slice(0, 8).map(x => {
+            const dateDisplay = x.date ? new Date(x.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—';
+            const amountDisplay = '₹' + (parseFloat(x.amount) || 0).toLocaleString('en-IN');
+            return `
+              <div class="leave-row-item">
+                <div class="leave-row-left">
+                  <div class="leave-type-text">${x.category || '—'}</div>
+                  <div class="leave-dates-text">${amountDisplay} · ${dateDisplay}</div>
+                </div>
+                <span class="badge ${badgeClass[x.status] || 'badge-pending'}">${x.status}</span>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (e) { showToast('Expenses load nahi hue.'); }
     }
 
     /* ── Section 7: Punch Status (read-only) ── */
