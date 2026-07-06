@@ -393,14 +393,44 @@
 
     .bottom-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 16px;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1100px) {
+      .bottom-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
       .bottom-grid {
         grid-template-columns: 1fr;
       }
+    }
+
+    .branch-select {
+      background: transparent;
+      border: none;
+      color: var(--accent-glow);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      padding-right: 4px;
+    }
+
+    .branch-select option {
+      background: #18181B;
+      color: var(--text-primary);
+    }
+
+    .panel-body {
+      max-height: 360px;
+      overflow-y: auto;
     }
 
     .panel {
@@ -621,6 +651,12 @@
         🏢 <span id="branchBadgeText">All Branches</span>
       </div>
 
+      <div class="branch-badge" id="branchFilterWrap" style="display:none;">
+        🏢 <select id="branchSelect" class="branch-select">
+          <option value="all">All Branches</option>
+        </select>
+      </div>
+
       <div class="stats-grid">
         <div class="stat-card blue">
           <div class="stat-label">Total Branches</div>
@@ -706,9 +742,17 @@
       <div class="bottom-grid">
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">👥 Recent Employees</div><a class="panel-link" href="employees.html">View All →</a>
+            <div class="panel-title">✅ Present Employees</div><a class="panel-link" href="attendance.html">View All →</a>
           </div>
-          <div class="panel-body" id="recentEmployees">
+          <div class="panel-body" id="presentEmployees">
+            <div style="padding:20px; text-align:center; color:var(--text-dim);">Loading...</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">📝 Work List</div><a class="panel-link" href="tasks.html">View All →</a>
+          </div>
+          <div class="panel-body" id="workList">
             <div style="padding:20px; text-align:center; color:var(--text-dim);">Loading...</div>
           </div>
         </div>
@@ -740,10 +784,19 @@
       }, 600);
     });
 
+    const CAN_FILTER_BRANCH = cachedUser.role === 'super_admin' || cachedUser.role === 'hr';
+
     function setUserInfo() {
       const greeting = getGreeting();
       document.getElementById('pageTitle').textContent = `${greeting}, ${cachedUser.name.split(' ')[0]}! 👋`;
-      document.getElementById('branchBadgeText').textContent = cachedUser.role === 'super_admin' ? 'All Branches (Super Admin)' : (cachedUser.branch_id || 'Your Branch');
+
+      if (CAN_FILTER_BRANCH) {
+        // Roles that can see multiple branches get the selector instead of the static badge
+        document.getElementById('branchBadge').style.display = 'none';
+        document.getElementById('branchFilterWrap').style.display = 'inline-flex';
+      } else {
+        document.getElementById('branchBadgeText').textContent = 'Your Branch';
+      }
 
       document.getElementById('topbarTitle').textContent =
         cachedUser.role === 'super_admin' ? 'Admin Dashboard' :
@@ -765,29 +818,150 @@
       document.getElementById('pageSubtitle').innerHTML = `Todays overview — <strong>${dateStr}</strong>`;
     }
 
+    // ---- Cached raw datasets (unfiltered by branch) ----
+    let ALL_EMPLOYEES = [];
+    let ALL_ATTENDANCE_TODAY = [];
+    let ALL_LEAVES_PENDING = [];
+    let ALL_TASKS = [];
+    let ALL_BRANCHES = [];
+    let META = { total_branches: 0, monthly_salary_expense: 0 };
+    let selectedBranchId = 'all';
+
+    function getTodayIST() {
+      const now = new Date();
+      const istDate = new Date(now.getTime() + 330 * 60000);
+      return istDate.toISOString().split('T')[0];
+    }
+
+    function filterByBranch(arr) {
+      if (selectedBranchId === 'all') return arr;
+      return arr.filter(row => row.branch_id === selectedBranchId);
+    }
+
     async function loadDashboard() {
       try {
-        const url = `${API_URL}?action=getDashboard&token=${AppSession.getToken()}`;
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (data.status === 'success') {
-          const d = data.data;
-          setStatCard('branches', d.total_branches, 'Active branches');
-          setStatCard('employees', d.total_employees, 'Active employees');
-          setStatCard('present', d.present_today, `Out of ${d.total_employees}`);
-          setStatCard('absent', d.absent_today, 'Not marked yet');
-          setStatCard('leaves', d.pending_leaves, 'Awaiting approval');
-          setStatCard('salary', '₹' + formatNumber(d.monthly_salary_expense), 'This month');
-        } else {
-          showToast(data.message || 'Error processing response payload metrics');
-        }
+        await Promise.all([
+          loadMeta(),
+          fetchEmployees(),
+          fetchAttendanceToday(),
+          fetchLeavesPending(),
+          fetchTasks(),
+          fetchBranches()
+        ]);
+        renderEverything();
       } catch (err) {
         showToast('API connection error. Showing offline mock values.');
         loadDemoData();
       }
-      loadRecentEmployees();
-      loadPendingLeaves();
+    }
+
+    async function loadMeta() {
+      const url = `${API_URL}?action=getDashboard&token=${AppSession.getToken()}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.status === 'success') {
+        META.total_branches = data.data.total_branches;
+        META.monthly_salary_expense = data.data.monthly_salary_expense;
+      }
+    }
+
+    async function fetchEmployees() {
+      try {
+        const res = await fetch(`${API_URL}?action=getEmployees&token=${AppSession.getToken()}&limit=1000`);
+        const data = await res.json();
+        if (data.status === 'success' && data.data && data.data.data) {
+          ALL_EMPLOYEES = data.data.data;
+        }
+      } catch (e) { }
+    }
+
+    async function fetchAttendanceToday() {
+      try {
+        const res = await fetch(`${API_URL}?action=getAttendance&token=${AppSession.getToken()}&date=${getTodayIST()}&limit=1000`);
+        const data = await res.json();
+        if (data.status === 'success' && data.data && data.data.data) {
+          ALL_ATTENDANCE_TODAY = data.data.data;
+        }
+      } catch (e) { }
+    }
+
+    async function fetchLeavesPending() {
+      try {
+        const res = await fetch(`${API_URL}?action=getLeaves&token=${AppSession.getToken()}&status=pending&limit=1000`);
+        const data = await res.json();
+        if (data.status === 'success' && data.data && data.data.data) {
+          ALL_LEAVES_PENDING = data.data.data;
+        }
+      } catch (e) { }
+    }
+
+    async function fetchTasks() {
+      try {
+        const res = await fetch(`${API_URL}?action=getTasks&token=${AppSession.getToken()}&limit=1000`);
+        const data = await res.json();
+        if (data.status === 'success' && data.data && data.data.data) {
+          ALL_TASKS = data.data.data;
+        }
+      } catch (e) { }
+    }
+
+    async function fetchBranches() {
+      try {
+        const res = await fetch(`${API_URL}?action=getBranches&token=${AppSession.getToken()}`);
+        const data = await res.json();
+        if (data.status === 'success' && Array.isArray(data.data)) {
+          ALL_BRANCHES = data.data.filter(b => b.status === 'active');
+        }
+      } catch (e) { }
+
+      if (CAN_FILTER_BRANCH) {
+        renderBranchSelector();
+      } else {
+        updateBranchBadgeText();
+      }
+    }
+
+    function findBranchName(branchId) {
+      const b = ALL_BRANCHES.find(br => br.branch_id === branchId);
+      return b ? b.branch_name : (branchId || 'Your Branch');
+    }
+
+    function updateBranchBadgeText() {
+      const el = document.getElementById('branchBadgeText');
+      if (el) el.textContent = findBranchName(cachedUser.branch_id);
+    }
+
+    function renderBranchSelector() {
+      const select = document.getElementById('branchSelect');
+      select.innerHTML = '<option value="all">All Branches</option>' +
+        ALL_BRANCHES.map(b => `<option value="${b.branch_id}">${b.branch_name}</option>`).join('');
+      select.addEventListener('change', (e) => {
+        selectedBranchId = e.target.value;
+        renderEverything();
+      });
+    }
+
+    function renderEverything() {
+      renderStats();
+      renderPresentEmployees();
+      renderWorkList();
+      renderPendingLeaves();
+    }
+
+    function renderStats() {
+      const activeEmps = filterByBranch(ALL_EMPLOYEES.filter(e => e.status === 'active'));
+      const attendance = filterByBranch(ALL_ATTENDANCE_TODAY);
+      const leaves = filterByBranch(ALL_LEAVES_PENDING);
+
+      const presentCount = attendance.filter(a => a.in_time).length;
+      const absentCount = Math.max(activeEmps.length - presentCount, 0);
+
+      setStatCard('branches', META.total_branches, 'Active branches');
+      setStatCard('employees', activeEmps.length, selectedBranchId === 'all' ? 'Active employees' : 'In selected branch');
+      setStatCard('present', presentCount, `Out of ${activeEmps.length}`);
+      setStatCard('absent', absentCount, 'Not marked yet');
+      setStatCard('leaves', leaves.length, 'Awaiting approval');
+      setStatCard('salary', '₹' + formatNumber(META.monthly_salary_expense), 'This month (company-wide)');
     }
 
     function loadDemoData() {
@@ -799,41 +973,83 @@
       setStatCard('salary', '₹1.8L', 'Current billing cycle');
     }
 
-    async function loadRecentEmployees() {
-      try {
-        const res = await fetch(`${API_URL}?action=getEmployees&token=${AppSession.getToken()}&limit=5`);
-        const data = await res.json();
-        if (data.status === 'success' && data.data.data) {
-          const emps = data.data.data.slice(0, 5);
-          document.getElementById('recentEmployees').innerHTML = emps.map(e => `
-          <div class="emp-row">
-            <div class="emp-avatar">${e.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}</div>
-            <div class="emp-info"><div class="emp-name">${e.name}</div><div class="emp-role">${e.designation_id || 'Staff Regular'}</div></div>
-            <span class="status-pill pill-active">Active</span>
-          </div>
-        `).join('');
-        }
-      } catch (e) { }
+    function findEmployeeName(empId) {
+      const emp = ALL_EMPLOYEES.find(e => e.emp_id === empId);
+      return emp ? emp.name : empId;
     }
 
-    async function loadPendingLeaves() {
-      try {
-        const res = await fetch(`${API_URL}?action=getLeaves&token=${AppSession.getToken()}&status=pending`);
-        const data = await res.json();
-        if (data.status === 'success' && data.data) {
-          const leaves = Array.isArray(data.data) ? data.data.slice(0, 4) : [];
-          if (leaves.length === 0) {
-            document.getElementById('pendingLeaves').innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-dim);">No leaves pending review 🎉</div>';
-            return;
-          }
-          document.getElementById('pendingLeaves').innerHTML = leaves.map(l => `
+    function initials(name) {
+      return String(name || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    }
+
+    function renderPresentEmployees() {
+      const attendance = filterByBranch(ALL_ATTENDANCE_TODAY).filter(a => a.in_time);
+      const container = document.getElementById('presentEmployees');
+
+      if (attendance.length === 0) {
+        container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-dim);">No one has punched in yet today</div>';
+        return;
+      }
+
+      container.innerHTML = attendance.map(a => {
+        const name = findEmployeeName(a.emp_id);
+        const punchedOut = !!a.out_time;
+        return `
+          <div class="emp-row">
+            <div class="emp-avatar">${initials(name)}</div>
+            <div class="emp-info"><div class="emp-name">${name}</div><div class="emp-role">In: ${a.in_time}${punchedOut ? ' · Out: ' + a.out_time : ''}</div></div>
+            <span class="status-pill ${punchedOut ? 'pill-pending' : 'pill-active'}">${punchedOut ? 'Punched Out' : 'Present'}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderWorkList() {
+      const statusMap = {
+        todo:         { label: 'To Do',       cls: 'pill-pending' },
+        in_progress:  { label: 'In Progress', cls: 'pill-active'  },
+        in_review:    { label: 'In Review',   cls: 'pill-pending' },
+        completed:    { label: 'Completed',   cls: 'pill-active'  }
+      };
+
+      const tasks = filterByBranch(ALL_TASKS)
+        .filter(t => t.status !== 'completed')
+        .slice(0, 8);
+
+      const container = document.getElementById('workList');
+
+      if (tasks.length === 0) {
+        container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-dim);">No active tasks right now 🎉</div>';
+        return;
+      }
+
+      container.innerHTML = tasks.map(t => {
+        const assignedName = t.assigned_to ? findEmployeeName(t.assigned_to) : 'Unassigned';
+        const st = statusMap[t.status] || { label: t.status, cls: 'pill-pending' };
+        return `
           <div class="leave-row">
-            <div class="leave-row-top"><div class="leave-name">${l.emp_id}</div><span class="status-pill pill-pending">${l.leave_type}</span></div>
+            <div class="leave-row-top"><div class="leave-name">${t.title}</div><span class="status-pill ${st.cls}">${st.label}</span></div>
+            <div class="leave-meta">👤 ${assignedName}${t.due_date ? ' · Due ' + t.due_date : ''}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderPendingLeaves() {
+      const leaves = filterByBranch(ALL_LEAVES_PENDING).slice(0, 6);
+      const container = document.getElementById('pendingLeaves');
+
+      if (leaves.length === 0) {
+        container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-dim);">No leaves pending review 🎉</div>';
+        return;
+      }
+
+      container.innerHTML = leaves.map(l => `
+          <div class="leave-row">
+            <div class="leave-row-top"><div class="leave-name">${findEmployeeName(l.emp_id)}</div><span class="status-pill pill-pending">${l.leave_type}</span></div>
             <div class="leave-meta">📅 ${l.from_date} to ${l.to_date} · ${l.days} Days</div>
           </div>
         `).join('');
-        }
-      } catch (e) { }
     }
 
     function setStatCard(id, value, subtitle) {
