@@ -488,6 +488,55 @@
       background: linear-gradient(90deg, transparent, var(--border), transparent);
       margin: 20px 0;
     }
+
+    /* ── Form fields (employee self-details) ── */
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .field input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 11px 13px;
+      font-size: 13.5px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .field input:focus {
+      border-color: var(--accent);
+    }
+
+    .field input::placeholder {
+      color: var(--dim);
+    }
+
+    .link-btn {
+      display: block;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 14px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .link-btn:hover {
+      color: var(--accent);
+    }
   </style>
 </head>
 
@@ -512,6 +561,7 @@
       <div class="progress-dots">
         <div class="dot-step cur" id="dp1"></div>
         <div class="dot-step" id="dp2"></div>
+        <div class="dot-step" id="dp3"></div>
       </div>
 
       <!-- ══ STEP 1 : Location ══════════════════════════ -->
@@ -521,28 +571,62 @@
             <div class="icon-ring ring-blue">📍</div>
           </div>
           <div class="step-title">Location Verify</div>
-          <div class="step-sub">Office boundary ke andar hona zaroori hai punch karne ke liye.</div>
+          <div class="step-sub">You need to be within the office boundary to punch. Your branch will be detected automatically from your location.</div>
           <div class="pill pill-waiting" id="locPill">
             <span class="pdot pdot-y"></span>
-            <span id="locPillText">Branch location load ho rahi hai…</span>
+            <span id="locPillText">Waiting for GPS location…</span>
           </div>
         </div>
 
         <div class="info-box">
           <strong>📌 Office Boundary:</strong><br />
-          GPS se verify hoga ki aap <strong id="branchLabel">—</strong> ke
-          <strong id="radiusLabel">…</strong> radius mein hain ya nahi.
+          GPS will verify whether you're within any registered branch's office boundary — <strong id="branchLabel">your branch will be detected automatically</strong>.
         </div>
 
         <div class="err" id="errLoc"></div>
 
-        <button class="btn btn-blue" id="btnLoc" onclick="requestLocation()" disabled>
-          📍 &nbsp;<span id="btnLocText">Branch location load ho rahi hai…</span>
+        <button class="btn btn-blue" id="btnLoc" onclick="requestLocation()">
+          📍 &nbsp;<span id="btnLocText">Allow Location</span>
         </button>
       </div>
 
-      <!-- ══ STEP 2 : Punch IN / OUT ════════════════════ -->
+      <!-- ══ STEP 2 : Employee Details (first-time only) ═ -->
       <div class="step" id="s2">
+        <div class="step-center">
+          <div style="display:flex;justify-content:center;">
+            <div class="icon-ring ring-blue">🧾</div>
+          </div>
+          <div class="step-title">Enter Your Details</div>
+          <div class="step-sub">First time here? Fill in your details once — they'll auto-fill on this
+            phone next time.</div>
+        </div>
+
+        <div class="err" id="errDetails"></div>
+
+        <div class="field">
+          <label>Employee ID</label>
+          <input id="inpEmpId" placeholder="e.g. EMP123456" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Name</label>
+          <input id="inpName" placeholder="Your full name" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="inpEmail" type="email" placeholder="you@example.com" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label>Mobile No.</label>
+          <input id="inpMobile" type="tel" placeholder="10-digit mobile number" autocomplete="off" />
+        </div>
+
+        <button class="btn btn-blue" id="btnVerify" onclick="submitDetails()">
+          <span class="spin" id="spVerify"></span> ✅ &nbsp;Verify &amp; Continue
+        </button>
+      </div>
+
+      <!-- ══ STEP 3 : Punch IN / OUT ════════════════════ -->
+      <div class="step" id="s3">
 
         <div style="display:flex;justify-content:center;margin-bottom:16px;">
           <div class="pill pill-ok">
@@ -570,8 +654,8 @@
         <!-- Shown when both IN+OUT already done today -->
         <div class="complete-banner" id="completeBanner" style="display:none;">
           <div class="cb-icon">✅</div>
-          <div class="cb-title">Aaj ki attendance complete ho gayi!</div>
-          <div class="cb-sub">IN aur OUT dono record ho chuke hain.</div>
+          <div class="cb-title">Today's attendance is complete!</div>
+          <div class="cb-sub">Both IN and OUT have been recorded.</div>
         </div>
 
         <div class="err" id="errPunch"></div>
@@ -582,17 +666,19 @@
         <button class="btn btn-out" id="btnOut" onclick="doPunch('out')" style="display:none;">
           <span class="spin dark" id="spOut"></span> 🕐 &nbsp;Punch OUT
         </button>
+
+        <div class="link-btn" onclick="switchEmployee()">Not you? Switch Employee</div>
       </div>
 
-      <!-- ══ STEP 3 : Success ═══════════════════════════ -->
-      <div class="step" id="s3">
+      <!-- ══ STEP 4 : Success ═══════════════════════════ -->
+      <div class="step" id="s4">
         <div class="step-center">
           <div style="display:flex;justify-content:center;">
             <div class="icon-ring" id="successRing"
               style="background:var(--success-dim);border:1.5px solid rgba(52,211,153,0.3);">✅</div>
           </div>
           <div class="step-title" id="successTitle">Punch Successful!</div>
-          <div class="step-sub" id="successMsg">Attendance record ho gayi hai.</div>
+          <div class="step-sub" id="successMsg">Your attendance has been recorded.</div>
         </div>
 
         <div class="time-row">
@@ -611,7 +697,7 @@
           <span id="finalDate">—</span>
         </div>
 
-        <button class="btn btn-blue" onclick="resetFlow()">↩ &nbsp;Done / Next Employee</button>
+        <button class="btn btn-blue" onclick="resetFlow()">↩ &nbsp;Done</button>
       </div>
 
     </div><!-- /body -->
@@ -624,37 +710,30 @@
     // const API_URL = 'https://script.google.com/macros/s/AKfycbyUp8iouhK5Bu6A7hSq0tgDDRAxmm7Am0HLhHSxe4vb1NmtZCW9rJAlsAGd8jWE16xQnw/exec';
     const API_URL = 'https://script.google.com/macros/s/AKfycbyUp8iouhK5Bu6A7hSq0tgDDRAxmm7Am0HLhHSxe4vb1NmtZCW9rJAlsAGd8jWE16xQnw/exec';
 
-    const QR_SECRET = 'CDLN-EBMS-2025-SECURE';
-
     let OFFICE_LAT = null, OFFICE_LNG = null, OFFICE_RADIUS = null;
     let OFFICE_BRANCH_ID = null, OFFICE_BRANCH_NAME = null;
-    let branchLocationReady = false;
 
-    const urlP = new URLSearchParams(window.location.search);
-    const EMP_ID = urlP.get('emp') || '';
-    const QR_CS = urlP.get('cs') || '';
+    // ✅ UNIVERSAL LINK: no ?branch=BR001 needed anymore. The page asks
+    // for GPS first, then the backend checks every registered branch's
+    // geofence and tells us which one (if any) the employee is inside.
 
-    // Branch resolution priority:
-    // 1. ?branch=BR003 in URL (QR code se ya manual override)
-    // 2. localStorage mein saved branch (login ke time set hota hai)
-    // 3. Empty — backend employee record se fallback karega
-    const _savedUser = JSON.parse(localStorage.getItem('ebms_user') || '{}');
-    const URL_BRANCH_ID = urlP.get('branch') || _savedUser.branch_id || '';
-
-    const isQR = EMP_ID.length > 0;
-    const SESSION_TOKEN = urlP.get('token') || localStorage.getItem('ebms_token') || '';
+    // Employee details are captured once on this phone (Step 2) and then
+    // remembered locally so future visits skip straight to Punch IN/OUT.
+    const KIOSK_KEY = 'ebms_self_punch_employee';
 
     let userLat = null, userLng = null;
     let lastPunch = null;   // null | 'in' | 'both'
     let todayIn = '—', todayOut = '—';
     let empInfo = {};
 
-    // ── QR checksum ───────────────────────────────────
-    function generateQrChecksum(empId, secret) {
-      const str = String(empId) + '::' + secret;
-      let h = 0;
-      for (let i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
-      return Math.abs(h).toString(16).toUpperCase().padStart(8, '0').slice(0, 8);
+    function getSavedEmployee() {
+      try { return JSON.parse(localStorage.getItem(KIOSK_KEY) || 'null'); } catch (e) { return null; }
+    }
+    function saveEmployee(emp) {
+      try { localStorage.setItem(KIOSK_KEY, JSON.stringify(emp)); } catch (e) {}
+    }
+    function clearSavedEmployee() {
+      try { localStorage.removeItem(KIOSK_KEY); } catch (e) {}
     }
 
     // ── Live clock ────────────────────────────────────
@@ -669,7 +748,7 @@
 
     // ── Progress (2 dots only) ────────────────────────
     function setProgress(step) {
-      for (let i = 1; i <= 2; i++) {
+      for (let i = 1; i <= 3; i++) {
         const el = document.getElementById('dp' + i);
         el.className = 'dot-step' + (i < step ? ' done' : i === step ? ' cur' : '');
       }
@@ -677,88 +756,68 @@
     function showStep(n) {
       document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
       document.getElementById('s' + n).classList.add('active');
-      setProgress(Math.min(n, 2));
+      setProgress(Math.min(n, 3));
     }
 
-    // ── Haversine ─────────────────────────────────────
-    function haversine(la1, lo1, la2, lo2) {
-      const R = 6371000, rad = Math.PI / 180;
-      const dLa = (la2 - la1) * rad, dLo = (lo2 - lo1) * rad;
-      const a = Math.sin(dLa / 2) ** 2 + Math.cos(la1 * rad) * Math.cos(la2 * rad) * Math.sin(dLo / 2) ** 2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    // (Distance/geofence matching now happens server-side in
+    // findBranchByLocation — see appscript_branch_location.gs)
+
+    // ── Find which branch's geofence the employee is currently inside
+    // (fully public — no login/QR checksum). Called AFTER we already
+    // have the user's GPS coordinates. ──────────────────────────────
+    async function findMyBranch(lat, lng) {
+      const res = await fetch(`${API_URL}?action=findBranchByLocation&lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`);
+      return res.json();
     }
 
-    // ── Fetch branch geofence ─────────────────────────
-    async function fetchBranchLocation() {
-      const errEl = document.getElementById('errLoc');
-      const pillText = document.getElementById('locPillText');
-      if (!SESSION_TOKEN) {
-        pillText.textContent = 'Session token nahi mila'; return;
-      }
-      try {
-        // Priority: ?branch= URL param → localStorage branch_id → getEmployee se fetched override
-        const effectiveBranch = URL_BRANCH_ID || window.__branchOverride || '';
-        const bp = effectiveBranch ? `&branch_id=${encodeURIComponent(effectiveBranch)}` : '';
-        const res = await fetch(`${API_URL}?action=getBranchLocation&token=${encodeURIComponent(SESSION_TOKEN)}${bp}`);
-        const out = await res.json();
-        if (out.status === 'success') {
-          OFFICE_LAT = out.data.latitude; OFFICE_LNG = out.data.longitude;
-          OFFICE_RADIUS = out.data.radius;
-          OFFICE_BRANCH_ID = out.data.branch_id; OFFICE_BRANCH_NAME = out.data.branch_name;
-          branchLocationReady = true;
-          document.getElementById('radiusLabel').textContent = OFFICE_RADIUS + 'm';
-          document.getElementById('branchLabel').textContent = OFFICE_BRANCH_NAME || OFFICE_BRANCH_ID;
-          document.getElementById('btnLocText').textContent = 'Location Allow Karein';
-          document.getElementById('btnLoc').disabled = false;
-          pillText.textContent = 'Location check ho rahi hai…';
-          if (navigator.geolocation) setTimeout(requestLocation, 300);
-        } else {
-          showErr(errEl, '⚠️ ' + (out.message || 'Branch location nahi mil saki.'));
-          pillText.textContent = 'Branch location error';
-        }
-      } catch (e) {
-        showErr(errEl, '⚠️ Network error — branch location load nahi ho saki. Internet check karke reload karein.');
-        pillText.textContent = 'Network error';
-      }
-    }
-
-    // ── STEP 1 : Location ─────────────────────────────
+    // ── STEP 1 : Location (GPS first, then backend detects branch) ──
     function requestLocation() {
       const pill = document.getElementById('locPill');
       const errEl = document.getElementById('errLoc');
       const btn = document.getElementById('btnLoc');
       errEl.style.display = 'none';
       pill.className = 'pill pill-waiting';
-      pill.innerHTML = '<span class="pdot pdot-y"></span> GPS fetch ho raha hai…';
+      pill.innerHTML = '<span class="pdot pdot-y"></span> Fetching GPS…';
       btn.disabled = true;
 
-      if (!branchLocationReady) {
-        showErr(errEl, 'Branch location abhi load nahi hui. Thoda wait karein ya page reload karein.');
-        return;
-      }
       if (!navigator.geolocation) {
-        showErr(errEl, 'Browser mein geolocation support nahi hai. Kisi aur device se try karein.');
+        showErr(errEl, 'Geolocation isn\'t supported in this browser. Please try a different device.');
         btn.disabled = false; return;
       }
 
       navigator.geolocation.getCurrentPosition(
-        pos => {
+        async pos => {
           userLat = pos.coords.latitude; userLng = pos.coords.longitude;
-          const dist = Math.round(haversine(userLat, userLng, OFFICE_LAT, OFFICE_LNG));
-          if (dist <= OFFICE_RADIUS) {
-            pill.className = 'pill pill-ok';
-            pill.innerHTML = '<span class="pdot pdot-g"></span> Office area verified ✓ (' + dist + 'm)';
-            document.getElementById('distLabel').textContent = 'Office se sirf ' + dist + 'm — Verified ✓';
-            fetchEmployeeAndPunch();
-          } else {
+          pill.innerHTML = '<span class="pdot pdot-y"></span> Detecting branch…';
+
+          try {
+            const out = await findMyBranch(userLat, userLng);
+            if (out.status === 'success' && out.data) {
+              OFFICE_LAT = out.data.latitude; OFFICE_LNG = out.data.longitude;
+              OFFICE_RADIUS = out.data.radius;
+              OFFICE_BRANCH_ID = out.data.branch_id; OFFICE_BRANCH_NAME = out.data.branch_name;
+              const dist = Math.round(out.data.distance);
+
+              document.getElementById('branchLabel').textContent = OFFICE_BRANCH_NAME || OFFICE_BRANCH_ID;
+              pill.className = 'pill pill-ok';
+              pill.innerHTML = '<span class="pdot pdot-g"></span> ' + (OFFICE_BRANCH_NAME || OFFICE_BRANCH_ID) + ' verified ✓ (' + dist + 'm)';
+              document.getElementById('distLabel').textContent = 'Only ' + dist + 'm from ' + (OFFICE_BRANCH_NAME || OFFICE_BRANCH_ID) + ' — Verified ✓';
+              afterLocationVerified();
+            } else {
+              pill.className = 'pill pill-denied';
+              pill.innerHTML = '<span class="pdot pdot-r"></span> Not within any office boundary';
+              showErr(errEl, '⚠️ ' + (out.message || 'You are not within any registered branch\'s office boundary.'));
+              btn.disabled = false;
+            }
+          } catch (e) {
+            showErr(errEl, '⚠️ Network error — could not detect branch. Check your internet and try again.');
             pill.className = 'pill pill-denied';
-            pill.innerHTML = '<span class="pdot pdot-r"></span> Office ke bahar (' + dist + 'm away)';
-            showErr(errEl, '⚠️ Aap office boundary (' + OFFICE_RADIUS + 'm) ke bahar hain (' + dist + 'm door). Andar aakar dobara try karein.');
+            pill.innerHTML = '<span class="pdot pdot-r"></span> Network error';
             btn.disabled = false;
           }
         },
         err => {
-          const m = { 1: 'Location permission deny hua. Browser settings mein allow karein.', 2: 'GPS signal nahi mila. WiFi on karein.', 3: 'Location timeout. Dobara try karein.' };
+          const m = { 1: 'Location permission denied. Please allow it in your browser settings.', 2: 'GPS signal not found. Please turn on WiFi.', 3: 'Location request timed out. Please try again.' };
           showErr(errEl, m[err.code] || 'Location error: ' + err.message);
           pill.className = 'pill pill-denied';
           pill.innerHTML = '<span class="pdot pdot-r"></span> Location Error';
@@ -768,41 +827,72 @@
       );
     }
 
-    // ── Fetch employee info + today's punch state ─────
-    async function fetchEmployeeAndPunch() {
-      const errEl = document.getElementById('errLoc');
-
-      // Resolve employee identity
-      if (isQR) {
-        // From QR: EMP_ID is in the URL; try saved profile from localStorage
-        const saved = JSON.parse(localStorage.getItem('ebms_user') || '{}');
-        empInfo = {
-          emp_id: EMP_ID,
-          name: (saved.employee_id === EMP_ID && saved.name) ? saved.name : EMP_ID,
-        };
+    // ── After GPS is verified: either skip straight to Punch (device
+    // already has employee details saved) or show the one-time details
+    // form (Step 2). ──────────────────────────────────────────────
+    function afterLocationVerified() {
+      const saved = getSavedEmployee();
+      if (saved && saved.emp_id) {
+        empInfo = saved;
+        goToPunchStep();
       } else {
-        // Web portal without QR: resolve from session token
-        try {
-          const r = await fetch(`${API_URL}?action=getProfile&token=${encodeURIComponent(SESSION_TOKEN)}`);
-          const d = await r.json();
-          if (d.status === 'success' && d.data) {
-            empInfo = { emp_id: d.data.employee_id || d.data.emp_id, name: d.data.name || d.data.employee_id };
-          } else {
-            // Fallback: use token as identity signal — show a generic label
-            empInfo = { emp_id: 'EMP', name: 'Employee' };
-          }
-        } catch (e) {
-          empInfo = { emp_id: 'EMP', name: 'Employee' };
-        }
+        setTimeout(() => showStep(2), 500);
+      }
+    }
+
+    // ── STEP 2 : Employee details form (first time on this phone) ──
+    async function submitDetails() {
+      const errEl = document.getElementById('errDetails');
+      errEl.style.display = 'none';
+
+      const emp_id = document.getElementById('inpEmpId').value.trim();
+      const name   = document.getElementById('inpName').value.trim();
+      const email  = document.getElementById('inpEmail').value.trim();
+      const mobile = document.getElementById('inpMobile').value.trim();
+
+      if (!emp_id || !name || !email || !mobile) {
+        showErr(errEl, 'All fields (Employee ID, Name, Email, Mobile) are required.');
+        return;
       }
 
-      document.getElementById('showName').textContent = empInfo.name;
+      const btn = document.getElementById('btnVerify');
+      const sp  = document.getElementById('spVerify');
+      btn.disabled = true; sp.style.display = 'inline-block';
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'verifyEmployeeSelf', emp_id, name, email, mobile })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success' && data.data) {
+          empInfo = {
+            emp_id: data.data.emp_id,
+            name:   data.data.name,
+            email:  data.data.email,
+            mobile: data.data.mobile
+          };
+          saveEmployee(empInfo);
+          goToPunchStep();
+        } else {
+          showErr(errEl, data.message || 'Details did not match. Please double-check and try again.');
+          btn.disabled = false; sp.style.display = 'none';
+        }
+      } catch (e) {
+        showErr(errEl, 'Network error. Check your internet and try again.');
+        btn.disabled = false; sp.style.display = 'none';
+      }
+    }
+
+    // ── STEP 3 : Punch screen — fetch today's IN/OUT status ────────
+    async function goToPunchStep() {
+      document.getElementById('showName').textContent = empInfo.name || empInfo.emp_id;
       document.getElementById('showEmpId').textContent = empInfo.emp_id;
 
-      // Fetch today's attendance
       try {
         const todayStr = istDateStr();
-        const r = await fetch(`${API_URL}?action=getAttendance&token=${encodeURIComponent(SESSION_TOKEN)}&emp_id=${encodeURIComponent(empInfo.emp_id)}&date=${todayStr}&limit=5`);
+        const r = await fetch(`${API_URL}?action=getAttendance&emp_id=${encodeURIComponent(empInfo.emp_id)}&date=${todayStr}&limit=5`);
         const d = await r.json();
         if (d.status === 'success') {
           const logs = (d.data && d.data.data) || [];
@@ -822,38 +912,45 @@
       document.getElementById('inDisp').textContent = todayIn !== '—' ? fmt12(todayIn) : '—';
       document.getElementById('outDisp').textContent = todayOut !== '—' ? fmt12(todayOut) : '—';
 
-      // Decide which button(s) to show
       const btnIn = document.getElementById('btnIn');
       const btnOut = document.getElementById('btnOut');
       const banner = document.getElementById('completeBanner');
 
       if (lastPunch === 'both') {
-        // Both done — show completion banner, no buttons
         banner.style.display = 'block';
         btnIn.style.display = 'none';
         btnOut.style.display = 'none';
       } else if (lastPunch === 'in') {
-        // IN done — show OUT button
         banner.style.display = 'none';
         btnIn.style.display = 'none';
         btnOut.style.display = 'flex';
       } else {
-        // Nothing done — show IN button
         banner.style.display = 'none';
         btnIn.style.display = 'flex';
         btnOut.style.display = 'none';
       }
 
-      setTimeout(() => showStep(2), 600);
+      showStep(3);
     }
 
-    // ── STEP 2 : Punch ────────────────────────────────
+    // ── "Not you? Switch Employee" — clears saved details on this phone
+    function switchEmployee() {
+      clearSavedEmployee();
+      empInfo = {};
+      lastPunch = null; todayIn = '—'; todayOut = '—';
+      const ids = ['inpEmpId', 'inpName', 'inpEmail', 'inpMobile'];
+      ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      document.getElementById('errDetails').style.display = 'none';
+      showStep(2);
+    }
+
+    // ── STEP 3 : Punch ────────────────────────────────
     async function doPunch(type) {
       const errEl = document.getElementById('errPunch');
       errEl.style.display = 'none';
 
-      if (!SESSION_TOKEN) {
-        showErr(errEl, '⚠️ Session token nahi mila. Login karke dobara try karein.'); return;
+      if (!empInfo.emp_id) {
+        showErr(errEl, '⚠️ Employee details not found. Please reload the page and try again.'); return;
       }
 
       const sp = document.getElementById(type === 'in' ? 'spIn' : 'spOut');
@@ -866,16 +963,16 @@
 
       const payload = {
         action: 'markAttendance',
-        token: SESSION_TOKEN,
         emp_id: empInfo.emp_id,
         date: dateStr,
         time: timeStr,
-        method: isQR ? 'QR-Scan' : 'Web-Portal',
+        method: 'Self-Punch',
         latitude: userLat,
         longitude: userLng,
-        remarks: type === 'in' ? 'QR Punch-In' : 'QR Punch-Out'
+        remarks: type === 'in' ? 'Self Punch-In' : 'Self Punch-Out'
       };
-      if (isQR) payload.qr_checksum = generateQrChecksum(empInfo.emp_id, QR_SECRET);
+      // No token / checksum — geofence + one-time detail verification
+      // (Step 2) is the identity proof for this self-service kiosk flow.
 
       try {
         const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
@@ -896,36 +993,35 @@
           if (type === 'in') {
             ring.style.cssText = 'background:var(--success-dim);border:1.5px solid rgba(52,211,153,0.3);';
             ring.textContent = '✅';
-            title.textContent = 'Punch IN Ho Gaya!';
-            msg.textContent = 'Aapki IN timing record ho gayi. Good morning! 🌅';
+            title.textContent = 'Punched IN!';
+            msg.textContent = 'Your IN time has been recorded. Good morning! 🌅';
           } else {
             ring.style.cssText = 'background:var(--warning-dim);border:1.5px solid rgba(251,191,36,0.28);';
             ring.textContent = '🕐';
-            title.textContent = 'Punch OUT Ho Gaya!';
-            msg.textContent = 'Aapki OUT timing record ho gayi. Have a nice evening! 🌇';
+            title.textContent = 'Punched OUT!';
+            msg.textContent = 'Your OUT time has been recorded. Have a nice evening! 🌇';
           }
 
-          showStep(3);
+          sp.style.display = 'none';
+          showStep(4);
         } else {
-          showErr(errEl, data.message || 'Punch record nahi hua. Dobara try karein.');
+          showErr(errEl, data.message || 'Punch could not be recorded. Please try again.');
           sp.style.display = 'none'; btn.disabled = false;
         }
       } catch (e) {
-        showErr(errEl, 'Network error. Internet check karein aur dobara try karein.');
+        showErr(errEl, 'Network error. Please check your internet and try again.');
         sp.style.display = 'none'; btn.disabled = false;
       }
     }
 
-    // ── Reset (next employee on same device) ──────────
+    // ── Reset (back to punch screen, same employee on this device) ──
     function resetFlow() {
-      lastPunch = null; todayIn = '—'; todayOut = '—'; empInfo = {};
       document.getElementById('inDisp').textContent = '—';
       document.getElementById('outDisp').textContent = '—';
       document.getElementById('completeBanner').style.display = 'none';
       document.getElementById('btnIn').style.display = 'none';
       document.getElementById('btnOut').style.display = 'none';
-      showStep(2);
-      fetchEmployeeAndPunch();
+      goToPunchStep();
     }
 
     // ── Helpers ───────────────────────────────────────
@@ -951,34 +1047,9 @@
 
     // ── Boot ──────────────────────────────────────────
     window.addEventListener('load', () => {
-      if (!SESSION_TOKEN) {
-        const errLoc = document.getElementById('errLoc');
-        showErr(errLoc, '⚠️ Session token nahi mila. Kripya pehle login karein, ya admin se token-wala QR link maangein.');
-        document.getElementById('btnLoc').disabled = true;
-        document.getElementById('locPillText').textContent = 'Login required';
-        return;
-      }
-
-      // Agar URL mein ?branch= nahi hai aur localStorage mein bhi branch_id nahi hai,
-      // toh getEmployee API se apna branch_id fetch karke localStorage update karo.
-      if (!URL_BRANCH_ID && SESSION_TOKEN) {
-        fetch(`${API_URL}?action=getEmployee&token=${encodeURIComponent(SESSION_TOKEN)}`)
-          .then(r => r.json())
-          .then(d => {
-            if (d.status === 'success' && d.data && d.data.branch_id) {
-              const saved = JSON.parse(localStorage.getItem('ebms_user') || '{}');
-              saved.branch_id   = d.data.branch_id;
-              saved.employee_id = d.data.emp_id  || saved.employee_id;
-              saved.name        = d.data.name    || saved.name;
-              localStorage.setItem('ebms_user', JSON.stringify(saved));
-              window.__branchOverride = d.data.branch_id;
-            }
-          })
-          .catch(() => {})
-          .finally(() => fetchBranchLocation());
-      } else {
-        fetchBranchLocation();
-      }
+      // Universal link — no ?branch= param needed. Nothing to boot-check;
+      // the employee taps "Allow Location" and the branch gets
+      // detected automatically from their GPS coordinates.
     });
   </script>
 </body>
