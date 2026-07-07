@@ -488,7 +488,7 @@
             z-index: 1200;
             display: none;
             opacity: 0;
-            transition: opacity 0.28s ease;
+            transition: opacity 0.25s ease;
         }
 
         .profile-drawer-overlay.open {
@@ -498,30 +498,39 @@
 
         .profile-drawer-panel {
             position: fixed;
-            top: 0;
-            right: 0;
-            height: 100vh;
-            width: 480px;
-            max-width: 100%;
-            background: rgba(15, 15, 17, 0.92);
-            border-left: 1px solid var(--glass-border);
+            top: 50%;
+            left: 50%;
+            width: 680px;
+            max-width: calc(100% - 48px);
+            height: 760px;
+            max-height: 90vh;
+            background: rgba(15, 15, 17, 0.95);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
             backdrop-filter: blur(28px) saturate(160%);
             -webkit-backdrop-filter: blur(28px) saturate(160%);
-            box-shadow: -24px 0 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
             z-index: 1201;
             display: flex;
             flex-direction: column;
-            transform: translateX(100%);
-            transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translate(-50%, -50%) scale(0.95);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease;
         }
 
         .profile-drawer-panel.open {
-            transform: translateX(0);
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        @media (max-width: 560px) {
+        @media (max-width: 620px) {
             .profile-drawer-panel {
-                width: 100%;
+                width: calc(100% - 24px);
+                height: 90vh;
+                max-height: 90vh;
+                border-radius: 16px;
             }
         }
 
@@ -808,6 +817,69 @@
             color: var(--text-dim);
             padding: 60px 20px;
             font-size: 13.5px;
+        }
+
+        .pd-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .pd-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 10px;
+            border-radius: 9px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .pd-tab.active {
+            background: var(--glass-strong);
+            color: var(--text-primary);
+        }
+
+        .pd-log-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .pd-log-row:last-child {
+            border-bottom: none;
+        }
+
+        .pd-log-date {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .pd-log-sub {
+            font-size: 11.5px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        .pd-log-times {
+            display: flex;
+            gap: 14px;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -1211,9 +1283,17 @@
         let pdDepartmentsMap = {};
         let pdDesignationsMap = {};
         let pdLookupsLoaded = false;
+        let pdActiveTab = 'profile';
+        let pdAttendanceLoaded = false;
+        let pdAttendanceCache = [];
+        let pdTasksLoaded = false;
+        let pdTasksCache = [];
 
         function openProfileDrawer(empId) {
             pdCurrentEmpId = empId;
+            pdActiveTab = 'profile';
+            pdAttendanceLoaded = false;
+            pdTasksLoaded = false;
             document.getElementById('profileDrawerOverlay').classList.add('open');
             document.getElementById('profileDrawerPanel').classList.add('open');
             document.getElementById('pdFooter').classList.remove('open');
@@ -1310,93 +1390,116 @@
                     </div>
                 </div>
 
-                <div class="pd-section">
-                    <div class="pd-section-title">🔒 Identity &amp; Records</div>
-                    <div class="pd-card">
-                        <div class="pd-grid">
-                            <div class="pd-field"><label>Email</label><div class="pd-value muted">${node.email || '—'}</div></div>
-                            <div class="pd-field"><label>Joining Date</label><div class="pd-value muted">${pdFormatJoiningDate(node.joining_date)}</div></div>
-                            <div class="pd-field"><label>Aadhaar Number</label><div class="pd-value muted">${node.aadhaar || '—'}</div></div>
-                            <div class="pd-field"><label>PAN Number</label><div class="pd-value muted">${node.pan || '—'}</div></div>
-                            <div class="pd-field full">
-                                <label>Weekly Off</label>
-                                <div class="pd-value muted">${node.weekly_off || 'Not set'}</div>
-                                ${showWeeklyOffSetter ? `
-                                <div class="pd-weekly-off-setter">
-                                    <select id="pdWeeklyOffSelect">
-                                        <option value="Sunday">Sunday</option>
-                                        <option value="Monday">Monday</option>
-                                        <option value="Tuesday">Tuesday</option>
-                                        <option value="Wednesday">Wednesday</option>
-                                        <option value="Thursday">Thursday</option>
-                                        <option value="Friday">Friday</option>
-                                        <option value="Saturday">Saturday</option>
+                <div class="pd-tabs">
+                    <button type="button" class="pd-tab active" data-tab="profile" onclick="switchPdTab('profile')">📋 Profile</button>
+                    <button type="button" class="pd-tab" data-tab="attendance" onclick="switchPdTab('attendance')">🕐 Attendance</button>
+                    <button type="button" class="pd-tab" data-tab="tasks" onclick="switchPdTab('tasks')">✅ Tasks</button>
+                </div>
+
+                <div id="pdTabProfile">
+                    <div class="pd-section">
+                        <div class="pd-section-title">🔒 Identity &amp; Records</div>
+                        <div class="pd-card">
+                            <div class="pd-grid">
+                                <div class="pd-field"><label>Email</label><div class="pd-value muted">${node.email || '—'}</div></div>
+                                <div class="pd-field"><label>Joining Date</label><div class="pd-value muted">${pdFormatJoiningDate(node.joining_date)}</div></div>
+                                <div class="pd-field"><label>Aadhaar Number</label><div class="pd-value muted">${node.aadhaar || '—'}</div></div>
+                                <div class="pd-field"><label>PAN Number</label><div class="pd-value muted">${node.pan || '—'}</div></div>
+                                <div class="pd-field full">
+                                    <label>Weekly Off</label>
+                                    <div class="pd-value muted">${node.weekly_off || 'Not set'}</div>
+                                    ${showWeeklyOffSetter ? `
+                                    <div class="pd-weekly-off-setter">
+                                        <select id="pdWeeklyOffSelect">
+                                            <option value="Sunday">Sunday</option>
+                                            <option value="Monday">Monday</option>
+                                            <option value="Tuesday">Tuesday</option>
+                                            <option value="Wednesday">Wednesday</option>
+                                            <option value="Thursday">Thursday</option>
+                                            <option value="Friday">Friday</option>
+                                            <option value="Saturday">Saturday</option>
+                                        </select>
+                                        <button type="button" class="btn-secondary" onclick="setMyWeeklyOffDrawer()">Set (one-time)</button>
+                                    </div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pd-section">
+                        <div class="pd-section-title">
+                            Role &amp; Contact Details
+                            <button type="button" class="pd-edit-trigger" id="pdEditTrigger" onclick="setProfileEditMode(true)">✏️ Edit</button>
+                        </div>
+                        <div class="pd-card">
+                            <div class="pd-grid">
+                                <div class="pd-field">
+                                    <label>Branch Code</label>
+                                    <div class="pd-value" id="pdLblBranch">${node.branch_id || '—'}</div>
+                                    <input type="text" id="pdInputBranch" class="pd-input" value="${node.branch_id || ''}" />
+                                </div>
+                                <div class="pd-field">
+                                    <label>Department</label>
+                                    <div class="pd-value" id="pdLblDepartment">${deptLabel}</div>
+                                    <input type="text" id="pdInputDepartment" class="pd-input" value="${node.department_id || ''}" />
+                                </div>
+                                <div class="pd-field">
+                                    <label>Designation</label>
+                                    <div class="pd-value" id="pdLblDesignation">${desigLabel}</div>
+                                    <input type="text" id="pdInputDesignation" class="pd-input" value="${node.designation_id || ''}" />
+                                </div>
+                                <div class="pd-field">
+                                    <label>Employment Type</label>
+                                    <div class="pd-value" id="pdLblEmploymentType">${node.employment_type || 'Full-time'}</div>
+                                    <select id="pdInputEmploymentType" class="pd-input">
+                                        <option value="Full-time">Full-time</option>
+                                        <option value="Part-time">Part-time</option>
+                                        <option value="Contract">Contract</option>
+                                        <option value="Intern">Intern</option>
                                     </select>
-                                    <button type="button" class="btn-secondary" onclick="setMyWeeklyOffDrawer()">Set (one-time)</button>
-                                </div>` : ''}
+                                </div>
+                                <div class="pd-field full">
+                                    <label>Mobile</label>
+                                    <div class="pd-value" id="pdLblMobile">${node.mobile || '—'}</div>
+                                    <input type="tel" id="pdInputMobile" class="pd-input" value="${node.mobile || ''}" />
+                                </div>
+                                <div class="pd-field full">
+                                    <label>Residential Address</label>
+                                    <div class="pd-value" id="pdLblAddress">${node.address || '—'}</div>
+                                    <input type="text" id="pdInputAddress" class="pd-input" value="${node.address || ''}" />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="pd-section">
-                    <div class="pd-section-title">
-                        Role &amp; Contact Details
-                        <button type="button" class="pd-edit-trigger" id="pdEditTrigger" onclick="setProfileEditMode(true)">✏️ Edit</button>
-                    </div>
-                    <div class="pd-card">
-                        <div class="pd-grid">
-                            <div class="pd-field">
-                                <label>Branch Code</label>
-                                <div class="pd-value" id="pdLblBranch">${node.branch_id || '—'}</div>
-                                <input type="text" id="pdInputBranch" class="pd-input" value="${node.branch_id || ''}" />
-                            </div>
-                            <div class="pd-field">
-                                <label>Department</label>
-                                <div class="pd-value" id="pdLblDepartment">${deptLabel}</div>
-                                <input type="text" id="pdInputDepartment" class="pd-input" value="${node.department_id || ''}" />
-                            </div>
-                            <div class="pd-field">
-                                <label>Designation</label>
-                                <div class="pd-value" id="pdLblDesignation">${desigLabel}</div>
-                                <input type="text" id="pdInputDesignation" class="pd-input" value="${node.designation_id || ''}" />
-                            </div>
-                            <div class="pd-field">
-                                <label>Employment Type</label>
-                                <div class="pd-value" id="pdLblEmploymentType">${node.employment_type || 'Full-time'}</div>
-                                <select id="pdInputEmploymentType" class="pd-input">
-                                    <option value="Full-time">Full-time</option>
-                                    <option value="Part-time">Part-time</option>
-                                    <option value="Contract">Contract</option>
-                                    <option value="Intern">Intern</option>
-                                </select>
-                            </div>
-                            <div class="pd-field full">
-                                <label>Mobile</label>
-                                <div class="pd-value" id="pdLblMobile">${node.mobile || '—'}</div>
-                                <input type="tel" id="pdInputMobile" class="pd-input" value="${node.mobile || ''}" />
-                            </div>
-                            <div class="pd-field full">
-                                <label>Residential Address</label>
-                                <div class="pd-value" id="pdLblAddress">${node.address || '—'}</div>
-                                <input type="text" id="pdInputAddress" class="pd-input" value="${node.address || ''}" />
-                            </div>
-                        </div>
-                    </div>
+                <div id="pdTabAttendance" style="display:none;">
+                    <div class="pd-loading-state"><div class="pd-spinner"></div>Loading attendance…</div>
+                </div>
+
+                <div id="pdTabTasks" style="display:none;">
+                    <div class="pd-loading-state"><div class="pd-spinner"></div>Loading tasks…</div>
                 </div>
             `;
             document.getElementById('pdInputEmploymentType').value = node.employment_type || 'Full-time';
             // Initial paint is always in "view" mode — toggle visibility directly
             // here instead of calling setProfileEditMode(false), which would
             // re-render and recurse.
-            document.querySelectorAll('#pdBody .pd-value').forEach(n => n.style.display = 'block');
-            document.querySelectorAll('#pdBody .pd-input').forEach(n => n.style.display = 'none');
+            document.querySelectorAll('#pdTabProfile .pd-value').forEach(n => n.style.display = 'block');
+            document.querySelectorAll('#pdTabProfile .pd-input').forEach(n => n.style.display = 'none');
             document.getElementById('pdFooter').classList.remove('open');
+
+            // Re-rendering (e.g. after Save) always lands back on the Profile
+            // tab — reset the tab bar + cached attendance/tasks state so a
+            // fresh open re-fetches rather than showing stale data.
+            pdActiveTab = 'profile';
+            pdAttendanceLoaded = false;
+            pdTasksLoaded = false;
         }
 
         function setProfileEditMode(on) {
-            document.querySelectorAll('#pdBody .pd-value').forEach(n => n.style.display = on ? 'none' : 'block');
-            document.querySelectorAll('#pdBody .pd-input').forEach(n => n.style.display = on ? 'block' : 'none');
+            document.querySelectorAll('#pdTabProfile .pd-value').forEach(n => n.style.display = on ? 'none' : 'block');
+            document.querySelectorAll('#pdTabProfile .pd-input').forEach(n => n.style.display = on ? 'block' : 'none');
             document.getElementById('pdFooter').classList.toggle('open', on);
             const trigger = document.getElementById('pdEditTrigger');
             if (trigger) trigger.style.visibility = on ? 'hidden' : 'visible';
@@ -1442,6 +1545,122 @@
                     showToast(out.message || 'Could not set weekly off.');
                 }
             } catch (err) { showToast('Sync error.'); }
+        }
+
+        // ── Profile Drawer Tabs — Profile / Attendance / Tasks ─────────
+        function switchPdTab(tab) {
+            // If mid-edit on the Profile tab, cancel that edit first — this
+            // re-renders the whole drawer from cache and resets to the
+            // 'profile' tab, so we apply the requested tab after it settles.
+            const wasEditing = document.getElementById('pdFooter').classList.contains('open');
+            if (wasEditing) setProfileEditMode(false);
+
+            pdActiveTab = tab;
+            document.querySelectorAll('.pd-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+            document.getElementById('pdTabProfile').style.display = tab === 'profile' ? 'block' : 'none';
+            document.getElementById('pdTabAttendance').style.display = tab === 'attendance' ? 'block' : 'none';
+            document.getElementById('pdTabTasks').style.display = tab === 'tasks' ? 'block' : 'none';
+
+            if (tab === 'attendance' && !pdAttendanceLoaded) fetchPdAttendance(pdCurrentEmpId);
+            if (tab === 'tasks' && !pdTasksLoaded) fetchPdTasks(pdCurrentEmpId);
+        }
+
+        async function fetchPdAttendance(empId) {
+            const body = document.getElementById('pdTabAttendance');
+            body.innerHTML = `<div class="pd-loading-state"><div class="pd-spinner"></div>Loading attendance…</div>`;
+            try {
+                const res = await fetch(`${API_URL}?action=getAttendance&token=${SESSION_TOKEN_VERIFIER}&emp_id=${empId}&limit=30`);
+                const payload = await res.json();
+                if (payload.status === 'success') {
+                    pdAttendanceLoaded = true;
+                    pdAttendanceCache = (payload.data && payload.data.data) || [];
+                    renderPdAttendance(pdAttendanceCache);
+                } else {
+                    body.innerHTML = `<div class="pd-error-state">${payload.message || 'Could not load attendance.'}</div>`;
+                }
+            } catch (err) {
+                body.innerHTML = `<div class="pd-error-state">Connection error — please try again.</div>`;
+            }
+        }
+
+        function renderPdAttendance(logs) {
+            const body = document.getElementById('pdTabAttendance');
+            if (!logs.length) {
+                body.innerHTML = `<div class="pd-error-state">No attendance records found for this employee.</div>`;
+                return;
+            }
+            body.innerHTML = `
+                <div class="pd-section-title">🕐 Recent Attendance (${logs.length})</div>
+                <div class="pd-card" style="padding:0;">
+                    ${logs.map(l => {
+                        const dateStr = l.date ? new Date(l.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+                        const lateMins = parseInt(l.late_minutes) || 0;
+                        return `
+                            <div class="pd-log-row">
+                                <div>
+                                    <div class="pd-log-date">${dateStr}</div>
+                                    <div class="pd-log-sub">${l.method || 'manual'}${lateMins > 0 ? ' · +' + lateMins + 'm late' : ' · On time'}</div>
+                                </div>
+                                <div class="pd-log-times">
+                                    <span style="color:var(--success);">⏱️ ${l.in_time || '—'}</span>
+                                    <span style="color:${l.out_time ? '#F87171' : 'var(--text-dim)'};">⏱️ ${l.out_time || 'Still In'}</span>
+                                </div>
+                                <span class="status-pill ${l.status === 'present' ? 'pill-active' : 'pill-inactive'}">${l.status || '—'}</span>
+                            </div>`;
+                    }).join('')}
+                </div>`;
+        }
+
+        const PD_TASK_STATUS_MAP = {
+            todo: { label: 'To Do', cls: 'pill-inactive' },
+            in_progress: { label: 'In Progress', cls: 'pill-active' },
+            in_review: { label: 'In Review', cls: 'pill-inactive' },
+            completed: { label: 'Completed', cls: 'pill-active' }
+        };
+
+        async function fetchPdTasks(empId) {
+            const body = document.getElementById('pdTabTasks');
+            body.innerHTML = `<div class="pd-loading-state"><div class="pd-spinner"></div>Loading tasks…</div>`;
+            try {
+                // getTasks doesn't take an emp_id filter server-side for admin
+                // roles, so fetch the accessible set and filter client-side.
+                const res = await fetch(`${API_URL}?action=getTasks&token=${SESSION_TOKEN_VERIFIER}&limit=1000`);
+                const payload = await res.json();
+                if (payload.status === 'success') {
+                    const allTasks = (payload.data && payload.data.data) || [];
+                    pdTasksCache = allTasks.filter(t => String(t.assigned_to) === String(empId));
+                    pdTasksLoaded = true;
+                    renderPdTasks(pdTasksCache);
+                } else {
+                    body.innerHTML = `<div class="pd-error-state">${payload.message || 'Could not load tasks.'}</div>`;
+                }
+            } catch (err) {
+                body.innerHTML = `<div class="pd-error-state">Connection error — please try again.</div>`;
+            }
+        }
+
+        function renderPdTasks(tasks) {
+            const body = document.getElementById('pdTabTasks');
+            if (!tasks.length) {
+                body.innerHTML = `<div class="pd-error-state">No tasks assigned to this employee yet.</div>`;
+                return;
+            }
+            body.innerHTML = `
+                <div class="pd-section-title">✅ Assigned Tasks (${tasks.length})</div>
+                <div class="pd-card" style="padding:0;">
+                    ${tasks.map(t => {
+                        const st = PD_TASK_STATUS_MAP[t.status] || { label: t.status, cls: 'pill-inactive' };
+                        return `
+                            <div class="pd-log-row" style="flex-direction:column; align-items:flex-start; gap:6px;">
+                                <div style="display:flex; justify-content:space-between; width:100%; align-items:center; gap:8px;">
+                                    <div class="pd-log-date">${t.title}</div>
+                                    <span class="status-pill ${st.cls}" style="flex-shrink:0;">${st.label}</span>
+                                </div>
+                                <div class="pd-log-sub">${t.priority ? '🔺 ' + t.priority.charAt(0).toUpperCase() + t.priority.slice(1) + ' priority' : ''}${t.due_date ? ' · Due ' + t.due_date : ' · No due date'}</div>
+                                ${t.submission_link ? `<a href="${t.submission_link}" target="_blank" rel="noopener" style="font-size:12px; color:var(--accent-glow);">🔗 View Submission</a>` : ''}
+                            </div>`;
+                    }).join('')}
+                </div>`;
         }
     </script>
 </body>
