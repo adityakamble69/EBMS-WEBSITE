@@ -83,7 +83,10 @@
     }
 
     @media (max-width: 600px) {
-      .topbar { padding-left: 16px; padding-right: 16px; }
+      .topbar {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
     }
 
     .topbar-title {
@@ -155,7 +158,9 @@
     }
 
     @media (max-width: 420px) {
-      .page-header h1 { font-size: 19px; }
+      .page-header h1 {
+        font-size: 19px;
+      }
     }
 
     .page-header p {
@@ -658,26 +663,6 @@
       </div>
 
       <div class="stats-grid">
-        <div class="stat-card blue">
-          <div class="stat-label">Total Branches</div>
-          <div class="stat-row">
-            <div>
-              <div class="stat-value" id="stat-branches"><span class="skeleton skel-val"></span></div>
-              <div class="stat-change" id="stat-branches-sub"><span class="skeleton skel-text"></span></div>
-            </div>
-            <div class="stat-icon blue">🏢</div>
-          </div>
-        </div>
-        <div class="stat-card cyan">
-          <div class="stat-label">Total Employees</div>
-          <div class="stat-row">
-            <div>
-              <div class="stat-value" id="stat-employees"><span class="skeleton skel-val"></span></div>
-              <div class="stat-change" id="stat-employees-sub"><span class="skeleton skel-text"></span></div>
-            </div>
-            <div class="stat-icon cyan">👥</div>
-          </div>
-        </div>
         <div class="stat-card green">
           <div class="stat-label">Present Today</div>
           <div class="stat-row">
@@ -698,6 +683,16 @@
             <div class="stat-icon red">❌</div>
           </div>
         </div>
+        <div class="stat-card cyan">
+          <div class="stat-label">Total Employees</div>
+          <div class="stat-row">
+            <div>
+              <div class="stat-value" id="stat-employees"><span class="skeleton skel-val"></span></div>
+              <div class="stat-change" id="stat-employees-sub"><span class="skeleton skel-text"></span></div>
+            </div>
+            <div class="stat-icon cyan">👥</div>
+          </div>
+        </div>
         <div class="stat-card yellow">
           <div class="stat-label">Pending Leaves</div>
           <div class="stat-row">
@@ -706,6 +701,16 @@
               <div class="stat-change" id="stat-leaves-sub"><span class="skeleton skel-text"></span></div>
             </div>
             <div class="stat-icon yellow">📅</div>
+          </div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Best Performer</div>
+          <div class="stat-row">
+            <div>
+              <div class="stat-value" id="stat-performer"><span class="skeleton skel-val"></span></div>
+              <div class="stat-change" id="stat-performer-sub"><span class="skeleton skel-text"></span></div>
+            </div>
+            <div class="stat-icon blue">🏆</div>
           </div>
         </div>
         <div class="stat-card purple">
@@ -720,29 +725,11 @@
         </div>
       </div>
 
-      <div class="quick-actions">
-        <a class="qa-btn" href="employees.html">
-          <div class="qa-icon">➕</div>
-          <div class="qa-label">Add Employee</div>
-        </a>
-        <a class="qa-btn" href="attendance.html">
-          <div class="qa-icon">✅</div>
-          <div class="qa-label">Mark Attendance</div>
-        </a>
-        <a class="qa-btn" href="leaves.html">
-          <div class="qa-icon">📋</div>
-          <div class="qa-label">Leave Requests</div>
-        </a>
-        <a class="qa-btn" href="salaryslip.html">
-          <div class="qa-icon">🧾</div>
-          <div class="qa-label">Generate Slip</div>
-        </a>
-      </div>
-
       <div class="bottom-grid">
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">✅ Present Employees</div><a class="panel-link" href="attendance.html">View All →</a>
+            <div class="panel-title">✅ Present Employees</div><a class="panel-link" href="attendance.html">View All
+              →</a>
           </div>
           <div class="panel-body" id="presentEmployees">
             <div style="padding:20px; text-align:center; color:var(--text-dim);">Loading...</div>
@@ -824,6 +811,7 @@
     let ALL_LEAVES_PENDING = [];
     let ALL_TASKS = [];
     let ALL_BRANCHES = [];
+    let ALL_PERFORMANCE = [];
     let META = { total_branches: 0, monthly_salary_expense: 0 };
     let selectedBranchId = 'all';
 
@@ -846,7 +834,8 @@
           fetchAttendanceToday(),
           fetchLeavesPending(),
           fetchTasks(),
-          fetchBranches()
+          fetchBranches(),
+          fetchPerformance()
         ]);
         renderEverything();
       } catch (err) {
@@ -905,6 +894,16 @@
       } catch (e) { }
     }
 
+    async function fetchPerformance() {
+      try {
+        const res = await fetch(`${API_URL}?action=getPerformance&token=${AppSession.getToken()}`);
+        const data = await res.json();
+        if (data.status === 'success' && Array.isArray(data.data)) {
+          ALL_PERFORMANCE = data.data;
+        }
+      } catch (e) { }
+    }
+
     async function fetchBranches() {
       try {
         const res = await fetch(`${API_URL}?action=getBranches&token=${AppSession.getToken()}`);
@@ -956,20 +955,41 @@
       const presentCount = attendance.filter(a => a.in_time).length;
       const absentCount = Math.max(activeEmps.length - presentCount, 0);
 
-      setStatCard('branches', META.total_branches, 'Active branches');
-      setStatCard('employees', activeEmps.length, selectedBranchId === 'all' ? 'Active employees' : 'In selected branch');
       setStatCard('present', presentCount, `Out of ${activeEmps.length}`);
       setStatCard('absent', absentCount, 'Not marked yet');
+      setStatCard('employees', activeEmps.length, selectedBranchId === 'all' ? 'Active employees' : 'In selected branch');
       setStatCard('leaves', leaves.length, 'Awaiting approval');
+      renderBestPerformer();
       setStatCard('salary', '₹' + formatNumber(META.monthly_salary_expense), 'This month (company-wide)');
     }
 
+    function renderBestPerformer() {
+      // Performance records only carry emp_id (no branch_id), so branch
+      // filtering goes through the employee's own branch_id.
+      const branchEmpIds = selectedBranchId === 'all'
+        ? null
+        : new Set(ALL_EMPLOYEES.filter(e => e.branch_id === selectedBranchId).map(e => e.emp_id));
+
+      const records = ALL_PERFORMANCE.filter(r => !branchEmpIds || branchEmpIds.has(r.emp_id));
+
+      if (!records.length) {
+        setStatCard('performer', '—', 'No scorecards yet');
+        return;
+      }
+
+      const top = records.reduce((best, r) =>
+        (parseFloat(r.score) || 0) > (parseFloat(best.score) || 0) ? r : best
+      );
+
+      setStatCard('performer', findEmployeeName(top.emp_id), `Score: ${parseFloat(top.score) || 0}`);
+    }
+
     function loadDemoData() {
-      setStatCard('branches', '2', 'Active branches');
-      setStatCard('employees', '8', 'Active employees');
       setStatCard('present', '5', 'Active entries');
       setStatCard('absent', '3', 'Missing logs');
+      setStatCard('employees', '8', 'Active employees');
       setStatCard('leaves', '2', 'Pending review');
+      setStatCard('performer', 'Aditi Sharma', 'Score: 92');
       setStatCard('salary', '₹1.8L', 'Current billing cycle');
     }
 
@@ -1006,10 +1026,10 @@
 
     function renderWorkList() {
       const statusMap = {
-        todo:         { label: 'To Do',       cls: 'pill-pending' },
-        in_progress:  { label: 'In Progress', cls: 'pill-active'  },
-        in_review:    { label: 'In Review',   cls: 'pill-pending' },
-        completed:    { label: 'Completed',   cls: 'pill-active'  }
+        todo: { label: 'To Do', cls: 'pill-pending' },
+        in_progress: { label: 'In Progress', cls: 'pill-active' },
+        in_review: { label: 'In Review', cls: 'pill-pending' },
+        completed: { label: 'Completed', cls: 'pill-active' }
       };
 
       const tasks = filterByBranch(ALL_TASKS)

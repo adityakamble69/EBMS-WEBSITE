@@ -13,6 +13,7 @@
 </head>
 
 <body>
+  <div class="top-loading-bar" id="topLoadingBar"></div>
   <div class="sidebar-spacer"></div>
 
   <div class="main-workspace" style="margin-left: 248px;">
@@ -25,29 +26,47 @@
         <h1>🧑‍💼 Recruitment Tracker</h1>
         <p>Registered candidates ki pipeline yahan dikhti hai — step by step approve karein.</p>
       </div>
-      <button class="btn-action" onclick="loadCandidates()">🔄 Refresh</button>
+      <button class="btn-action" id="refreshBtn" onclick="loadCandidates()">
+        <span id="refreshIcon">🔄</span> <span id="refreshLabel">Refresh</span>
+      </button>
     </div>
 
     <!-- Stats -->
     <div class="rec-stats-bar" id="statsBar">
       <div class="rec-stat-chip">
-        <div class="rec-stat-num" id="statTotal">—</div>
+        <div class="rec-stat-num skeleton" id="statTotal">—</div>
         <div class="rec-stat-lbl">Total Candidates</div>
       </div>
       <div class="rec-stat-chip">
-        <div class="rec-stat-num" id="statApplied" style="color:#93C5FD">—</div>
+        <div class="rec-stat-num skeleton" id="statApplied" style="color:#93C5FD">—</div>
         <div class="rec-stat-lbl">Applied</div>
       </div>
       <div class="rec-stat-chip">
-        <div class="rec-stat-num" id="statScreening" style="color:#FCD34D">—</div>
+        <div class="rec-stat-num skeleton" id="statScreening" style="color:#FCD34D">—</div>
         <div class="rec-stat-lbl">Screening</div>
       </div>
       <div class="rec-stat-chip">
-        <div class="rec-stat-num" id="statInterview" style="color:#C4B5FD">—</div>
+        <div class="rec-stat-num skeleton" id="statHrCalling" style="color:#FBBF24">—</div>
+        <div class="rec-stat-lbl">HR Calling</div>
+      </div>
+      <div class="rec-stat-chip">
+        <div class="rec-stat-num skeleton" id="statInterview" style="color:#C4B5FD">—</div>
         <div class="rec-stat-lbl">Interview</div>
       </div>
       <div class="rec-stat-chip">
-        <div class="rec-stat-num" id="statHired" style="color:#34D399">—</div>
+        <div class="rec-stat-num skeleton" id="statRounds" style="color:#A5B4FC">—</div>
+        <div class="rec-stat-lbl">Round 1 / 2</div>
+      </div>
+      <div class="rec-stat-chip">
+        <div class="rec-stat-num skeleton" id="statOffered" style="color:#6EE7B7">—</div>
+        <div class="rec-stat-lbl">Offered</div>
+      </div>
+      <div class="rec-stat-chip">
+        <div class="rec-stat-num skeleton" id="statHold" style="color:#FB923C">—</div>
+        <div class="rec-stat-lbl">On Hold</div>
+      </div>
+      <div class="rec-stat-chip">
+        <div class="rec-stat-num skeleton" id="statHired" style="color:#34D399">—</div>
         <div class="rec-stat-lbl">Hired</div>
       </div>
     </div>
@@ -60,7 +79,7 @@
 
     <!-- Pipeline Board -->
     <div class="pipeline-board" id="pipelineBoard">
-      <div class="rec-loading">Loading candidates…</div>
+      <!-- filled by renderSkeletonBoard() on load -->
     </div>
   </div>
 
@@ -72,7 +91,7 @@
       <button class="drawer-close" onclick="closeDrawer()">×</button>
     </div>
     <div class="drawer-body" id="drawerBody">
-      <div class="rec-loading">Loading…</div>
+      <div class="rec-loading"><span class="spinner-ring"></span> Loading…</div>
     </div>
   </div>
 
@@ -83,26 +102,76 @@
     const USER = AppSession.getUser();
     const IS_ADMIN = USER && (USER.role === 'super_admin' || USER.role === 'hr');
 
+    // ── Full pipeline order ──
+    // applied -> screening -> hr_calling -> interview -> round1 -> round2 -> offered -> hired
+    // 'hold' branches off 'offered' (put candidate on hold) and resumes back to 'offered'.
+    // 'rejected' can happen from any non-final stage (see renderCard/renderDrawer reject button).
     const STAGE_LABELS = {
       applied: 'Applied', screening: 'Screening',
-      interview: 'Interview', offered: 'Offered',
+      hr_calling: 'HR Calling', interview: 'Interview',
+      round1: 'Round 1', round2: 'Round 2',
+      offered: 'Offered', hold: 'On Hold',
       hired: 'Hired', rejected: 'Rejected'
     };
     const NEXT_STAGE = {
-      applied: 'screening', screening: 'interview',
-      interview: 'offered', offered: 'hired'
+      applied: 'screening', screening: 'hr_calling',
+      hr_calling: 'interview', interview: 'round1',
+      round1: 'round2', round2: 'offered',
+      offered: 'hired', hold: 'offered'
     };
     const NEXT_LABEL = {
-      applied: '→ Screening', screening: '→ Interview',
-      interview: '→ Offered', offered: '✓ Hire'
+      applied: '→ Screening', screening: '→ HR Calling',
+      hr_calling: '→ Interview', interview: '→ Round 1',
+      round1: '→ Round 2', round2: '→ Offered',
+      offered: '✓ Hire', hold: '↩ Resume'
+    };
+    // Stage(s) that get an extra secondary action button besides the
+    // default "next stage" + "reject" pair.
+    const EXTRA_ACTION = {
+      offered: { stage: 'hold', label: '⏸ Hold' }
     };
 
     let allCandidates = [];
     let activeCandidateId = null;
 
+    // Column labels used both by the skeleton loader and the real board,
+    // so the layout doesn't jump when real data replaces the skeleton.
+    const PIPELINE_COLUMNS = [
+      'Applied', 'Screening', 'HR Calling', 'Interview',
+      'Round 1', 'Round 2', 'Offered', 'Hold', 'Hired / Rejected'
+    ];
+
+    function renderSkeletonBoard() {
+      return PIPELINE_COLUMNS.map(label => `
+        <div class="pipeline-col">
+          <div class="pipeline-col-head">
+            <span class="skeleton-bar skeleton-title"></span>
+            <span class="skeleton-bar skeleton-count"></span>
+          </div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>`).join('');
+    }
+
+    function setRefreshLoading(isLoading) {
+      const btn = document.getElementById('refreshBtn');
+      const icon = document.getElementById('refreshIcon');
+      const label = document.getElementById('refreshLabel');
+      btn.disabled = isLoading;
+      icon.classList.toggle('spin', isLoading);
+      label.textContent = isLoading ? 'Refreshing…' : 'Refresh';
+    }
+
+    function setStatsLoading(isLoading) {
+      document.querySelectorAll('.rec-stat-num').forEach(el => {
+        el.classList.toggle('skeleton', isLoading);
+      });
+    }
+
     async function loadCandidates() {
-      document.getElementById('pipelineBoard').innerHTML =
-        '<div class="rec-loading" style="grid-column:1/-1">Loading candidates…</div>';
+      setRefreshLoading(true);
+      setStatsLoading(true);
+      document.getElementById('pipelineBoard').innerHTML = renderSkeletonBoard();
       try {
         const res = await fetch(
           `${API_URL}?action=getCandidates&token=${TOKEN}&_ts=${Date.now()}`,
@@ -115,19 +184,34 @@
           filterAndRender();
         } else {
           showToast(payload.message || 'Error loading candidates.');
-          document.getElementById('pipelineBoard').innerHTML =
-            '<div class="rec-loading" style="grid-column:1/-1;color:var(--danger)">Error loading candidates.</div>';
+          renderBoardError('Error loading candidates.');
         }
       } catch (e) {
         showToast('Network error — candidates could not be loaded.');
+        renderBoardError('Network error — candidates could not be loaded.');
+      } finally {
+        setRefreshLoading(false);
+        setStatsLoading(false);
       }
+    }
+
+    function renderBoardError(message) {
+      document.getElementById('pipelineBoard').innerHTML = `
+        <div class="rec-loading" style="grid-column:1/-1;color:var(--danger);flex-direction:column;gap:10px">
+          <span>${message}</span>
+          <button class="btn-action" onclick="loadCandidates()">↻ Retry</button>
+        </div>`;
     }
 
     function updateStats() {
       document.getElementById('statTotal').textContent = allCandidates.length;
       document.getElementById('statApplied').textContent = allCandidates.filter(c => c.stage === 'applied').length;
       document.getElementById('statScreening').textContent = allCandidates.filter(c => c.stage === 'screening').length;
+      document.getElementById('statHrCalling').textContent = allCandidates.filter(c => c.stage === 'hr_calling').length;
       document.getElementById('statInterview').textContent = allCandidates.filter(c => c.stage === 'interview').length;
+      document.getElementById('statRounds').textContent = allCandidates.filter(c => c.stage === 'round1' || c.stage === 'round2').length;
+      document.getElementById('statOffered').textContent = allCandidates.filter(c => c.stage === 'offered').length;
+      document.getElementById('statHold').textContent = allCandidates.filter(c => c.stage === 'hold').length;
       document.getElementById('statHired').textContent = allCandidates.filter(c => c.stage === 'hired').length;
     }
 
@@ -150,8 +234,12 @@
       const cols = [
         { key: 'applied', label: 'Applied', cls: 'col-applied' },
         { key: 'screening', label: 'Screening', cls: 'col-screening' },
+        { key: 'hr_calling', label: 'HR Calling', cls: 'col-hr_calling' },
         { key: 'interview', label: 'Interview', cls: 'col-interview' },
+        { key: 'round1', label: 'Round 1', cls: 'col-round1' },
+        { key: 'round2', label: 'Round 2', cls: 'col-round2' },
         { key: 'offered', label: 'Offered', cls: 'col-offered' },
+        { key: 'hold', label: 'Hold', cls: 'col-hold' },
         { key: 'final', label: 'Hired / Rejected', cls: 'col-final' }
       ];
       board.innerHTML = cols.map(col => {
@@ -181,10 +269,15 @@
       if (IS_ADMIN && !isFinal) {
         const ns = NEXT_STAGE[c.stage];
         const nl = NEXT_LABEL[c.stage];
+        const extra = EXTRA_ACTION[c.stage];
+        const extraBtn = extra
+          ? `<button class="btn-move btn-hold" onclick="event.stopPropagation(); moveStage('${c.candidate_id}','${extra.stage}')">${extra.label}</button>`
+          : '';
         actionsHtml = `
           <div class="c-actions">
             <button class="btn-view" onclick="event.stopPropagation(); openDrawer('${c.candidate_id}')">Details</button>
             <button class="btn-move" onclick="event.stopPropagation(); moveStage('${c.candidate_id}','${ns}')">${nl}</button>
+            ${extraBtn}
             <button class="btn-move btn-reject" onclick="event.stopPropagation(); moveStage('${c.candidate_id}','rejected')">✕ Reject</button>
           </div>`;
       } else {
@@ -221,7 +314,11 @@
       if (!c) return;
       document.getElementById('drawerOverlay').classList.add('open');
       document.getElementById('candidateDrawer').classList.add('open');
-      renderDrawer(c);
+      document.getElementById('drawerBody').innerHTML =
+        '<div class="rec-loading"><span class="spinner-ring"></span> Loading…</div>';
+      // Tiny delay lets the open animation start before we swap in content —
+      // drawer feels responsive instead of content just appearing instantly.
+      requestAnimationFrame(() => renderDrawer(c));
     }
 
     function closeDrawer() {
@@ -245,9 +342,14 @@
       if (IS_ADMIN && !isFinal) {
         const ns = NEXT_STAGE[c.stage];
         const nl = NEXT_LABEL[c.stage];
+        const extra = EXTRA_ACTION[c.stage];
+        const extraBtn = extra
+          ? `<button class="btn-stage-action btn-hold-drawer" onclick="moveStage('${c.candidate_id}','${extra.stage}')">${extra.label}</button>`
+          : '';
         stageActionsHtml = `
           <div class="stage-action-row">
             <button class="btn-stage-action btn-approve" onclick="moveStage('${c.candidate_id}','${ns}')">${nl}</button>
+            ${extraBtn}
             <button class="btn-stage-action btn-reject-drawer" onclick="moveStage('${c.candidate_id}','rejected')">✕ Reject</button>
           </div>`;
       }
@@ -307,7 +409,20 @@
       `;
     }
 
+    function showTopBar() {
+      const el = document.getElementById('topLoadingBar');
+      el.classList.remove('done');
+      el.classList.add('active');
+    }
+
+    function hideTopBar() {
+      const el = document.getElementById('topLoadingBar');
+      el.classList.add('done');
+      setTimeout(() => { el.classList.remove('active', 'done'); }, 300);
+    }
+
     async function moveStage(candidateId, newStage) {
+      showTopBar();
       try {
         const res = await fetch(API_URL, {
           method: 'POST',
@@ -327,7 +442,7 @@
         } else {
           showToast(out.message || 'Error occurred.');
         }
-      } catch (e) { showToast('Network error.'); }
+      } catch (e) { showToast('Network error.'); } finally { hideTopBar(); }
     }
 
     document.addEventListener('DOMContentLoaded', loadCandidates);
@@ -371,6 +486,94 @@
       padding: 48px;
       color: var(--text-dim);
       font-size: 13px;
+      gap: 10px;
+    }
+
+    /* ── Top progress bar (shown during stage-update requests) ── */
+    .top-loading-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-hi), var(--success));
+      z-index: 2000;
+      opacity: 0;
+      transition: width 0.4s ease, opacity 0.25s ease;
+    }
+
+    .top-loading-bar.active {
+      opacity: 1;
+      width: 70%;
+    }
+
+    .top-loading-bar.done {
+      width: 100%;
+      opacity: 0;
+    }
+
+    /* ── Spinner ring (drawer / inline loading) ── */
+    .spinner-ring {
+      width: 15px;
+      height: 15px;
+      border: 2px solid var(--glass-border);
+      border-top-color: var(--accent-hi);
+      border-radius: 50%;
+      display: inline-block;
+      animation: spin 0.7s linear infinite;
+    }
+
+    #refreshIcon.spin {
+      display: inline-block;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Skeleton shimmer (stats + kanban placeholders) ── */
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .rec-stat-num.skeleton {
+      color: transparent;
+      min-width: 26px;
+      display: inline-block;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--glass-bg) 25%, var(--glass-hover) 50%, var(--glass-bg) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.3s infinite;
+    }
+
+    .skeleton-bar {
+      display: inline-block;
+      height: 10px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--glass-bg) 25%, var(--glass-hover) 50%, var(--glass-bg) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.3s infinite;
+    }
+
+    .skeleton-title {
+      width: 58px;
+    }
+
+    .skeleton-count {
+      width: 18px;
+      height: 14px;
+      border-radius: 20px;
+    }
+
+    .skeleton-card {
+      height: 92px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, var(--glass-bg) 25%, var(--glass-hover) 50%, var(--glass-bg) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.3s infinite;
     }
 
     /* ── Pipeline Board ── */
@@ -435,12 +638,25 @@
       color: #FCD34D;
     }
 
+    .col-hr_calling .col-title {
+      color: #FBBF24;
+    }
+
     .col-interview .col-title {
       color: #C4B5FD;
     }
 
+    .col-round1 .col-title,
+    .col-round2 .col-title {
+      color: #A5B4FC;
+    }
+
     .col-offered .col-title {
       color: var(--success);
+    }
+
+    .col-hold .col-title {
+      color: #FB923C;
     }
 
     .col-final .col-title {
@@ -597,6 +813,15 @@
     .stage-rejected {
       background: var(--danger-dim);
       color: var(--danger);
+    }
+
+    .btn-move.btn-hold {
+      background: rgba(251, 146, 60, 0.14);
+      color: #FB923C;
+    }
+
+    .btn-move.btn-hold:hover {
+      background: rgba(251, 146, 60, 0.24);
     }
 
     /* ── Drawer ── */
@@ -809,6 +1034,16 @@
       background: rgba(248, 113, 113, 0.2);
     }
 
+    .btn-stage-action.btn-hold-drawer {
+      background: rgba(251, 146, 60, 0.14);
+      border-color: rgba(251, 146, 60, 0.3);
+      color: #FB923C;
+    }
+
+    .btn-stage-action.btn-hold-drawer:hover {
+      background: rgba(251, 146, 60, 0.24);
+    }
+
     .current-stage-badge {
       display: inline-flex;
       align-items: center;
@@ -832,16 +1067,35 @@
       border: 1px solid rgba(252, 211, 77, 0.2);
     }
 
+    .badge-hr_calling {
+      background: rgba(251, 191, 36, 0.12);
+      color: #FBBF24;
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
     .badge-interview {
       background: rgba(196, 181, 253, 0.12);
       color: #C4B5FD;
       border: 1px solid rgba(196, 181, 253, 0.2);
     }
 
+    .badge-round1,
+    .badge-round2 {
+      background: rgba(165, 180, 252, 0.12);
+      color: #A5B4FC;
+      border: 1px solid rgba(165, 180, 252, 0.2);
+    }
+
     .badge-offered {
       background: var(--success-dim);
       color: #6EE7B7;
       border: 1px solid rgba(52, 211, 153, 0.2);
+    }
+
+    .badge-hold {
+      background: rgba(251, 146, 60, 0.12);
+      color: #FB923C;
+      border: 1px solid rgba(251, 146, 60, 0.2);
     }
 
     .badge-hired {

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent: #A8AFC4;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --danger: #F87171;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar-spacer { width: 240px; flex-shrink: 0; }
+    @media (max-width: 768px) { .sidebar-spacer { display: none; } }
+
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+    @media (max-width: 600px) { .main-workspace { padding: 16px; } }
+
+    .mobile-nav-bar {
+      display: none;
+      height: 50px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--radius-sm);
+      align-items: center;
+      padding: 0 16px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 768px) { .mobile-nav-bar { display: flex; } }
+
+    .title-area h1 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; }
+    .title-area p { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+    .header-block { margin-bottom: 20px; }
+
+    /* Tabs */
+    .settings-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 14px;
+    }
+    .tab-btn {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      border-radius: 999px;
+      padding: 9px 18px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, border-color 0.18s;
+    }
+    .tab-btn:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+    .tab-btn.active {
+      background: var(--glass-strong);
+      color: var(--text-primary);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .panel-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600; }
+    .panel-header p { font-size: 12.5px; color: var(--text-dim); margin-top: 3px; }
+
+    .btn-action {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(var(--glass-blur));
+      transition: background 0.18s, border-color 0.18s, transform 0.18s;
+    }
+    .btn-action:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.18); transform: translateY(-1px); }
+
+    .btn-icon-sm {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      border-radius: 8px;
+      padding: 6px 11px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-right: 6px;
+    }
+    .btn-icon-sm:hover { background: rgba(255,255,255,0.1); }
+    .btn-icon-sm.danger { color: var(--danger); border-color: rgba(248,113,113,0.25); }
+    .btn-icon-sm.success { color: var(--success); border-color: rgba(52,211,153,0.25); }
+
+    .table-container {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      width: 100%;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      margin-bottom: 24px;
+    }
+
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 700px; }
+    .data-table th { background: rgba(255, 255, 255, 0.06); color: var(--text-primary); padding: 14px 16px; font-weight: 600; white-space: nowrap; }
+    .data-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(255, 255, 255, 0.025); }
+    .data-table tr:nth-child(even) td { background: rgba(255, 255, 255, 0.015); }
+
+    .status-pill { font-weight: 600; font-size: 12.5px; }
+    .status-pill.active { color: var(--success); }
+    .status-pill.inactive { color: var(--danger); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-card {
+      background: rgba(24, 24, 27, 0.75);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 500px; width: 100%;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    }
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 { font-family: 'Space Grotesk', sans-serif; font-size: 16px; }
+    .modal-body { padding: 24px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-group label { font-size: 12.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .form-group input, .form-group select {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.18s, background 0.18s;
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.07); }
+    @media (max-width: 900px) { .form-group input, .form-group select { font-size: 16px; } }
+
+    .password-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 26px;
+      max-width: 460px;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    }
+
+    .empty-note { padding: 24px; text-align: center; color: var(--text-dim); }
+
+    .restricted-note {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      max-width: 460px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sidebar-spacer"></div>
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span></div>
+
+    <div class="header-block title-area">
+      <h1>⚙️ Settings</h1>
+      <p>Company-wide configuration — branches aur account security. Yeh saara kaam rarely hota hai (jaise saal me ek baar), isliye alag rakha gaya hai.</p>
+    </div>
+
+    <div class="settings-tabs" id="settingsTabs">
+      <button class="tab-btn active" data-tab="branches" onclick="switchTab('branches')">🏢 Branches</button>
+      <button class="tab-btn" data-tab="password" onclick="switchTab('password')">🔒 Change Password</button>
+    </div>
+
+    <!-- ============== BRANCHES ============== -->
+    <div class="tab-panel active" id="panel-branches">
+      <div class="panel-header">
+        <div>
+          <h2>Branches</h2>
+          <p>Add new branches, edit details, ya activate/deactivate purani branches.</p>
+        </div>
+        <button class="btn-action" onclick="openAddBranchModal()">➕ Add New Branch</button>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Branch ID</th><th>Branch Name</th><th>City</th><th>Address</th>
+              <th>Phone</th><th>Email</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="branchesRowsContainer">
+            <tr><td colspan="8" class="empty-note">Branches are loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============== CHANGE PASSWORD ============== -->
+    <div class="tab-panel" id="panel-password">
+      <div class="panel-header">
+        <div>
+          <h2>Change Password</h2>
+          <p>Apna account password update karein.</p>
+        </div>
+      </div>
+      <div class="password-card">
+        <form id="passwordForm" onsubmit="submitPasswordChange(event)">
+          <div class="form-group"><label>Current Password *</label><input type="password" id="oldPassword" required autocomplete="current-password" /></div>
+          <div class="form-group"><label>New Password *</label><input type="password" id="newPassword" required minlength="6" autocomplete="new-password" /></div>
+          <div class="form-group"><label>Confirm New Password *</label><input type="password" id="confirmPassword" required minlength="6" autocomplete="new-password" /></div>
+          <button type="submit" class="btn-action" style="width:100%; justify-content:center; margin-top:6px;">Update Password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Branch Modal -->
+  <div class="modal-overlay" id="branchModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="branchModalTitle">🏢 Add New Branch</h3>
+        <button style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer; padding:10px; margin:-10px; border-radius:8px; line-height:1;" onclick="closeBranchModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="branchForm" onsubmit="submitBranchForm(event)">
+          <input type="hidden" id="bBranchId" />
+          <div class="form-group"><label>Branch Name *</label><input type="text" id="bName" required /></div>
+          <div class="form-group"><label>City *</label><input type="text" id="bCity" required /></div>
+          <div class="form-group"><label>Address</label><input type="text" id="bAddress" /></div>
+          <div class="form-group"><label>Phone</label><input type="tel" id="bPhone" /></div>
+          <div class="form-group"><label>Email</label><input type="email" id="bEmail" /></div>
+          <button type="submit" class="btn-action" style="width: 100%; justify-content: center; margin-top:10px;" id="branchSubmitBtn">Save Branch</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const CURRENT_USER = AppSession.getUser() || {};
+    const IS_SUPER_ADMIN = CURRENT_USER.role === 'super_admin';
+
+    let branchesCache = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!IS_SUPER_ADMIN) {
+        // Non-super-admins only get Change Password here — Branches
+        // config stays super_admin-only.
+        document.querySelectorAll('#settingsTabs .tab-btn').forEach(btn => {
+          if (btn.dataset.tab !== 'password') btn.style.display = 'none';
+        });
+        switchTab('password');
+        const note = document.createElement('div');
+        note.className = 'restricted-note';
+        note.textContent = 'Branches sirf Super Admin edit kar sakte hain.';
+        document.getElementById('panel-password').prepend(note);
+      } else {
+        loadBranches();
+      }
+    });
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+    }
+
+    // ============== BRANCHES ==============
+    async function loadBranches() {
+      try {
+        const res = await fetch(`${API_URL}?action=getBranches&token=${TOKEN}`);
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          branchesCache = payload.data;
+          renderBranchesTable();
+        } else {
+          showToast(payload.message);
+        }
+      } catch (e) { showToast('Branches fetch karne me dikkat aayi.'); }
+    }
+
+    function renderBranchesTable() {
+      const container = document.getElementById('branchesRowsContainer');
+      if (!branchesCache.length) {
+        container.innerHTML = '<tr><td colspan="8" class="empty-note">Koi branch nahi mili.</td></tr>';
+        return;
+      }
+      container.innerHTML = branchesCache.map(b => `
+        <tr>
+          <td><code>${b.branch_id}</code></td>
+          <td><strong>${b.branch_name}</strong></td>
+          <td>${b.city}</td>
+          <td>${b.address || '—'}</td>
+          <td>${b.phone || '—'}</td>
+          <td>${b.email || '—'}</td>
+          <td><span class="status-pill ${b.status === 'active' ? 'active' : 'inactive'}">${b.status}</span></td>
+          <td>
+            <button class="btn-icon-sm" onclick="openEditBranchModal('${b.branch_id}')">✏️ Edit</button>
+            <button class="btn-icon-sm ${b.status === 'active' ? 'danger' : 'success'}" onclick="toggleBranchStatus('${b.branch_id}', '${b.status}')">
+              ${b.status === 'active' ? '⛔ Deactivate' : '✅ Activate'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openAddBranchModal() {
+      document.getElementById('branchModalTitle').textContent = '🏢 Add New Branch';
+      document.getElementById('branchSubmitBtn').textContent = 'Save Branch';
+      document.getElementById('branchForm').reset();
+      document.getElementById('bBranchId').value = '';
+      document.getElementById('branchModal').style.display = 'flex';
+    }
+
+    function openEditBranchModal(branchId) {
+      const b = branchesCache.find(x => x.branch_id === branchId);
+      if (!b) return;
+      document.getElementById('branchModalTitle').textContent = '✏️ Edit Branch';
+      document.getElementById('branchSubmitBtn').textContent = 'Update Branch';
+      document.getElementById('bBranchId').value = b.branch_id;
+      document.getElementById('bName').value = b.branch_name || '';
+      document.getElementById('bCity').value = b.city || '';
+      document.getElementById('bAddress').value = b.address || '';
+      document.getElementById('bPhone').value = b.phone || '';
+      document.getElementById('bEmail').value = b.email || '';
+      document.getElementById('branchModal').style.display = 'flex';
+    }
+
+    function closeBranchModal() {
+      document.getElementById('branchModal').style.display = 'none';
+      document.getElementById('branchForm').reset();
+    }
+
+    async function submitBranchForm(e) {
+      e.preventDefault();
+      const branchId = document.getElementById('bBranchId').value;
+      const isEdit = !!branchId;
+      const payload = {
+        token: TOKEN,
+        action: isEdit ? 'updateBranch' : 'addBranch',
+        branch_name: document.getElementById('bName').value,
+        city: document.getElementById('bCity').value,
+        address: document.getElementById('bAddress').value,
+        phone: document.getElementById('bPhone').value,
+        email: document.getElementById('bEmail').value
+      };
+      if (isEdit) payload.branch_id = branchId;
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast(isEdit ? 'Branch update ho gayi!' : 'Branch successfully add ho gayi!');
+          closeBranchModal();
+          loadBranches();
+        } else {
+          showToast(out.message);
+        }
+      } catch (err) { showToast('Network connectivity error.'); }
+    }
+
+    async function toggleBranchStatus(branchId, currentStatus) {
+      const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+      const label = newStatus === 'active' ? 'activate' : 'deactivate';
+      if (!confirm(`Is branch ko ${label} karna hai?`)) return;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'updateBranch', branch_id: branchId, status: newStatus })
+        });
+        const out = await res.json();
+        if (out.status === 'success') { showToast('Branch status update ho gaya!'); loadBranches(); }
+        else showToast(out.message);
+      } catch (err) { showToast('Network connectivity error.'); }
+    }
+
+    // ============== CHANGE PASSWORD ==============
+    async function submitPasswordChange(e) {
+      e.preventDefault();
+      const oldPassword = document.getElementById('oldPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (newPassword !== confirmPassword) {
+        showToast('New password aur Confirm password match nahi kar rahe.');
+        return;
+      }
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'changePassword', old_password: oldPassword, new_password: newPassword })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('Password successfully change ho gaya!');
+          document.getElementById('passwordForm').reset();
+        } else {
+          showToast(out.message);
+        }
+      } catch (err) { showToast('Network connectivity error.'); }
+    }
+  </script>
+</body>
+
+</html>

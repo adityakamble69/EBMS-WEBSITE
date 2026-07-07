@@ -394,6 +394,28 @@
     .punch-success-flash {
       animation: punchFlash 0.6s ease-out;
     }
+
+    .summary-toggle-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      backdrop-filter: blur(var(--glass-blur));
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      user-select: none;
+    }
+
+    .summary-toggle-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .summary-toggle-card.active {
+      border-color: var(--accent-glow);
+      background: var(--glass-strong);
+      box-shadow: 0 0 0 1px var(--accent-glow) inset;
+    }
   </style>
 </head>
 
@@ -418,10 +440,9 @@
       </div>
     </div>
 
-    <!-- Today Summary Cards -->
+    <!-- Today Summary Cards (click to toggle detail list below) -->
     <div id="todaySummaryRow" style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px;">
-      <div
-        style="background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--radius); padding:18px 20px; backdrop-filter:blur(var(--glass-blur));">
+      <div id="cardPresent" class="summary-toggle-card active" onclick="selectSummaryView('present')">
         <div
           style="font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
           Total Present Today</div>
@@ -429,8 +450,7 @@
           style="font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; color:#34D399;">—</div>
         <div style="font-size:12px; color:var(--text-muted); margin-top:3px;" id="summaryDate">—</div>
       </div>
-      <div
-        style="background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--radius); padding:18px 20px; backdrop-filter:blur(var(--glass-blur));">
+      <div id="cardAbsent" class="summary-toggle-card" onclick="selectSummaryView('absent')">
         <div
           style="font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
           Absent Today</div>
@@ -438,8 +458,7 @@
           style="font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; color:#F87171;">—</div>
         <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Not punched in</div>
       </div>
-      <div
-        style="background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--radius); padding:18px 20px; backdrop-filter:blur(var(--glass-blur));">
+      <div id="cardLate" class="summary-toggle-card" onclick="selectSummaryView('late')">
         <div
           style="font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
           Late Arrivals</div>
@@ -447,8 +466,7 @@
           style="font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; color:#FBBF24;">—</div>
         <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">After 9:00 AM</div>
       </div>
-      <div
-        style="background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--radius); padding:18px 20px; backdrop-filter:blur(var(--glass-blur));">
+      <div id="cardOut" class="summary-toggle-card" onclick="selectSummaryView('out')">
         <div
           style="font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
           Punched Out</div>
@@ -459,13 +477,14 @@
       </div>
     </div>
 
-    <!-- Today's Punch-In List -->
+    <!-- Today's Detail List — toggles based on which summary card is selected -->
     <div
       style="background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--radius); padding:18px 20px; margin-bottom:20px; backdrop-filter:blur(var(--glass-blur));">
       <div
         style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
-        <div style="font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; color:var(--accent-glow);">
-          📋 Aaj ke Punch-In Records</div>
+        <div id="summaryListTitle"
+          style="font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; color:var(--accent-glow);">
+          📋 Present Today</div>
         <button onclick="loadTodaySummary()"
           style="background:var(--glass-strong); border:1px solid var(--glass-border); color:#fff; border-radius:8px; padding:6px 14px; font-size:12px; cursor:pointer;">↻
           Refresh</button>
@@ -681,76 +700,151 @@
     }
 
     // ── Today Summary ───────────────────────────────────────────
+    // Cached data so toggling between cards doesn't re-fetch every time.
+    let TODAY_LOGS = [];
+    let ALL_EMPLOYEES = [];
+    let EMPLOYEE_MAP = {};
+    let CURRENT_SUMMARY_VIEW = 'present';
+
     async function loadTodaySummary() {
       const todayStr = new Date().toISOString().split('T')[0];
       document.getElementById('summaryDate').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
 
       try {
-        const res = await fetch(`${API_URL}?action=getAttendance&token=${AUTHENTICATED_SESSION_TOKEN}&date=${todayStr}&limit=200`);
-        const data = await res.json();
-        if (data.status !== 'success') return;
+        const [attRes, empRes] = await Promise.all([
+          fetch(`${API_URL}?action=getAttendance&token=${AUTHENTICATED_SESSION_TOKEN}&date=${todayStr}&limit=500`),
+          fetch(`${API_URL}?action=getEmployees&token=${AUTHENTICATED_SESSION_TOKEN}&limit=1000`)
+        ]);
+        const attData = await attRes.json();
+        const empData = await empRes.json();
 
-        const logs = (data.data && data.data.data) || [];
+        if (attData.status !== 'success') return;
+        TODAY_LOGS = (attData.data && attData.data.data) || [];
 
-        const present = logs.filter(l => l.status === 'present' || l.in_time);
-        const late = logs.filter(l => parseInt(l.late_minutes) > 0);
-        const punchedOut = logs.filter(l => l.out_time && String(l.out_time).trim() !== '');
+        ALL_EMPLOYEES = (empData.status === 'success' && empData.data && empData.data.data) || [];
+        EMPLOYEE_MAP = {};
+        ALL_EMPLOYEES.forEach(emp => { EMPLOYEE_MAP[emp.emp_id] = emp; });
+
+        const activeEmployees = ALL_EMPLOYEES.filter(emp => emp.status === 'active');
+        const presentEmpIds = new Set(TODAY_LOGS.map(l => l.emp_id));
+
+        const present = TODAY_LOGS.filter(l => l.status === 'present' || l.in_time);
+        const late = TODAY_LOGS.filter(l => parseInt(l.late_minutes) > 0);
+        const punchedOut = TODAY_LOGS.filter(l => l.out_time && String(l.out_time).trim() !== '');
+        const absentEmployees = activeEmployees.filter(emp => !presentEmpIds.has(emp.emp_id));
 
         document.getElementById('summaryPresent').textContent = present.length;
         document.getElementById('summaryLate').textContent = late.length;
         document.getElementById('summaryOut').textContent = punchedOut.length;
+        // If employees couldn't be fetched (e.g. role/permission), show dash instead of a wrong 0
+        document.getElementById('summaryAbsent').textContent = ALL_EMPLOYEES.length ? absentEmployees.length : '—';
 
-        // Absent count needs total employees - but we show what we have
-        // Show dash for absent since we don't fetch total employees here
-        document.getElementById('summaryAbsent').textContent = '—';
-
-        // Render punch list
-        const listEl = document.getElementById('todayPunchList');
-        if (logs.length === 0) {
-          listEl.innerHTML = '<div style="text-align:center; color:var(--text-dim); font-size:13px; padding:20px;">Aaj koi punch record nahi mila.</div>';
-          return;
-        }
-
-        // Sort by in_time latest first
-        const sorted = [...logs].sort((a, b) => {
-          const ta = String(a.in_time || '').replace(':', '');
-          const tb = String(b.in_time || '').replace(':', '');
-          return tb.localeCompare(ta);
-        });
-
-        listEl.innerHTML = sorted.map(l => {
-          const inT = l.in_time ? fmt12Hr(l.in_time) : '—';
-          const outT = l.out_time && String(l.out_time).trim() ? fmt12Hr(l.out_time) : 'Still In';
-          const late = parseInt(l.late_minutes) || 0;
-          const lateStr = late > 0 ? `<span style="color:#FBBF24; font-size:11px; margin-left:8px;">+${late}m late</span>` : '<span style="color:#34D399; font-size:11px; margin-left:8px;">On time</span>';
-          const outColor = outT === 'Still In' ? '#A1A1AA' : '#FCA5A5';
-          return `
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(255,255,255,0.025); border-radius:10px; border:1px solid rgba(255,255,255,0.05); flex-wrap:wrap; gap:8px;">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <div style="width:36px; height:36px; border-radius:50%; background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.2); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#6EE7B7; flex-shrink:0;">
-                  ${(l.emp_id || '?').slice(-2)}
-                </div>
-                <div>
-                  <div style="font-size:13.5px; font-weight:600; color:var(--text-primary);">${l.emp_id || '—'} ${lateStr}</div>
-                  <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">${l.branch_id || ''} · ${l.method || 'manual'}</div>
-                </div>
-              </div>
-              <div style="display:flex; gap:18px; align-items:center;">
-                <div style="text-align:center;">
-                  <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.4px;">IN</div>
-                  <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; color:#6EE7B7;">${inT}</div>
-                </div>
-                <div style="text-align:center;">
-                  <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.4px;">OUT</div>
-                  <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; color:${outColor};">${outT}</div>
-                </div>
-              </div>
-            </div>`;
-        }).join('');
+        renderSummaryList(CURRENT_SUMMARY_VIEW);
 
       } catch (err) {
         document.getElementById('todayPunchList').innerHTML = '<div style="text-align:center; color:#F87171; font-size:13px; padding:20px;">Load nahi ho saka. Network check karein.</div>';
       }
+    }
+
+    // Called when a summary card is clicked — switches which list is shown below.
+    function selectSummaryView(type) {
+      CURRENT_SUMMARY_VIEW = type;
+      document.querySelectorAll('.summary-toggle-card').forEach(c => c.classList.remove('active'));
+      const idMap = { present: 'cardPresent', absent: 'cardAbsent', late: 'cardLate', out: 'cardOut' };
+      const activeCard = document.getElementById(idMap[type]);
+      if (activeCard) activeCard.classList.add('active');
+      renderSummaryList(type);
+    }
+
+    function employeeName(empId) {
+      const emp = EMPLOYEE_MAP[empId];
+      return emp ? emp.name : (empId || 'Unknown');
+    }
+
+    function renderSummaryList(type) {
+      const titleEl = document.getElementById('summaryListTitle');
+      const listEl = document.getElementById('todayPunchList');
+
+      const presentEmpIds = new Set(TODAY_LOGS.map(l => l.emp_id));
+      const activeEmployees = ALL_EMPLOYEES.filter(emp => emp.status === 'active');
+
+      let items = [];
+      let emptyMsg = '';
+
+      if (type === 'present') {
+        titleEl.textContent = '📋 Present Today';
+        items = [...TODAY_LOGS].sort((a, b) => String(b.in_time || '').replace(':', '').localeCompare(String(a.in_time || '').replace(':', '')));
+        emptyMsg = 'Aaj koi punch record nahi mila.';
+      } else if (type === 'late') {
+        titleEl.textContent = '🟡 Late Arrivals Today';
+        items = TODAY_LOGS.filter(l => parseInt(l.late_minutes) > 0)
+          .sort((a, b) => (parseInt(b.late_minutes) || 0) - (parseInt(a.late_minutes) || 0));
+        emptyMsg = 'Aaj koi late arrival nahi hai.';
+      } else if (type === 'out') {
+        titleEl.textContent = '🔵 Punched Out Today';
+        items = TODAY_LOGS.filter(l => l.out_time && String(l.out_time).trim() !== '')
+          .sort((a, b) => String(b.out_time || '').replace(':', '').localeCompare(String(a.out_time || '').replace(':', '')));
+        emptyMsg = 'Aaj tak kisi ne punch-out nahi kiya.';
+      } else if (type === 'absent') {
+        titleEl.textContent = '🔴 Absent Today';
+        const absentEmployees = activeEmployees.filter(emp => !presentEmpIds.has(emp.emp_id));
+        listEl.innerHTML = absentEmployees.length === 0
+          ? '<div style="text-align:center; color:var(--text-dim); font-size:13px; padding:20px;">Aaj sab present hain 🎉</div>'
+          : absentEmployees.map(emp => `
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(255,255,255,0.025); border-radius:10px; border:1px solid rgba(255,255,255,0.05); flex-wrap:wrap; gap:8px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:36px; height:36px; border-radius:50%; background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.2); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#FCA5A5; flex-shrink:0;">
+                  ${(emp.emp_id || '?').slice(-2)}
+                </div>
+                <div>
+                  <div style="font-size:13.5px; font-weight:600; color:var(--text-primary);">${emp.name || emp.emp_id}</div>
+                  <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">${emp.emp_id || ''} · ${emp.branch_id || ''}</div>
+                </div>
+              </div>
+              <span style="font-size:11.5px; color:#F87171; font-weight:600;">Not punched in</span>
+            </div>`).join('');
+        return;
+      }
+
+      if (!ALL_EMPLOYEES.length && (type === 'present' || type === 'late' || type === 'out')) {
+        // Employee names unavailable — fall back gracefully, still show emp_id.
+      }
+
+      if (items.length === 0) {
+        listEl.innerHTML = `<div style="text-align:center; color:var(--text-dim); font-size:13px; padding:20px;">${emptyMsg}</div>`;
+        return;
+      }
+
+      listEl.innerHTML = items.map(l => {
+        const inT = l.in_time ? fmt12Hr(l.in_time) : '—';
+        const outT = l.out_time && String(l.out_time).trim() ? fmt12Hr(l.out_time) : 'Still In';
+        const lateMins = parseInt(l.late_minutes) || 0;
+        const lateStr = lateMins > 0 ? `<span style="color:#FBBF24; font-size:11px; margin-left:8px;">+${lateMins}m late</span>` : '<span style="color:#34D399; font-size:11px; margin-left:8px;">On time</span>';
+        const outColor = outT === 'Still In' ? '#A1A1AA' : '#FCA5A5';
+        const name = employeeName(l.emp_id);
+        return `
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(255,255,255,0.025); border-radius:10px; border:1px solid rgba(255,255,255,0.05); flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:36px; height:36px; border-radius:50%; background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.2); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#6EE7B7; flex-shrink:0;">
+                ${(l.emp_id || '?').slice(-2)}
+              </div>
+              <div>
+                <div style="font-size:13.5px; font-weight:600; color:var(--text-primary);">${name} ${lateStr}</div>
+                <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">${l.emp_id || ''} · ${l.branch_id || ''} · ${l.method || 'manual'}</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:18px; align-items:center;">
+              <div style="text-align:center;">
+                <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.4px;">IN</div>
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; color:#6EE7B7;">${inT}</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.4px;">OUT</div>
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; color:${outColor};">${outT}</div>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
     }
 
     function fmt12Hr(val) {

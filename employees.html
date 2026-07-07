@@ -138,6 +138,50 @@
             transform: translateY(-1px);
         }
 
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .qa-btn {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--glass-blur));
+            border-radius: var(--radius);
+            padding: 14px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.18s;
+            text-decoration: none;
+            display: block;
+            color: inherit;
+        }
+
+        .qa-btn:hover {
+            border-color: rgba(255, 255, 255, 0.18);
+            background: var(--glass-strong);
+            transform: translateY(-2px);
+        }
+
+        .qa-icon {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .qa-label {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
         .filter-deck {
             background: var(--glass);
             border: 1px solid var(--glass-border);
@@ -781,7 +825,25 @@
                 <h1>👥 Employees Directory</h1>
                 <p>Manage all active and inactive records of the organization from here.</p>
             </div>
-            <button class="btn-action" onclick="toggleModal(true)">➕ Add New Employee</button>
+        </div>
+
+        <div class="quick-actions">
+            <a class="qa-btn" href="#" onclick="toggleModal(true); return false;">
+                <div class="qa-icon">➕</div>
+                <div class="qa-label">Add Employee</div>
+            </a>
+            <a class="qa-btn" href="attendance.html">
+                <div class="qa-icon">✅</div>
+                <div class="qa-label">Mark Attendance</div>
+            </a>
+            <a class="qa-btn" href="leaves.html">
+                <div class="qa-icon">📋</div>
+                <div class="qa-label">Leave Requests</div>
+            </a>
+            <a class="qa-btn" href="salaryslip.html">
+                <div class="qa-icon">🧾</div>
+                <div class="qa-label">Generate Slip</div>
+            </a>
         </div>
 
         <div class="filter-deck">
