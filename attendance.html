@@ -441,7 +441,7 @@
     </div>
 
     <!-- Today Summary Cards (click to toggle detail list below) -->
-    <div id="todaySummaryRow" style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px;">
+    <div id="todaySummaryRow" style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px;">
       <div id="cardPresent" class="summary-toggle-card active" onclick="selectSummaryView('present')">
         <div
           style="font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
@@ -457,14 +457,6 @@
         <div id="summaryAbsent"
           style="font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; color:#F87171;">—</div>
         <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Not punched in</div>
-      </div>
-      <div id="cardLate" class="summary-toggle-card" onclick="selectSummaryView('late')">
-        <div
-          style="font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
-          Late Arrivals</div>
-        <div id="summaryLate"
-          style="font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; color:#FBBF24;">—</div>
-        <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">After 9:00 AM</div>
       </div>
       <div id="cardOut" class="summary-toggle-card" onclick="selectSummaryView('out')">
         <div
@@ -496,14 +488,9 @@
 
     <!-- Filter Deck -->
     <div class="filter-deck">
-      <input type="text" id="filterEmpId" class="input-text-box" placeholder="Filter by Employee ID"
+      <input type="text" id="filterEmail" class="input-text-box" placeholder="Filter by Email"
         oninput="triggerLogSearch()" style="max-width:220px;" />
       <input type="date" id="filterDate" class="input-date-picker" onchange="triggerLogSearch()" />
-      <select id="filterBranch" class="dropdown-select" onchange="triggerLogSearch()">
-        <option value="">All Branches</option>
-        <option value="BR001">BR001</option>
-        <option value="BR002">BR002</option>
-      </select>
       <button onclick="CURRENT_PAGE_TRACKER=1; loadAttendanceMasterLogs();"
         style="background:var(--glass-strong); border:1px solid var(--glass-border); color:#fff; border-radius:var(--radius-sm); padding:9px 16px; font-size:13px; cursor:pointer;">Refresh</button>
     </div>
@@ -512,20 +499,17 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Transaction ID</th>
-            <th>Employee ID</th>
-            <th>Branch</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
             <th>Date</th>
             <th>Punch In</th>
             <th>Punch Out</th>
-            <th>Late Mins</th>
-            <th>Status</th>
-            <th>Remarks/Logs</th>
           </tr>
         </thead>
         <tbody id="attendanceLogsContainer">
           <tr>
-            <td colspan="9" style="padding: 32px; text-align: center; color: var(--text-dim);">Logs stream structure
+            <td colspan="6" style="padding: 32px; text-align: center; color: var(--text-dim);">Logs stream structure
               updating... Please wait.</td>
           </tr>
         </tbody>
@@ -672,8 +656,7 @@
         token: AUTHENTICATED_SESSION_TOKEN,
         action: 'markAttendance',
         emp_id: empId,
-        qr_checksum: _qrChecksum(empId),
-        method: 'QR-Scan'
+        qr_checksum: _qrChecksum(empId)
       };
 
       try {
@@ -723,18 +706,17 @@
 
         ALL_EMPLOYEES = (empData.status === 'success' && empData.data && empData.data.data) || [];
         EMPLOYEE_MAP = {};
-        ALL_EMPLOYEES.forEach(emp => { EMPLOYEE_MAP[emp.emp_id] = emp; });
+        ALL_EMPLOYEES.forEach(emp => { EMPLOYEE_MAP[emp.emp_id] = emp; if (emp.email) EMPLOYEE_MAP[String(emp.email).toLowerCase()] = emp; });
 
         const activeEmployees = ALL_EMPLOYEES.filter(emp => emp.status === 'active');
-        const presentEmpIds = new Set(TODAY_LOGS.map(l => l.emp_id));
+        // Attendance rows no longer carry emp_id — identity is by Email now.
+        const presentEmails = new Set(TODAY_LOGS.map(l => String(l['Email'] || '').toLowerCase()));
 
-        const present = TODAY_LOGS.filter(l => l.status === 'present' || l.in_time);
-        const late = TODAY_LOGS.filter(l => parseInt(l.late_minutes) > 0);
-        const punchedOut = TODAY_LOGS.filter(l => l.out_time && String(l.out_time).trim() !== '');
-        const absentEmployees = activeEmployees.filter(emp => !presentEmpIds.has(emp.emp_id));
+        const present = TODAY_LOGS; // a row only exists once a punch-in has happened
+        const punchedOut = TODAY_LOGS.filter(l => l['Out-Time'] && String(l['Out-Time']).trim() !== '');
+        const absentEmployees = activeEmployees.filter(emp => !presentEmails.has(String(emp.email || '').toLowerCase()));
 
         document.getElementById('summaryPresent').textContent = present.length;
-        document.getElementById('summaryLate').textContent = late.length;
         document.getElementById('summaryOut').textContent = punchedOut.length;
         // If employees couldn't be fetched (e.g. role/permission), show dash instead of a wrong 0
         document.getElementById('summaryAbsent').textContent = ALL_EMPLOYEES.length ? absentEmployees.length : '—';
@@ -750,22 +732,22 @@
     function selectSummaryView(type) {
       CURRENT_SUMMARY_VIEW = type;
       document.querySelectorAll('.summary-toggle-card').forEach(c => c.classList.remove('active'));
-      const idMap = { present: 'cardPresent', absent: 'cardAbsent', late: 'cardLate', out: 'cardOut' };
+      const idMap = { present: 'cardPresent', absent: 'cardAbsent', out: 'cardOut' };
       const activeCard = document.getElementById(idMap[type]);
       if (activeCard) activeCard.classList.add('active');
       renderSummaryList(type);
     }
 
-    function employeeName(empId) {
-      const emp = EMPLOYEE_MAP[empId];
-      return emp ? emp.name : (empId || 'Unknown');
+    function employeeName(email) {
+      const emp = EMPLOYEE_MAP[String(email || '').toLowerCase()];
+      return emp ? emp.name : (email || 'Unknown');
     }
 
     function renderSummaryList(type) {
       const titleEl = document.getElementById('summaryListTitle');
       const listEl = document.getElementById('todayPunchList');
 
-      const presentEmpIds = new Set(TODAY_LOGS.map(l => l.emp_id));
+      const presentEmails = new Set(TODAY_LOGS.map(l => String(l['Email'] || '').toLowerCase()));
       const activeEmployees = ALL_EMPLOYEES.filter(emp => emp.status === 'active');
 
       let items = [];
@@ -773,21 +755,16 @@
 
       if (type === 'present') {
         titleEl.textContent = '📋 Present Today';
-        items = [...TODAY_LOGS].sort((a, b) => String(b.in_time || '').replace(':', '').localeCompare(String(a.in_time || '').replace(':', '')));
+        items = [...TODAY_LOGS].sort((a, b) => String(b['In-Time'] || '').replace(':', '').localeCompare(String(a['In-Time'] || '').replace(':', '')));
         emptyMsg = 'Aaj koi punch record nahi mila.';
-      } else if (type === 'late') {
-        titleEl.textContent = '🟡 Late Arrivals Today';
-        items = TODAY_LOGS.filter(l => parseInt(l.late_minutes) > 0)
-          .sort((a, b) => (parseInt(b.late_minutes) || 0) - (parseInt(a.late_minutes) || 0));
-        emptyMsg = 'Aaj koi late arrival nahi hai.';
       } else if (type === 'out') {
         titleEl.textContent = '🔵 Punched Out Today';
-        items = TODAY_LOGS.filter(l => l.out_time && String(l.out_time).trim() !== '')
-          .sort((a, b) => String(b.out_time || '').replace(':', '').localeCompare(String(a.out_time || '').replace(':', '')));
+        items = TODAY_LOGS.filter(l => l['Out-Time'] && String(l['Out-Time']).trim() !== '')
+          .sort((a, b) => String(b['Out-Time'] || '').replace(':', '').localeCompare(String(a['Out-Time'] || '').replace(':', '')));
         emptyMsg = 'Aaj tak kisi ne punch-out nahi kiya.';
       } else if (type === 'absent') {
         titleEl.textContent = '🔴 Absent Today';
-        const absentEmployees = activeEmployees.filter(emp => !presentEmpIds.has(emp.emp_id));
+        const absentEmployees = activeEmployees.filter(emp => !presentEmails.has(String(emp.email || '').toLowerCase()));
         listEl.innerHTML = absentEmployees.length === 0
           ? '<div style="text-align:center; color:var(--text-dim); font-size:13px; padding:20px;">Aaj sab present hain 🎉</div>'
           : absentEmployees.map(emp => `
@@ -806,31 +783,25 @@
         return;
       }
 
-      if (!ALL_EMPLOYEES.length && (type === 'present' || type === 'late' || type === 'out')) {
-        // Employee names unavailable — fall back gracefully, still show emp_id.
-      }
-
       if (items.length === 0) {
         listEl.innerHTML = `<div style="text-align:center; color:var(--text-dim); font-size:13px; padding:20px;">${emptyMsg}</div>`;
         return;
       }
 
       listEl.innerHTML = items.map(l => {
-        const inT = l.in_time ? fmt12Hr(l.in_time) : '—';
-        const outT = l.out_time && String(l.out_time).trim() ? fmt12Hr(l.out_time) : 'Still In';
-        const lateMins = parseInt(l.late_minutes) || 0;
-        const lateStr = lateMins > 0 ? `<span style="color:#FBBF24; font-size:11px; margin-left:8px;">+${lateMins}m late</span>` : '<span style="color:#34D399; font-size:11px; margin-left:8px;">On time</span>';
+        const inT = l['In-Time'] ? fmt12Hr(l['In-Time']) : '—';
+        const outT = l['Out-Time'] && String(l['Out-Time']).trim() ? fmt12Hr(l['Out-Time']) : 'Still In';
         const outColor = outT === 'Still In' ? '#A1A1AA' : '#FCA5A5';
-        const name = employeeName(l.emp_id);
+        const name = l['Name'] || employeeName(l['Email']);
         return `
           <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(255,255,255,0.025); border-radius:10px; border:1px solid rgba(255,255,255,0.05); flex-wrap:wrap; gap:8px;">
             <div style="display:flex; align-items:center; gap:10px;">
               <div style="width:36px; height:36px; border-radius:50%; background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.2); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#6EE7B7; flex-shrink:0;">
-                ${(l.emp_id || '?').slice(-2)}
+                ${(name || '?').slice(0, 2).toUpperCase()}
               </div>
               <div>
-                <div style="font-size:13.5px; font-weight:600; color:var(--text-primary);">${name} ${lateStr}</div>
-                <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">${l.emp_id || ''} · ${l.branch_id || ''} · ${l.method || 'manual'}</div>
+                <div style="font-size:13.5px; font-weight:600; color:var(--text-primary);">${name}</div>
+                <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">${l['Email'] || ''}</div>
               </div>
             </div>
             <div style="display:flex; gap:18px; align-items:center;">
@@ -873,13 +844,11 @@
     }
 
     async function loadAttendanceMasterLogs() {
-      const empEl = document.getElementById('filterEmpId');
+      const emailEl = document.getElementById('filterEmail');
       const dateEl = document.getElementById('filterDate');
-      const branchEl = document.getElementById('filterBranch');
-      const empVal = encodeURIComponent(empEl ? empEl.value.trim() : '');
+      const emailVal = encodeURIComponent(emailEl ? emailEl.value.trim() : '');
       const dateVal = dateEl ? dateEl.value : '';
-      const branchVal = branchEl ? branchEl.value : '';
-      const ENDPOINT = `${API_URL}?action=getAttendance&token=${AUTHENTICATED_SESSION_TOKEN}&page=${CURRENT_PAGE_TRACKER}&limit=12&emp_id=${empVal}&date=${dateVal}&branch_id=${branchVal}`;
+      const ENDPOINT = `${API_URL}?action=getAttendance&token=${AUTHENTICATED_SESSION_TOKEN}&page=${CURRENT_PAGE_TRACKER}&limit=12&email=${emailVal}&date=${dateVal}`;
 
       try {
         const res = await fetch(ENDPOINT);
@@ -896,23 +865,19 @@
     function renderAttendanceRowsMatrix(logsArray) {
       const container = document.getElementById('attendanceLogsContainer');
       if (!logsArray || logsArray.length === 0) {
-        container.innerHTML = `<tr><td colspan="9" style="padding:24px; text-align:center; color:var(--text-dim);">Koi logs nahi mile is filter ke liye.</td></tr>`;
+        container.innerHTML = `<tr><td colspan="6" style="padding:24px; text-align:center; color:var(--text-dim);">Koi logs nahi mile is filter ke liye.</td></tr>`;
         return;
       }
       container.innerHTML = logsArray.map(log => {
-        const formattedDate = log.date ? new Date(log.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-        const statusClass = log.status === 'present' ? 'badge-present' : 'badge-absent';
+        const formattedDate = log['Date'] ? new Date(log['Date']).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
         return `
         <tr>
-          <td><code style="color:var(--text-dim);">${log.att_id}</code></td>
-          <td><strong style="color:var(--accent-glow);">${log.emp_id}</strong></td>
-          <td>${log.branch_id || '—'}</td>
+          <td><strong style="color:var(--accent-glow);">${log['Name'] || '—'}</strong></td>
+          <td>${log['Phone'] || '—'}</td>
+          <td>${log['Email'] || '—'}</td>
           <td>${formattedDate}</td>
-          <td style="color:#6EE7B7; font-weight:500;">⏱️ ${formatTime12Hour(log.in_time)}</td>
-          <td style="color:#FCA5A5; font-weight:500;">⏱️ ${formatTime12Hour(log.out_time)}</td>
-          <td><span style="color:${log.late_minutes > 0 ? 'var(--warning)' : 'var(--text-dim)'};">${log.late_minutes || 0} mins</span></td>
-          <td><span class="status-badge ${statusClass}">${log.status}</span></td>
-          <td style="font-size:13px; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${log.remarks || ''}">${log.remarks || '—'}</td>
+          <td style="color:#6EE7B7; font-weight:500;">⏱️ ${formatTime12Hour(log['In-Time'])}</td>
+          <td style="color:#FCA5A5; font-weight:500;">⏱️ ${log['Out-Time'] ? formatTime12Hour(log['Out-Time']) : 'Still In'}</td>
         </tr>`;
       }).join('');
     }

@@ -881,6 +881,289 @@
             font-weight: 600;
             flex-shrink: 0;
         }
+
+        .pd-attendance-table-wrap {
+            max-height: 420px;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        .pd-attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+
+        .pd-attendance-table thead th {
+            position: sticky;
+            top: 0;
+            background: #131826;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--glass-border);
+            white-space: nowrap;
+            z-index: 1;
+        }
+
+        .pd-attendance-table tbody td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .pd-attendance-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .pd-attendance-table tbody tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* ============================================================
+           ATTENDANCE — summary cards + month calendar + day popup
+           ============================================================ */
+        .pd-att-summary-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        @media (max-width: 560px) {
+            .pd-att-summary-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pd-att-summary-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            text-align: center;
+        }
+
+        .pd-att-summary-card label {
+            display: block;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .pd-att-summary-card .pd-att-summary-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .pd-att-summary-card .pd-att-summary-sub {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        .pd-cal-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+        }
+
+        .pd-cal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .pd-cal-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .pd-cal-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pd-cal-nav button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .pd-cal-nav button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .pd-cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .pd-cal-daylabel {
+            text-align: center;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: var(--text-dim);
+            padding-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .pd-cal-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: default;
+            color: var(--text-dim);
+            background: rgba(255, 255, 255, 0.02);
+            position: relative;
+        }
+
+        .pd-cal-cell.pd-cal-empty {
+            background: transparent;
+        }
+
+        .pd-cal-cell.pd-cal-present {
+            background: rgba(52, 211, 153, 0.16);
+            color: var(--success);
+            cursor: pointer;
+        }
+
+        .pd-cal-cell.pd-cal-present:hover {
+            background: rgba(52, 211, 153, 0.3);
+        }
+
+        .pd-cal-cell.pd-cal-weeklyoff {
+            background: rgba(168, 175, 196, 0.18);
+            color: var(--accent-glow);
+        }
+
+        .pd-cal-cell.pd-cal-weeklyoff.pd-cal-present {
+            background: linear-gradient(135deg, rgba(168, 175, 196, 0.25), rgba(52, 211, 153, 0.2));
+            color: var(--accent-glow);
+        }
+
+        .pd-cal-cell.pd-cal-today {
+            outline: 2px solid var(--accent-glow);
+            outline-offset: -2px;
+        }
+
+        .pd-day-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            z-index: 1300;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .pd-day-modal-overlay.open {
+            display: flex;
+        }
+
+        .pd-day-modal-card {
+            background: rgba(24, 24, 27, 0.9);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(28px) saturate(160%);
+            border-radius: var(--radius);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 340px;
+            padding: 20px;
+        }
+
+        .pd-day-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .pd-day-modal-header h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .pd-day-modal-close {
+            background: var(--error);
+            border: none;
+            color: #fff;
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pd-day-modal-row {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .pd-day-modal-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .pd-day-modal-row label {
+            display: block;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+
+        .pd-day-modal-row .pd-day-modal-time {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .pd-day-modal-row.in-time .pd-day-modal-time {
+            color: var(--success);
+        }
+
+        .pd-day-modal-row.out-time .pd-day-modal-time {
+            color: #60A5FA;
+        }
     </style>
 </head>
 
@@ -1072,6 +1355,23 @@
     <!-- ============================================================
          PROFILE DRAWER — slide-in employee profile panel
          ============================================================ -->
+    <div class="pd-day-modal-overlay" id="pdDayModalOverlay" onclick="closePdDayModal()">
+        <div class="pd-day-modal-card" onclick="event.stopPropagation()">
+            <div class="pd-day-modal-header">
+                <h3 id="pdDayModalTitle">—</h3>
+                <button type="button" class="pd-day-modal-close" onclick="closePdDayModal()">✕</button>
+            </div>
+            <div class="pd-day-modal-row in-time">
+                <label>In-Time</label>
+                <div class="pd-day-modal-time" id="pdDayModalIn">—</div>
+            </div>
+            <div class="pd-day-modal-row out-time">
+                <label>Out-Time</label>
+                <div class="pd-day-modal-time" id="pdDayModalOut">—</div>
+            </div>
+        </div>
+    </div>
+
     <div class="profile-drawer-overlay" id="profileDrawerOverlay" onclick="closeProfileDrawer()"></div>
     <div class="profile-drawer-panel" id="profileDrawerPanel">
         <div class="pd-header">
@@ -1294,6 +1594,8 @@
             pdActiveTab = 'profile';
             pdAttendanceLoaded = false;
             pdTasksLoaded = false;
+            pdCalYear = null;
+            pdCalMonth = null;
             document.getElementById('profileDrawerOverlay').classList.add('open');
             document.getElementById('profileDrawerPanel').classList.add('open');
             document.getElementById('pdFooter').classList.remove('open');
@@ -1316,7 +1618,12 @@
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && document.getElementById('profileDrawerPanel').classList.contains('open')) {
+            if (e.key !== 'Escape') return;
+            if (document.getElementById('pdDayModalOverlay').classList.contains('open')) {
+                closePdDayModal();
+                return;
+            }
+            if (document.getElementById('profileDrawerPanel').classList.contains('open')) {
                 closeProfileDrawer();
             }
         });
@@ -1565,11 +1872,22 @@
             if (tab === 'tasks' && !pdTasksLoaded) fetchPdTasks(pdCurrentEmpId);
         }
 
+        // ⚠️ SHEET FORMAT UPDATE: the 'attendance' sheet no longer stores
+        // emp_id (or att_id/branch_id/method/late_minutes/status/remarks) —
+        // it's just Name | Phone | Email | Date | In-Time | Out-Time now,
+        // and handleGetAttendance() only knows how to filter by ?email=
+        // (see appscript_attendance.gs). So we resolve+pass the employee's
+        // email from the cached profile instead of emp_id.
         async function fetchPdAttendance(empId) {
             const body = document.getElementById('pdTabAttendance');
             body.innerHTML = `<div class="pd-loading-state"><div class="pd-spinner"></div>Loading attendance…</div>`;
+            const email = (pdCacheData && pdCacheData.email) ? pdCacheData.email : '';
+            if (!email) {
+                body.innerHTML = `<div class="pd-error-state">This profile has no email on file, so attendance can't be looked up.</div>`;
+                return;
+            }
             try {
-                const res = await fetch(`${API_URL}?action=getAttendance&token=${SESSION_TOKEN_VERIFIER}&emp_id=${empId}&limit=30`);
+                const res = await fetch(`${API_URL}?action=getAttendance&token=${SESSION_TOKEN_VERIFIER}&email=${encodeURIComponent(email)}&limit=90`);
                 const payload = await res.json();
                 if (payload.status === 'success') {
                     pdAttendanceLoaded = true;
@@ -1583,32 +1901,182 @@
             }
         }
 
+        // ⚠️ SHEET FORMAT UPDATE: attendance rows are now just
+        // { Name, Phone, Email, Date, In-Time, Out-Time } — no more
+        // att_id/status/method/late_minutes/remarks. Date/In-Time/Out-Time
+        // arrive pre-formatted as plain strings ("dd-MM-yyyy" / "HH:mm")
+        // from formatDateOnly()/formatTimeOnly() on the backend, so they
+        // can be rendered as-is without re-parsing as JS Date objects.
+        // "Status" and "Hours Worked" are now derived client-side instead
+        // of being stored columns.
+        function pdCalcHours(inTime, outTime) {
+            if (!inTime || !outTime) return '—';
+            const [ih, im] = String(inTime).split(':').map(Number);
+            const [oh, om] = String(outTime).split(':').map(Number);
+            if ([ih, im, oh, om].some(n => isNaN(n))) return '—';
+            let mins = (oh * 60 + om) - (ih * 60 + im);
+            if (mins < 0) mins += 24 * 60; // out-time past midnight
+            const h = Math.floor(mins / 60), m = mins % 60;
+            return `${h}h ${m}m`;
+        }
+
+        // ── Attendance calendar state ───────────────────────────────
+        // pdCalYear/pdCalMonth track which month is currently displayed
+        // in the calendar (0-indexed month, matches JS Date convention).
+        let pdCalYear = null;
+        let pdCalMonth = null;
+        const PD_WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const PD_MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+        // Attendance dates arrive as "dd-MM-yyyy" strings — build a quick
+        // lookup keyed the same way so the calendar can match a day cell
+        // to its record without re-parsing dates on every render.
+        function pdBuildAttendanceMap(logs) {
+            const map = {};
+            logs.forEach(l => {
+                const dateStr = l['Date'];
+                if (!dateStr) return;
+                map[dateStr] = { inTime: l['In-Time'] || '', outTime: l['Out-Time'] || '' };
+            });
+            return map;
+        }
+
+        function pdDateKey(day, month, year) {
+            const dd = String(day).padStart(2, '0');
+            const mm = String(month + 1).padStart(2, '0');
+            return `${dd}-${mm}-${year}`;
+        }
+
         function renderPdAttendance(logs) {
             const body = document.getElementById('pdTabAttendance');
-            if (!logs.length) {
-                body.innerHTML = `<div class="pd-error-state">No attendance records found for this employee.</div>`;
-                return;
+            const attMap = pdBuildAttendanceMap(logs);
+
+            // Default the visible month to the most recent attendance
+            // record if we have one, otherwise the current real month.
+            if (pdCalYear === null || pdCalMonth === null) {
+                let latest = null;
+                logs.forEach(l => {
+                    const parts = String(l['Date'] || '').split('-');
+                    if (parts.length === 3) {
+                        const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+                        if (!isNaN(d.getTime()) && (!latest || d > latest)) latest = d;
+                    }
+                });
+                const base = latest || new Date();
+                pdCalYear = base.getFullYear();
+                pdCalMonth = base.getMonth();
             }
+
+            const node = pdCacheData || {};
+            const weeklyOffDay = node.weekly_off || '';
+
             body.innerHTML = `
-                <div class="pd-section-title">🕐 Recent Attendance (${logs.length})</div>
-                <div class="pd-card" style="padding:0;">
-                    ${logs.map(l => {
-                        const dateStr = l.date ? new Date(l.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-                        const lateMins = parseInt(l.late_minutes) || 0;
-                        return `
-                            <div class="pd-log-row">
-                                <div>
-                                    <div class="pd-log-date">${dateStr}</div>
-                                    <div class="pd-log-sub">${l.method || 'manual'}${lateMins > 0 ? ' · +' + lateMins + 'm late' : ' · On time'}</div>
-                                </div>
-                                <div class="pd-log-times">
-                                    <span style="color:var(--success);">⏱️ ${l.in_time || '—'}</span>
-                                    <span style="color:${l.out_time ? '#F87171' : 'var(--text-dim)'};">⏱️ ${l.out_time || 'Still In'}</span>
-                                </div>
-                                <span class="status-pill ${l.status === 'present' ? 'pill-active' : 'pill-inactive'}">${l.status || '—'}</span>
-                            </div>`;
-                    }).join('')}
+                <div class="pd-att-summary-row">
+                    <div class="pd-att-summary-card">
+                        <label>Shift Timing</label>
+                        <div class="pd-att-summary-value">9:00 AM – 6:00 PM</div>
+                        <div class="pd-att-summary-sub">Morning Shift</div>
+                    </div>
+                    <div class="pd-att-summary-card">
+                        <label>Weekly Off</label>
+                        <div class="pd-att-summary-value">${weeklyOffDay || 'Not set'}</div>
+                        <div class="pd-att-summary-sub">&nbsp;</div>
+                    </div>
+                    <div class="pd-att-summary-card">
+                        <label>Hours This Month</label>
+                        <div class="pd-att-summary-value" id="pdHoursThisMonth">—</div>
+                        <div class="pd-att-summary-sub">&nbsp;</div>
+                    </div>
+                </div>
+                <div class="pd-cal-card">
+                    <div class="pd-cal-header">
+                        <button type="button" onclick="pdCalNav(-1)">◀ Prev</button>
+                        <div class="pd-cal-title" id="pdCalTitle"></div>
+                        <button type="button" onclick="pdCalNav(1)">Next ▶</button>
+                    </div>
+                    <div class="pd-cal-grid" id="pdCalGrid"></div>
                 </div>`;
+
+            // Stash the map/weekly-off on window-scope vars so nav clicks
+            // (which only re-run the grid, not this whole innerHTML swap)
+            // can reuse them without re-fetching.
+            window._pdAttMap = attMap;
+            window._pdWeeklyOffDay = weeklyOffDay;
+            pdRenderCalendarGrid();
+        }
+
+        function pdCalNav(delta) {
+            pdCalMonth += delta;
+            if (pdCalMonth < 0) { pdCalMonth = 11; pdCalYear--; }
+            if (pdCalMonth > 11) { pdCalMonth = 0; pdCalYear++; }
+            pdRenderCalendarGrid();
+        }
+
+        function pdRenderCalendarGrid() {
+            const attMap = window._pdAttMap || {};
+            const weeklyOffDay = window._pdWeeklyOffDay || '';
+            const year = pdCalYear, month = pdCalMonth;
+
+            document.getElementById('pdCalTitle').textContent = `${PD_MONTH_NAMES[month]} ${year}`;
+
+            const firstDow = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+            let cells = PD_WEEKDAY_NAMES.map(d => `<div class="pd-cal-daylabel">${d.slice(0, 3)}</div>`).join('');
+            for (let i = 0; i < firstDow; i++) cells += `<div class="pd-cal-cell pd-cal-empty"></div>`;
+
+            let monthMinutes = 0;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dow = new Date(year, month, day).getDay();
+                const key = pdDateKey(day, month, year);
+                const record = attMap[key];
+                const isWeeklyOff = weeklyOffDay && PD_WEEKDAY_NAMES[dow] === weeklyOffDay;
+                const isToday = isCurrentMonth && today.getDate() === day;
+                let cls = 'pd-cal-cell';
+                if (isWeeklyOff) cls += ' pd-cal-weeklyoff';
+                if (record) cls += ' pd-cal-present';
+                if (isToday) cls += ' pd-cal-today';
+
+                if (record) {
+                    monthMinutes += pdMinutesBetween(record.inTime, record.outTime);
+                }
+
+                const clickAttr = record ? `onclick="pdOpenDayModal('${key}')"` : '';
+                cells += `<div class="${cls}" ${clickAttr}>${day}</div>`;
+            }
+
+            document.getElementById('pdCalGrid').innerHTML = cells;
+
+            const h = Math.floor(monthMinutes / 60), m = monthMinutes % 60;
+            const hoursEl = document.getElementById('pdHoursThisMonth');
+            if (hoursEl) hoursEl.textContent = monthMinutes > 0 ? `${h}h ${m}m` : '0h 0m';
+        }
+
+        function pdMinutesBetween(inTime, outTime) {
+            if (!inTime || !outTime) return 0;
+            const [ih, im] = String(inTime).split(':').map(Number);
+            const [oh, om] = String(outTime).split(':').map(Number);
+            if ([ih, im, oh, om].some(n => isNaN(n))) return 0;
+            let mins = (oh * 60 + om) - (ih * 60 + im);
+            if (mins < 0) mins += 24 * 60;
+            return mins;
+        }
+
+        function pdOpenDayModal(key) {
+            const record = (window._pdAttMap || {})[key];
+            const parts = key.split('-'); // dd-MM-yyyy
+            const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+            const title = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('pdDayModalTitle').textContent = title;
+            document.getElementById('pdDayModalIn').textContent = (record && record.inTime) ? record.inTime : '—';
+            document.getElementById('pdDayModalOut').textContent = (record && record.outTime) ? record.outTime : 'Still In';
+            document.getElementById('pdDayModalOverlay').classList.add('open');
+        }
+
+        function closePdDayModal() {
+            document.getElementById('pdDayModalOverlay').classList.remove('open');
         }
 
         const PD_TASK_STATUS_MAP = {
@@ -1649,8 +2117,8 @@
                 <div class="pd-section-title">✅ Assigned Tasks (${tasks.length})</div>
                 <div class="pd-card" style="padding:0;">
                     ${tasks.map(t => {
-                        const st = PD_TASK_STATUS_MAP[t.status] || { label: t.status, cls: 'pill-inactive' };
-                        return `
+                const st = PD_TASK_STATUS_MAP[t.status] || { label: t.status, cls: 'pill-inactive' };
+                return `
                             <div class="pd-log-row" style="flex-direction:column; align-items:flex-start; gap:6px;">
                                 <div style="display:flex; justify-content:space-between; width:100%; align-items:center; gap:8px;">
                                     <div class="pd-log-date">${t.title}</div>
@@ -1659,7 +2127,7 @@
                                 <div class="pd-log-sub">${t.priority ? '🔺 ' + t.priority.charAt(0).toUpperCase() + t.priority.slice(1) + ' priority' : ''}${t.due_date ? ' · Due ' + t.due_date : ' · No due date'}</div>
                                 ${t.submission_link ? `<a href="${t.submission_link}" target="_blank" rel="noopener" style="font-size:12px; color:var(--accent-glow);">🔗 View Submission</a>` : ''}
                             </div>`;
-                    }).join('')}
+            }).join('')}
                 </div>`;
         }
     </script>

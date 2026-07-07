@@ -895,12 +895,16 @@
         const d = await r.json();
         if (d.status === 'success') {
           const logs = (d.data && d.data.data) || [];
-          const mine = logs.find(l => l.emp_id === empInfo.emp_id);
+          // Backend already filters by emp_id (self-punch session) + date,
+          // so the attendance sheet's own row for today (if any) is logs[0].
+          // Row has no emp_id column anymore — match on Email as a safety
+          // check in case more than one row ever comes back.
+          const mine = logs.find(l => String(l['Email'] || '').toLowerCase() === String(empInfo.email || '').toLowerCase()) || logs[0];
           if (mine) {
-            todayIn = mine.in_time || '—';
-            todayOut = mine.out_time || '—';
-            if (mine.in_time && mine.out_time) lastPunch = 'both';
-            else if (mine.in_time) lastPunch = 'in';
+            todayIn = mine['In-Time'] || '—';
+            todayOut = mine['Out-Time'] || '—';
+            if (mine['In-Time'] && mine['Out-Time']) lastPunch = 'both';
+            else if (mine['In-Time']) lastPunch = 'in';
             else lastPunch = null;
           } else {
             lastPunch = null; todayIn = '—'; todayOut = '—';
@@ -964,22 +968,21 @@
         action: 'markAttendance',
         emp_id: empInfo.emp_id,
         date: dateStr,
-        time: timeStr,
-        method: 'Self-Punch',
-        latitude: userLat,
-        longitude: userLng,
-        remarks: type === 'in' ? 'Self Punch-In' : 'Self Punch-Out'
+        time: timeStr
       };
       // No token / checksum — geofence + one-time detail verification
       // (Step 2) is the identity proof for this self-service kiosk flow.
+      // method/latitude/longitude/remarks removed — the new
+      // handleMarkAttendance() in appscript_attendance.gs only reads
+      // emp_id, date and time; the old fields were silently ignored.
 
       try {
         const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
         const data = await res.json();
 
         if (data.status === 'success') {
-          if (type === 'in') todayIn = (data.data && data.data.in_time) ? data.data.in_time : timeStr;
-          else todayOut = (data.data && data.data.out_time) ? data.data.out_time : timeStr;
+          if (type === 'in') todayIn = (data.data && data.data['In-Time']) ? data.data['In-Time'] : timeStr;
+          else todayOut = (data.data && data.data['Out-Time']) ? data.data['Out-Time'] : timeStr;
 
           document.getElementById('finalIn').textContent = todayIn !== '—' ? fmt12(todayIn) : '—';
           document.getElementById('finalOut').textContent = todayOut !== '—' ? fmt12(todayOut) : '—';
@@ -1046,9 +1049,12 @@
 
     // ── Boot ──────────────────────────────────────────
     window.addEventListener('load', () => {
-      // Universal link — no ?branch= param needed. Nothing to boot-check;
-      // the employee taps "Allow Location" and the branch gets
-      // detected automatically from their GPS coordinates.
+      // Universal link — no ?branch= param needed. Location is now
+      // requested automatically on page open (browser shows its native
+      // permission popup) — employee just taps "Allow". The button
+      // (#btnLoc) stays visible as a manual retry path in case GPS
+      // fails or permission is denied on the first attempt.
+      requestLocation();
     });
   </script>
 </body>
