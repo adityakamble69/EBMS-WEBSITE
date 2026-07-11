@@ -5,202 +5,294 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Teacher / Employee Registration — Codeline.AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg-base:      #0A0A0B;
-      --card-bg:      #15151A;
-      --glass-border: rgba(255,255,255,0.10);
-      --text-primary: #F4F4F5;
-      --text-muted:   #A1A1AA;
-      --text-dim:     #6B7280;
-      --accent:       #A8AFC4;
-      --accent-glow:  #D4D9E6;
-      --error:        #F87171;
+      --bg-base:      #000000;
+      --card-bg:      #131318;
+      --card-bg-2:    #17171E;
+      --glass-border: rgba(255,255,255,0.09);
+      --glass-border-strong: rgba(255,255,255,0.16);
+      --text-primary: #F5F5F7;
+      --text-muted:   #9C9CA8;
+      --text-dim:     #5C5C68;
+      --accent-a:     #67E8F9;
+      --accent-b:     #A78BFA;
+      --accent-grad:  linear-gradient(100deg, var(--accent-a), var(--accent-b));
+      --error:        #FB7185;
       --success:      #34D399;
-      --radius:       22px;
-      --radius-sm:    10px;
+      --radius:       24px;
+      --radius-sm:    12px;
+      --mono: 'JetBrains Mono', monospace;
     }
+
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Inter', sans-serif;
-      background: #0A0A0B
-        radial-gradient(circle at 12% -10%, rgba(255,255,255,0.05), transparent 45%),
-        radial-gradient(circle at 90% 0%, rgba(255,255,255,0.03), transparent 40%);
+      background: var(--bg-base);
       background-attachment: fixed;
       color: var(--text-primary);
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: 40px 16px;
+      padding: 48px 16px 60px;
     }
 
-    @media (max-width: 600px) { body { padding: 20px 10px; } }
+    @media (max-width: 600px) { body { padding: 20px 10px 40px; } }
 
+    .page-wrap { width: 100%; max-width: 640px; }
+
+    /* ---- Sticky progress header ---- */
+    .progress-shell {
+      position: sticky; top: 14px; z-index: 50;
+      margin-bottom: 22px;
+      border-radius: 16px;
+      padding: 1px;
+      background: linear-gradient(160deg, rgba(255,255,255,0.14), rgba(255,255,255,0.02));
+    }
+    .progress-card {
+      background: rgba(19,19,24,0.82);
+      backdrop-filter: blur(14px);
+      border-radius: 15px;
+      padding: 14px 18px 16px;
+      border: 1px solid var(--glass-border);
+    }
+    .progress-top-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px; gap: 10px;
+    }
+    .progress-brand { display: flex; align-items: center; gap: 8px; }
+    .progress-brand-logo { width: 20px; height: 20px; flex-shrink: 0; }
+    .progress-brand-name {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+      font-size: 14.5px; letter-spacing: 0.3px;
+    }
+    .progress-brand-cursor {
+      display: inline-block; width: 2px; height: 13px;
+      background: var(--accent-a); margin-left: 1px;
+      animation: blink 1.1s step-start infinite; vertical-align: -2px;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .progress-pct {
+      font-family: var(--mono); font-size: 11.5px; font-weight: 500;
+      color: var(--text-dim); white-space: nowrap;
+    }
+    .progress-pct b { color: var(--accent-a); font-weight: 600; }
+
+    .step-track { display: flex; align-items: center; gap: 6px; }
+    .step-item {
+      flex: 1; display: flex; align-items: center; gap: 8px;
+      cursor: pointer; padding: 4px 2px; border: none; background: none;
+      color: inherit; font-family: inherit; text-align: left;
+    }
+    .step-dot {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+      border: 1.5px solid var(--glass-border-strong);
+      color: var(--text-dim); transition: all 0.25s ease;
+    }
+    .step-item.is-done .step-dot {
+      background: var(--accent-grad); border-color: transparent; color: #0A0A0D;
+    }
+    .step-item.is-active .step-dot { border-color: var(--accent-a); color: var(--accent-a); }
+    .step-label {
+      font-size: 11.5px; font-weight: 600; color: var(--text-dim);
+      letter-spacing: 0.2px; transition: color 0.25s ease;
+    }
+    .step-item.is-active .step-label,
+    .step-item.is-done .step-label { color: var(--text-primary); }
+    .step-connector { flex-shrink: 0; width: 14px; height: 1px; background: var(--glass-border-strong); }
+    @media (max-width: 460px) { .step-label { display: none; } .step-connector { width: 8px; } }
+
+    .progress-bar-track {
+      margin-top: 12px; height: 3px; border-radius: 3px;
+      background: rgba(255,255,255,0.06); overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; width: 0%; border-radius: 3px;
+      background: var(--accent-grad);
+      transition: width 0.35s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ---- Form shell ---- */
     .form-shell {
-      width: 100%; max-width: 560px;
       border-radius: var(--radius);
       padding: 1px;
       background: linear-gradient(160deg, rgba(255,255,255,0.16), rgba(255,255,255,0.03));
-      height: fit-content;
     }
 
     .form-card {
       background: var(--card-bg);
       border: 1px solid var(--glass-border);
       border-radius: calc(var(--radius) - 1px);
-      padding: 36px 32px 28px;
+      padding: 40px 36px 32px;
     }
+    @media (max-width: 480px) { .form-card { padding: 30px 20px 24px; } }
 
-    @media (max-width: 480px) { .form-card { padding: 28px 20px 22px; } }
+    .form-header { text-align: center; margin-bottom: 34px; }
+    .form-title {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+      font-size: 22px; letter-spacing: 0.2px; margin-bottom: 6px;
+    }
+    .form-subtitle { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
 
-    /* ---- Brand ---- */
-    .brand-row {
-      display: flex; align-items: center; justify-content: center;
-      gap: 10px; margin-bottom: 6px;
+    /* ---- Section ---- */
+    .form-section { margin-bottom: 8px; }
+    .section-header {
+      display: flex; align-items: baseline; gap: 10px;
+      margin: 34px 0 20px;
     }
-    .brand-logo-mark { width: 30px; height: 30px; flex-shrink: 0; }
-    .brand-name {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700; font-size: 26px;
-      letter-spacing: 0.5px; color: var(--text-primary);
+    .form-section:first-of-type .section-header { margin-top: 0; }
+    .section-num {
+      font-family: var(--mono); font-size: 11px; font-weight: 600;
+      color: var(--accent-a); letter-spacing: 0.5px;
     }
-    .form-subtitle {
-      text-align: center; font-size: 12px; font-weight: 600;
-      letter-spacing: 2px; text-transform: uppercase;
-      color: var(--text-dim); margin-bottom: 28px;
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 600;
+      letter-spacing: 0.3px; text-transform: uppercase; color: var(--text-primary);
     }
+    .section-rule { flex: 1; height: 1px; background: var(--glass-border); }
 
-    /* ---- Section divider ---- */
-    .section-divider {
-      display: flex; align-items: center; gap: 12px;
-      margin: 28px 0 20px;
+    /* ---- Field grid ---- */
+    .field-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 18px 20px;
     }
-    .section-divider::before,
-    .section-divider::after {
-      content: ''; flex: 1; height: 1px;
-      background: var(--glass-border);
-    }
-    .section-divider span {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 12.5px; font-weight: 700;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      color: var(--accent-glow); white-space: nowrap;
-    }
+    @media (max-width: 560px) { .field-row { grid-template-columns: 1fr; } }
 
-    /* ---- Fields ---- */
     .field-group { margin-bottom: 20px; }
     .field-group label {
-      display: block; font-size: 12px; font-weight: 700;
-      letter-spacing: 0.5px; text-transform: uppercase;
-      color: #D4D4D8; margin-bottom: 8px;
+      display: block; font-size: 11.5px; font-weight: 700;
+      letter-spacing: 0.6px; text-transform: uppercase;
+      color: #C7C7D1; margin-bottom: 9px;
     }
-    .field-group label .req-star { color: var(--error); margin-left: 2px; }
+    .field-group label .req-star { color: var(--accent-a); margin-left: 3px; }
+
     .field-group input[type="text"],
     .field-group input[type="tel"],
     .field-group input[type="email"],
     .field-group input[type="date"],
     .field-group select,
     .field-group textarea {
-      width: 100%; background: transparent; border: none;
-      border-bottom: 1.5px solid var(--glass-border);
+      width: 100%; background: rgba(255,255,255,0.02);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
       color: var(--text-primary);
-      font-family: 'Inter', sans-serif; font-size: 15px;
-      padding: 6px 2px 10px; outline: none;
-      transition: border-color 0.2s;
+      font-family: 'Inter', sans-serif; font-size: 14.5px;
+      padding: 12px 14px; outline: none;
+      transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
     }
-    .field-group select { cursor: pointer; }
-    .field-group select option { background: #18181B; color: #fff; }
+    .field-group select {
+      cursor: pointer; appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7' fill='none'%3E%3Cpath d='M1 1L5.5 6L10 1' stroke='%239C9CA8' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center;
+      padding-right: 36px;
+    }
+    .field-group select option { background: #17171E; color: #fff; }
     .field-group input::placeholder,
-    .field-group textarea::placeholder { color: #52525B; }
+    .field-group textarea::placeholder { color: #4A4A55; }
     .field-group input:focus,
     .field-group select:focus,
-    .field-group textarea:focus { border-color: var(--accent-glow); }
+    .field-group textarea:focus {
+      border-color: var(--accent-a);
+      background: rgba(103,232,249,0.035);
+      box-shadow: 0 0 0 3px rgba(103,232,249,0.09);
+    }
     .field-group input.field-invalid,
     .field-group select.field-invalid { border-color: var(--error); }
+    .field-group input[type="date"] { color-scheme: dark; }
 
     .field-hint {
-      font-size: 11px; color: var(--text-dim);
-      margin-top: 6px; text-align: right;
+      font-family: var(--mono); font-size: 10.5px; color: var(--text-dim);
+      margin-top: 7px; text-align: right; letter-spacing: 0.2px;
     }
     .field-error-msg {
       font-size: 11.5px; color: var(--error);
-      margin-top: 6px; display: none;
+      margin-top: 7px; display: none;
     }
     .field-error-msg.show { display: block; }
 
-    /* ---- File upload ---- */
-    .file-upload-row {
-      display: flex; align-items: center;
-      gap: 12px; flex-wrap: wrap;
+    /* ---- Document dropzones ---- */
+    .dropzone-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 560px) { .dropzone-row { grid-template-columns: 1fr; } }
+
+    .dropzone {
+      border: 1.5px dashed var(--glass-border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--card-bg-2);
+      padding: 16px; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      display: flex; align-items: center; gap: 12px;
     }
-    .file-upload-btn {
-      background: #3F3F46; color: #fff; border: none;
-      padding: 9px 16px; border-radius: 7px;
-      font-size: 13.5px; font-weight: 500;
-      cursor: pointer; white-space: nowrap;
-      transition: background 0.18s;
+    .dropzone:hover { border-color: rgba(103,232,249,0.4); background: rgba(103,232,249,0.03); }
+    .dropzone.is-dragover { border-color: var(--accent-a); background: rgba(103,232,249,0.06); }
+    .dropzone.has-file { border-style: solid; border-color: rgba(52,211,153,0.4); }
+
+    .dz-icon {
+      width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
-    .file-upload-btn:hover { background: #52525B; }
-    .file-upload-row input[type="file"],
-    input[type="file"] { display: none; }
-    .file-chosen-name {
-      font-size: 13px; color: var(--text-dim);
-      overflow: hidden; text-overflow: ellipsis;
-      white-space: nowrap; flex: 1; min-width: 0;
+    .dz-icon svg { width: 17px; height: 17px; color: var(--text-dim); }
+    .dz-icon img { width: 100%; height: 100%; object-fit: cover; display: none; }
+
+    .dz-text { min-width: 0; flex: 1; }
+    .dz-title { font-size: 13px; font-weight: 600; color: var(--text-primary); display: block; }
+    .dz-sub {
+      font-size: 11.5px; color: var(--text-dim); display: block; margin-top: 2px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .file-chosen-name.has-file { color: var(--success); }
-    .file-preview-thumb {
-      width: 40px; height: 40px; border-radius: 8px;
-      object-fit: cover; border: 1px solid var(--glass-border);
-      flex-shrink: 0; display: none;
-    }
+    .dz-sub.has-file { color: var(--success); }
 
     /* ---- Submit ---- */
     .submit-btn {
-      width: 100%; margin-top: 8px;
-      background: rgba(255,255,255,0.92);
-      color: #0A0A0B; border: none; padding: 15px;
-      border-radius: 100px; font-size: 15px; font-weight: 700;
-      letter-spacing: 0.5px; text-transform: uppercase;
-      cursor: pointer;
+      width: 100%; margin-top: 18px;
+      background: linear-gradient(135deg, #1C1C24, #131318);
+      color: var(--text-primary); border: 1.5px solid transparent;
+      background-clip: padding-box;
+      padding: 16px;
+      border-radius: 100px; font-size: 14.5px; font-weight: 700;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      cursor: pointer; position: relative;
+      box-shadow: inset 0 0 0 1.5px rgba(103,232,249,0.35);
       transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s, background 0.18s;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
     }
     .submit-btn:hover:not(:disabled) {
-      transform: translateY(-1px); background: #ffffff;
-      box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+      transform: translateY(-1px);
+      background: linear-gradient(135deg, #22222B, #17171E);
+      box-shadow: inset 0 0 0 1.5px rgba(103,232,249,0.6), 0 8px 22px rgba(103,232,249,0.15);
     }
-    .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
     .footer-note {
-      text-align: center; font-size: 11.5px;
-      color: var(--text-dim); margin-top: 18px;
+      text-align: center; font-size: 11px; font-family: var(--mono);
+      color: var(--text-dim); margin-top: 20px; letter-spacing: 0.3px;
     }
 
     /* ---- Status overlay ---- */
     .status-overlay {
       position: fixed; inset: 0;
-      background: rgba(5,5,6,0.85); backdrop-filter: blur(6px);
+      background: rgba(4,4,6,0.86); backdrop-filter: blur(8px);
       display: none; align-items: center;
       justify-content: center; z-index: 999; padding: 24px;
     }
     .status-overlay.show { display: flex; }
     .status-card {
       background: var(--card-bg); border: 1px solid var(--glass-border);
-      border-radius: var(--radius); padding: 36px 32px;
+      border-radius: var(--radius); padding: 38px 32px;
       text-align: center; max-width: 380px; width: 100%;
     }
     .status-icon {
-      width: 56px; height: 56px; border-radius: 50%;
+      width: 58px; height: 58px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       margin: 0 auto 18px; font-size: 26px;
     }
     .status-icon.loading {
       border: 3px solid var(--glass-border);
-      border-top-color: var(--accent-glow);
+      border-top-color: var(--accent-a);
       animation: spin 0.8s linear infinite;
     }
     .status-icon.success {
@@ -208,190 +300,256 @@
       border: 1px solid rgba(52,211,153,0.3);
     }
     .status-icon.error {
-      background: rgba(244,113,113,0.14); color: var(--error);
-      border: 1px solid rgba(244,113,113,0.3);
+      background: rgba(251,113,133,0.14); color: var(--error);
+      border: 1px solid rgba(251,113,133,0.3);
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .status-title {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 17px; font-weight: 700; margin-bottom: 8px;
+      font-size: 17.5px; font-weight: 700; margin-bottom: 8px;
     }
     .status-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
     .status-id {
-      margin-top: 14px; font-size: 12.5px; color: var(--accent-glow);
-      font-family: 'Space Grotesk', sans-serif;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--glass-border);
+      margin-top: 14px; font-size: 12px; color: var(--accent-a);
+      font-family: var(--mono);
+      background: rgba(103,232,249,0.06);
+      border: 1px solid rgba(103,232,249,0.2);
       border-radius: 8px; padding: 6px 12px; display: inline-block;
     }
     .status-card .submit-btn { margin-top: 22px; }
   </style>
 </head>
 <body>
-  <div class="form-shell">
-    <div class="form-card">
+  <div class="page-wrap">
 
-      <div class="brand-row">
-        <svg class="brand-logo-mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="16,2 28,9 28,23 16,30 4,23 4,9"
-            fill="none" stroke="url(#logoGrad)" stroke-width="2.4"/>
-          <defs>
-            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#E4E4E7"/>
-              <stop offset="100%" stop-color="#71717A"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        <div class="brand-name">CODELINE.AI</div>
+    <!-- ---- Sticky progress header ---- -->
+    <div class="progress-shell">
+      <div class="progress-card">
+        <div class="progress-top-row">
+          <div class="progress-brand">
+            <svg class="progress-brand-logo" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="16,2 28,9 28,23 16,30 4,23 4,9" fill="none" stroke="url(#logoGradSmall)" stroke-width="2.6"/>
+              <defs>
+                <linearGradient id="logoGradSmall" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#67E8F9"/>
+                  <stop offset="100%" stop-color="#A78BFA"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span class="progress-brand-name">CODELINE.AI<span class="progress-brand-cursor"></span></span>
+          </div>
+          <div class="progress-pct"><b id="progressCount">0</b>/<span id="progressTotal">0</span> fields complete</div>
+        </div>
+
+        <div class="step-track">
+          <button type="button" class="step-item" id="stepPersonal" onclick="scrollToSection('secPersonal')">
+            <span class="step-dot">1</span><span class="step-label">Personal</span>
+          </button>
+          <span class="step-connector"></span>
+          <button type="button" class="step-item" id="stepProfessional" onclick="scrollToSection('secProfessional')">
+            <span class="step-dot">2</span><span class="step-label">Professional</span>
+          </button>
+          <span class="step-connector"></span>
+          <button type="button" class="step-item" id="stepDocuments" onclick="scrollToSection('secDocuments')">
+            <span class="step-dot">3</span><span class="step-label">Documents</span>
+          </button>
+        </div>
+
+        <div class="progress-bar-track"><div class="progress-bar-fill" id="progressBarFill"></div></div>
       </div>
-      <div class="form-subtitle">Teacher / Employee Registration</div>
+    </div>
 
-      <form id="registrationForm" onsubmit="handleFormSubmit(event)" novalidate>
+    <!-- ---- Form ---- -->
+    <div class="form-shell">
+      <div class="form-card">
 
-        <!-- ---- Personal Information ---- -->
-        <div class="section-divider"><span>Personal Information</span></div>
-
-        <div class="field-group">
-          <label>Full Name<span class="req-star">*</span></label>
-          <input type="text" id="fName" placeholder="Enter full name" required />
-          <div class="field-error-msg" id="errName">Full name is required.</div>
+        <div class="form-header">
+          <div class="form-title">Teacher / Employee Registration</div>
+          <div class="form-subtitle">Join the Codeline.AI team — takes about 3 minutes to complete.</div>
         </div>
 
-        <div class="field-group">
-          <label>Date of Birth<span class="req-star">*</span></label>
-          <input type="date" id="fDob" required />
-          <div class="field-error-msg" id="errDob">Date of birth is required.</div>
-        </div>
+        <form id="registrationForm" onsubmit="handleFormSubmit(event)" novalidate>
 
-        <div class="field-group">
-          <label>Gender<span class="req-star">*</span></label>
-          <select id="fGender" required>
-            <option value="" selected disabled>-- Select Gender --</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
-          <div class="field-error-msg" id="errGender">Please select a gender.</div>
-        </div>
+          <!-- ---- Personal Information ---- -->
+          <div class="form-section" id="secPersonal">
+            <div class="section-header">
+              <span class="section-num">01</span>
+              <span class="section-title">Personal Information</span>
+              <span class="section-rule"></span>
+            </div>
 
-        <div class="field-group">
-          <label>Contact Number<span class="req-star">*</span></label>
-          <input type="tel" id="fMobile" placeholder="e.g. 9876543210" maxlength="10" required />
-          <div class="field-error-msg" id="errMobile">Enter a valid 10-digit mobile number.</div>
-        </div>
+            <div class="field-row">
+              <div class="field-group">
+                <label>Full Name<span class="req-star">*</span></label>
+                <input type="text" id="fName" placeholder="Enter full name" required />
+                <div class="field-error-msg" id="errName">Full name is required.</div>
+              </div>
+              <div class="field-group">
+                <label>Date of Birth<span class="req-star">*</span></label>
+                <input type="date" id="fDob" required />
+                <div class="field-error-msg" id="errDob">Date of birth is required.</div>
+              </div>
+            </div>
 
-        <div class="field-group">
-          <label>Email ID<span class="req-star">*</span></label>
-          <input type="email" id="fEmail" placeholder="example@gmail.com" required />
-          <div class="field-error-msg" id="errEmail">Enter a valid email address.</div>
-        </div>
+            <div class="field-row">
+              <div class="field-group">
+                <label>Gender<span class="req-star">*</span></label>
+                <select id="fGender" required>
+                  <option value="" selected disabled>-- Select Gender --</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+                <div class="field-error-msg" id="errGender">Please select a gender.</div>
+              </div>
+              <div class="field-group">
+                <label>Contact Number<span class="req-star">*</span></label>
+                <input type="tel" id="fMobile" placeholder="e.g. 9876543210" maxlength="10" required />
+                <div class="field-error-msg" id="errMobile">Enter a valid 10-digit mobile number.</div>
+              </div>
+            </div>
 
-        <div class="field-group">
-          <label>Current Address<span class="req-star">*</span></label>
-          <input type="text" id="fCurrentAddress" placeholder="Enter current address" required />
-          <div class="field-error-msg" id="errCurrentAddress">Current address is required.</div>
-        </div>
+            <div class="field-group">
+              <label>Email ID<span class="req-star">*</span></label>
+              <input type="email" id="fEmail" placeholder="example@gmail.com" required />
+              <div class="field-error-msg" id="errEmail">Enter a valid email address.</div>
+            </div>
 
-        <div class="field-group">
-          <label>Permanent Address</label>
-          <input type="text" id="fPermanentAddress" placeholder="Enter permanent address (if different)" />
-        </div>
+            <div class="field-group">
+              <label>Current Address<span class="req-star">*</span></label>
+              <input type="text" id="fCurrentAddress" placeholder="Enter current address" required />
+              <div class="field-error-msg" id="errCurrentAddress">Current address is required.</div>
+            </div>
 
-        <!-- ---- Professional Details ---- -->
-        <div class="section-divider"><span>Professional Details</span></div>
-
-        <div class="field-group">
-          <label>Role / Designation<span class="req-star">*</span></label>
-          <select id="fRole" required>
-            <option value="" selected disabled>-- Select Role --</option>
-            <option value="Teacher">Teacher</option>
-            <option value="Admin">Admin</option>
-            <option value="Accountant">Accountant</option>
-            <option value="Office Staff">Office Staff</option>
-          </select>
-          <div class="field-error-msg" id="errRole">Please select a role.</div>
-        </div>
-
-        <div class="field-group">
-          <label>Department<span class="req-star">*</span></label>
-          <select id="fDepartment" required>
-            <option value="" selected disabled>-- Select Department --</option>
-            <option value="IT">IT</option>
-            <option value="Non-IT">Non-IT</option>
-            <option value="Technical">Technical</option>
-            <option value="Back Office / Admin">Back Office / Admin</option>
-            <option value="Other">Other</option>
-          </select>
-          <div class="field-error-msg" id="errDepartment">Please select a department.</div>
-        </div>
-
-        <div class="field-group">
-          <label>Highest Qualification<span class="req-star">*</span></label>
-          <input type="text" id="fQualification" placeholder="e.g. B.Ed, M.Tech, PhD" required />
-          <div class="field-error-msg" id="errQualification">Qualification is required.</div>
-        </div>
-
-        <!-- ---- Document Uploads ---- -->
-        <div class="section-divider"><span>Documents Upload</span></div>
-
-        <div class="field-group">
-          <label>Profile Picture<span class="req-star">*</span></label>
-          <div class="file-upload-row">
-            <button type="button" class="file-upload-btn"
-              onclick="document.getElementById('fPhoto').click()">Choose File</button>
-            <img class="file-preview-thumb" id="thumbPhoto" alt="" />
-            <span class="file-chosen-name" id="namePhoto">No file chosen</span>
+            <div class="field-group">
+              <label>Permanent Address</label>
+              <input type="text" id="fPermanentAddress" placeholder="Enter permanent address (if different)" />
+            </div>
           </div>
-          <input type="file" id="fPhoto" accept="image/*"
-            onchange="handleFileSelect(this, 'photo')" />
-          <div class="field-hint">Size: 300 KB to 4 MB</div>
-          <div class="field-error-msg" id="errPhoto"></div>
-        </div>
 
-        <div class="field-group">
-          <label>Signature Upload<span class="req-star">*</span></label>
-          <div class="file-upload-row">
-            <button type="button" class="file-upload-btn"
-              onclick="document.getElementById('fSignature').click()">Choose File</button>
-            <img class="file-preview-thumb" id="thumbSignature" alt="" />
-            <span class="file-chosen-name" id="nameSignature">No file chosen</span>
+          <!-- ---- Professional Details ---- -->
+          <div class="form-section" id="secProfessional">
+            <div class="section-header">
+              <span class="section-num">02</span>
+              <span class="section-title">Professional Details</span>
+              <span class="section-rule"></span>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label>Role / Designation<span class="req-star">*</span></label>
+                <select id="fRole" required>
+                  <option value="" selected disabled>-- Select Role --</option>
+                  <option value="Teacher">Teacher</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Accountant">Accountant</option>
+                  <option value="Office Staff">Office Staff</option>
+                </select>
+                <div class="field-error-msg" id="errRole">Please select a role.</div>
+              </div>
+              <div class="field-group">
+                <label>Department<span class="req-star">*</span></label>
+                <select id="fDepartment" required>
+                  <option value="" selected disabled>-- Select Department --</option>
+                  <option value="IT">IT</option>
+                  <option value="Non-IT">Non-IT</option>
+                  <option value="Technical">Technical</option>
+                  <option value="Back Office / Admin">Back Office / Admin</option>
+                  <option value="Other">Other</option>
+                </select>
+                <div class="field-error-msg" id="errDepartment">Please select a department.</div>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label>Highest Qualification<span class="req-star">*</span></label>
+              <input type="text" id="fQualification" placeholder="e.g. B.Ed, M.Tech, PhD" required />
+              <div class="field-error-msg" id="errQualification">Qualification is required.</div>
+            </div>
           </div>
-          <input type="file" id="fSignature" accept="image/*"
-            onchange="handleFileSelect(this, 'signature')" />
-          <div class="field-hint">Size: 300 KB to 4 MB</div>
-          <div class="field-error-msg" id="errSignature"></div>
-        </div>
 
-        <div class="field-group">
-          <label>Aadhar Card (PDF)<span class="req-star">*</span></label>
-          <div class="file-upload-row">
-            <button type="button" class="file-upload-btn"
-              onclick="document.getElementById('fAadhar').click()">Choose File</button>
-            <span class="file-chosen-name" id="nameAadhar">No file chosen</span>
+          <!-- ---- Document Uploads ---- -->
+          <div class="form-section" id="secDocuments">
+            <div class="section-header">
+              <span class="section-num">03</span>
+              <span class="section-title">Documents Upload</span>
+              <span class="section-rule"></span>
+            </div>
+
+            <div class="dropzone-row">
+              <div class="field-group">
+                <label>Profile Picture<span class="req-star">*</span></label>
+                <div class="dropzone" id="dzPhoto" onclick="document.getElementById('fPhoto').click()">
+                  <div class="dz-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                    <img id="thumbPhoto" alt="" />
+                  </div>
+                  <div class="dz-text">
+                    <span class="dz-title">Photo</span>
+                    <span class="dz-sub" id="namePhoto">Drag & drop or click to upload</span>
+                  </div>
+                </div>
+                <input type="file" id="fPhoto" accept="image/*" onchange="handleFileSelect(this, 'photo')" />
+                <div class="field-hint">300 KB – 4 MB</div>
+                <div class="field-error-msg" id="errPhoto"></div>
+              </div>
+
+              <div class="field-group">
+                <label>Signature Upload<span class="req-star">*</span></label>
+                <div class="dropzone" id="dzSignature" onclick="document.getElementById('fSignature').click()">
+                  <div class="dz-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                    <img id="thumbSignature" alt="" />
+                  </div>
+                  <div class="dz-text">
+                    <span class="dz-title">Signature</span>
+                    <span class="dz-sub" id="nameSignature">Drag & drop or click to upload</span>
+                  </div>
+                </div>
+                <input type="file" id="fSignature" accept="image/*" onchange="handleFileSelect(this, 'signature')" />
+                <div class="field-hint">300 KB – 4 MB</div>
+                <div class="field-error-msg" id="errSignature"></div>
+              </div>
+
+              <div class="field-group">
+                <label>Aadhar Card (PDF)<span class="req-star">*</span></label>
+                <div class="dropzone" id="dzAadhar" onclick="document.getElementById('fAadhar').click()">
+                  <div class="dz-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                  </div>
+                  <div class="dz-text">
+                    <span class="dz-title">Aadhar Card</span>
+                    <span class="dz-sub" id="nameAadhar">Drag & drop or click to upload</span>
+                  </div>
+                </div>
+                <input type="file" id="fAadhar" accept="application/pdf" onchange="handleFileSelect(this, 'aadhar')" />
+                <div class="field-hint">PDF · 300 KB – 4 MB</div>
+                <div class="field-error-msg" id="errAadhar"></div>
+              </div>
+
+              <div class="field-group">
+                <label>Experience / Degree (PDF)<span class="req-star">*</span></label>
+                <div class="dropzone" id="dzExperience" onclick="document.getElementById('fExperience').click()">
+                  <div class="dz-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                  </div>
+                  <div class="dz-text">
+                    <span class="dz-title">Experience Letter</span>
+                    <span class="dz-sub" id="nameExperience">Drag & drop or click to upload</span>
+                  </div>
+                </div>
+                <input type="file" id="fExperience" accept="application/pdf" onchange="handleFileSelect(this, 'experience_doc')" />
+                <div class="field-hint">PDF · 300 KB – 4 MB</div>
+                <div class="field-error-msg" id="errExperience"></div>
+              </div>
+            </div>
           </div>
-          <input type="file" id="fAadhar" accept="application/pdf"
-            onchange="handleFileSelect(this, 'aadhar')" />
-          <div class="field-hint">Format: PDF | Size: 300 KB to 4 MB</div>
-          <div class="field-error-msg" id="errAadhar"></div>
-        </div>
 
-        <div class="field-group">
-          <label>Experience Letter / Degree (PDF)<span class="req-star">*</span></label>
-          <div class="file-upload-row">
-            <button type="button" class="file-upload-btn"
-              onclick="document.getElementById('fExperience').click()">Choose File</button>
-            <span class="file-chosen-name" id="nameExperience">No file chosen</span>
-          </div>
-          <input type="file" id="fExperience" accept="application/pdf"
-            onchange="handleFileSelect(this, 'experience_doc')" />
-          <div class="field-hint">Format: PDF | Size: 300 KB to 4 MB</div>
-          <div class="field-error-msg" id="errExperience"></div>
-        </div>
+          <button type="submit" class="submit-btn" id="submitBtn">Register Employee</button>
+        </form>
 
-        <button type="submit" class="submit-btn" id="submitBtn">Register Employee</button>
-      </form>
-
-      <div class="footer-note">© 2026 Codeline.AI | All Rights Reserved</div>
+        <div class="footer-note">© 2026 CODELINE.AI — All Rights Reserved</div>
+      </div>
     </div>
   </div>
 
@@ -431,6 +589,13 @@
       experience_doc: 'nameExperience'
     };
 
+    const DROPZONE_IDS = {
+      photo:          'dzPhoto',
+      signature:      'dzSignature',
+      aadhar:         'dzAadhar',
+      experience_doc: 'dzExperience'
+    };
+
     // ---- Error helpers ----
     function showErr(id, msg) {
       const el = document.getElementById(id);
@@ -451,21 +616,27 @@
       const file  = inputEl.files && inputEl.files[0];
       const errId  = FILE_ERROR_IDS[key];
       const nameId = FILE_NAME_IDS[key];
+      const dzId   = DROPZONE_IDS[key];
+      const dz     = document.getElementById(dzId);
 
       clearErr(errId);
       selectedFiles[key] = null;
 
       if (!file) {
-        document.getElementById(nameId).textContent = 'No file chosen';
+        document.getElementById(nameId).textContent = 'Drag & drop or click to upload';
         document.getElementById(nameId).classList.remove('has-file');
+        if (dz) dz.classList.remove('has-file');
+        updateProgress();
         return;
       }
 
       if (file.size < MIN_FILE_BYTES || file.size > MAX_FILE_BYTES) {
         showErr(errId, 'File must be between 300 KB and 4 MB.');
         inputEl.value = '';
-        document.getElementById(nameId).textContent = 'No file chosen';
+        document.getElementById(nameId).textContent = 'Drag & drop or click to upload';
         document.getElementById(nameId).classList.remove('has-file');
+        if (dz) dz.classList.remove('has-file');
+        updateProgress();
         return;
       }
 
@@ -478,6 +649,7 @@
         };
         document.getElementById(nameId).textContent = file.name;
         document.getElementById(nameId).classList.add('has-file');
+        if (dz) dz.classList.add('has-file');
 
         // Image preview for photo / signature
         const thumbKey   = key.charAt(0).toUpperCase() + key.slice(1).replace('_doc', 'Doc');
@@ -487,12 +659,46 @@
           thumb.src = reader.result;
           thumb.style.display = 'block';
         }
+        updateProgress();
       };
       reader.onerror = function () {
         showErr(errId, 'Could not read this file — please try again.');
       };
       reader.readAsDataURL(file);
     }
+
+    // ---- Drag & drop wiring for dropzones ----
+    Object.keys(DROPZONE_IDS).forEach(function (key) {
+      const dz = document.getElementById(DROPZONE_IDS[key]);
+      const input = document.getElementById(
+        key === 'photo' ? 'fPhoto' :
+        key === 'signature' ? 'fSignature' :
+        key === 'aadhar' ? 'fAadhar' : 'fExperience'
+      );
+      if (!dz || !input) return;
+
+      ['dragenter', 'dragover'].forEach(function (evt) {
+        dz.addEventListener(evt, function (e) {
+          e.preventDefault(); e.stopPropagation();
+          dz.classList.add('is-dragover');
+        });
+      });
+      ['dragleave', 'dragend'].forEach(function (evt) {
+        dz.addEventListener(evt, function (e) {
+          e.preventDefault(); e.stopPropagation();
+          dz.classList.remove('is-dragover');
+        });
+      });
+      dz.addEventListener('drop', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        dz.classList.remove('is-dragover');
+        const dropped = e.dataTransfer && e.dataTransfer.files;
+        if (dropped && dropped.length) {
+          input.files = dropped;
+          handleFileSelect(input, key);
+        }
+      });
+    });
 
     // ---- Text field validators ----
     function validateField(id, errId, testFn, msg) {
@@ -541,6 +747,63 @@
       });
 
       return ok;
+    }
+
+    // ---- Live progress tracker ----
+    const REQUIRED_TEXT_FIELDS = [
+      { id: 'fName',            test: v => v.length > 0 },
+      { id: 'fDob',              test: v => v.length > 0 },
+      { id: 'fGender',           test: v => v.length > 0 },
+      { id: 'fMobile',           test: v => /^[0-9]{10}$/.test(v) },
+      { id: 'fEmail',            test: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+      { id: 'fCurrentAddress',   test: v => v.length > 0 }
+    ];
+    const REQUIRED_PROFESSIONAL_FIELDS = [
+      { id: 'fRole',            test: v => v.length > 0 },
+      { id: 'fDepartment',      test: v => v.length > 0 },
+      { id: 'fQualification',   test: v => v.length > 0 }
+    ];
+    const REQUIRED_FILE_KEYS = ['photo', 'signature', 'aadhar', 'experience_doc'];
+
+    function fieldOk(f) {
+      const el = document.getElementById(f.id);
+      if (!el) return false;
+      return f.test(el.value.trim());
+    }
+
+    function setStepState(stepId, done, active) {
+      const el = document.getElementById(stepId);
+      if (!el) return;
+      el.classList.toggle('is-done', done);
+      el.classList.toggle('is-active', active && !done);
+    }
+
+    function updateProgress() {
+      const personalDone     = REQUIRED_TEXT_FIELDS.every(fieldOk);
+      const professionalDone = REQUIRED_PROFESSIONAL_FIELDS.every(fieldOk);
+      const documentsDone    = REQUIRED_FILE_KEYS.every(k => !!selectedFiles[k]);
+
+      setStepState('stepPersonal', personalDone, !personalDone);
+      setStepState('stepProfessional', professionalDone, personalDone && !professionalDone);
+      setStepState('stepDocuments', documentsDone, personalDone && professionalDone && !documentsDone);
+
+      const totalRequired = REQUIRED_TEXT_FIELDS.length + REQUIRED_PROFESSIONAL_FIELDS.length + REQUIRED_FILE_KEYS.length;
+      const completedCount =
+        REQUIRED_TEXT_FIELDS.filter(fieldOk).length +
+        REQUIRED_PROFESSIONAL_FIELDS.filter(fieldOk).length +
+        REQUIRED_FILE_KEYS.filter(k => !!selectedFiles[k]).length;
+
+      document.getElementById('progressCount').textContent = completedCount;
+      document.getElementById('progressTotal').textContent = totalRequired;
+      document.getElementById('progressBarFill').style.width = (completedCount / totalRequired * 100) + '%';
+    }
+
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const offset = 130;
+      const top = el.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
     }
 
     // ---- Status overlay ----
@@ -640,7 +903,7 @@
       }
     }
 
-    // Inline validation on blur for mobile
+    // Inline validation on blur, plus live progress tracking
     document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('fMobile').addEventListener('blur', function () {
         validateField('fMobile', 'errMobile',
@@ -654,6 +917,16 @@
           'Enter a valid email address.'
         );
       });
+
+      const watchedIds = ['fName','fDob','fGender','fMobile','fEmail','fCurrentAddress','fRole','fDepartment','fQualification'];
+      watchedIds.forEach(function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', updateProgress);
+        el.addEventListener('change', updateProgress);
+      });
+
+      updateProgress();
     });
   </script>
 </body>

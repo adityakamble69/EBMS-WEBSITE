@@ -611,7 +611,13 @@
           // so role renaming/typos on frontend can't accidentally let an
           // employee land on the admin dashboard.
           const isAdminPanelUser = data.data.is_admin_panel_user === true;
-          const destination = isAdminPanelUser ? 'dashboard.html' : 'employee_dashboard.html';
+          const role = data.data.user.role;
+          // HR gets its own recruitment-only landing page instead of the
+          // full Admin Dashboard — super_admin/branch_manager still go
+          // to dashboard.html, employee still goes to employee_dashboard.html.
+          const destination = role === 'hr'
+            ? 'hr_dashboard.html'
+            : (isAdminPanelUser ? 'dashboard.html' : 'employee_dashboard.html');
           // Loader is already up — navigate directly rather than via
           // navigateWithLoader() (which would just re-show it).
           window.location.href = destination;

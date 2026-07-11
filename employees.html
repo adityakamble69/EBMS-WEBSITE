@@ -1287,7 +1287,7 @@
         </div>
 
         <div class="quick-actions">
-            <a class="qa-btn" href="#" onclick="toggleModal(true); return false;">
+            <a class="qa-btn" href="#" onclick="openAddEmployeeModal(); return false;">
                 <div class="qa-icon">➕</div>
                 <div class="qa-label">Add Employee</div>
             </a>
@@ -1379,18 +1379,13 @@
                         <div class="form-group">
                             <label>Department *</label>
                             <select id="formDept" required>
-                                <option value="DEPT001">Training Department</option>
-                                <option value="DEPT002">Management</option>
-                                <option value="DEPT003">Human Resources</option>
+                                <option value="">Loading departments…</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Designation Role *</label>
                             <select id="formDesignation" required>
-                                <option value="DES004">Trainer</option>
-                                <option value="DES002">Branch Manager</option>
-                                <option value="DES003">HR Executive</option>
-                                <option value="DES005">Counselor</option>
+                                <option value="">Loading designations…</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -1615,6 +1610,61 @@
         function toggleModal(isVisible) {
             document.getElementById('addEmployeeModal').style.display = isVisible ? 'flex' : 'none';
             if (!isVisible) document.getElementById('newEmployeeForm').reset();
+        }
+
+        // ✅ Add-Employee Department / Designation dropdowns used to be a
+        // hardcoded, out-of-sync <option> list. They now load live from
+        // the 'departments' / 'designations' sheets every time the modal
+        // opens, so whatever gets added there (via addDepartment /
+        // addDesignation) shows up here automatically.
+        let addEmpLookupsCache = null; // { departments: [...], designations: [...] }
+
+        function fillPlainSelect(selectEl, items, valueKey, labelFn, placeholderText) {
+            const current = selectEl.value;
+            selectEl.innerHTML = `<option value="">${placeholderText}</option>` +
+                items.map(it => `<option value="${it[valueKey]}">${labelFn(it)}</option>`).join('');
+            if (current && items.some(it => String(it[valueKey]) === String(current))) {
+                selectEl.value = current;
+            }
+        }
+
+        async function openAddEmployeeModal() {
+            toggleModal(true);
+
+            const deptSelect  = document.getElementById('formDept');
+            const desigSelect = document.getElementById('formDesignation');
+
+            if (addEmpLookupsCache) {
+                fillPlainSelect(deptSelect, addEmpLookupsCache.departments, 'department_id',
+                    d => d.name || d.department_name || d.department_id, 'Select department…');
+                fillPlainSelect(desigSelect, addEmpLookupsCache.designations, 'designation_id',
+                    d => d.name || d.designation_name || d.designation_id, 'Select designation…');
+                return;
+            }
+
+            deptSelect.innerHTML  = '<option value="">Loading departments…</option>';
+            desigSelect.innerHTML = '<option value="">Loading designations…</option>';
+
+            try {
+                const [deptRes, desigRes] = await Promise.all([
+                    fetch(`${API_URL}?action=getDepartments&token=${SESSION_TOKEN_VERIFIER}`),
+                    fetch(`${API_URL}?action=getDesignations&token=${SESSION_TOKEN_VERIFIER}`)
+                ]);
+                const [deptPayload, desigPayload] = await Promise.all([deptRes.json(), desigRes.json()]);
+
+                const departments  = deptPayload.status === 'success'  ? (deptPayload.data || [])  : [];
+                const designations = desigPayload.status === 'success' ? (desigPayload.data || []) : [];
+
+                addEmpLookupsCache = { departments, designations };
+
+                fillPlainSelect(deptSelect, departments, 'department_id',
+                    d => d.name || d.department_name || d.department_id, 'Select department…');
+                fillPlainSelect(desigSelect, designations, 'designation_id',
+                    d => d.name || d.designation_name || d.designation_id, 'Select designation…');
+            } catch (e) {
+                deptSelect.innerHTML  = '<option value="">Could not load — try again</option>';
+                desigSelect.innerHTML = '<option value="">Could not load — try again</option>';
+            }
         }
 
         function triggerSearch() {

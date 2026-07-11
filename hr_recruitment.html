@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Recruitment Tracker — Codeline.AI</title>
+  <title>HR Recruitment — Codeline.AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
@@ -14,10 +14,26 @@
 
 <body>
   <div class="top-loading-bar" id="topLoadingBar"></div>
-  <div class="sidebar-spacer"></div>
 
-  <div class="main-workspace" style="margin-left: 248px;">
-    <div class="mobile-nav-bar" onclick="openSidebar()">
+  <!-- ============================================================
+       Standalone HR top navbar — NOT connected to sidebar.html /
+       app.js's injectSidebar(). HR's recruitment section is fully
+       self-contained: just this page + hr_dashboard.html.
+       ============================================================ -->
+  <div class="hr-top-navbar">
+    <div class="hr-navbar-logo">
+      <div class="hr-navbar-logo-icon">⚡</div>
+      <div class="hr-navbar-logo-text">Codeline<span>.AI</span> <small>HR</small></div>
+    </div>
+    <div class="hr-navbar-actions">
+      <a class="hr-nav-btn" href="hr_dashboard.html">📊 Dashboard</a>
+      <a class="hr-nav-btn active" href="hr_recruitment.html">🧑‍💼 Recruitment</a>
+      <button class="hr-nav-btn logout" onclick="localStorage.clear(); window.location.href='index.html';">🚪 Logout</button>
+    </div>
+  </div>
+
+  <div class="main-workspace" style="margin-left: 0;">
+    <div class="mobile-nav-bar" style="display:none;">
       ☰ <span>Menu</span>
     </div>
 
@@ -662,6 +678,44 @@
 
   <!-- Recruitment page styles — only use style.css variables, no hardcoded colors -->
   <style>
+    /* ── Standalone HR top navbar (self-contained, no sidebar.html) ── */
+    .hr-top-navbar {
+      position: sticky; top: 0; z-index: 600;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px;
+      padding: 12px 24px;
+      background: rgba(20, 20, 23, 0.65);
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .hr-navbar-logo { display: flex; align-items: center; gap: 10px; }
+    .hr-navbar-logo-icon {
+      width: 32px; height: 32px; background: linear-gradient(135deg, #1C1C20, #2E2E34);
+      border: 1px solid var(--glass-border); border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; font-size: 15px;
+    }
+    .hr-navbar-logo-text {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px; color: var(--text-primary);
+    }
+    .hr-navbar-logo-text span { color: var(--accent-hi); font-weight: 500; }
+    .hr-navbar-logo-text small { color: var(--text-dim); font-weight: 500; font-size: 10px; margin-left: 4px; text-transform: uppercase; letter-spacing: 0.6px; }
+    .hr-navbar-actions { display: flex; align-items: center; gap: 8px; }
+    .hr-nav-btn {
+      padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+      background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-muted);
+      text-decoration: none; cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .hr-nav-btn:hover { background: var(--glass-hover); color: var(--text-primary); }
+    .hr-nav-btn.active { background: var(--glass-hover); color: var(--text-primary); border-color: var(--glass-border-hi); font-weight: 600; }
+    .hr-nav-btn.logout { color: var(--danger); }
+    .hr-nav-btn.logout:hover { background: var(--danger-dim); }
+    @media (max-width: 700px) {
+      .hr-navbar-logo-text small { display: none; }
+      .hr-nav-btn { padding: 8px 10px; font-size: 12px; }
+    }
+
     /* ── Hire Modal ── */
     .modal-overlay {
       position: fixed;

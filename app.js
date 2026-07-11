@@ -155,9 +155,34 @@ const AppSession = {
     // and the admin-side dashboard isn't meant for the employee role.
     const role = localStorage.getItem('ebms_role');
     const page = window.location.pathname.split('/').pop();
-    if (role === 'employee' && page === 'dashboard.html') {
-      window.location.href = 'employee_dashboard.html';
-    } else if (role && role !== 'employee' && page === 'employee_dashboard.html') {
+
+    if (role === 'employee') {
+      if (page !== 'employee_dashboard.html') { window.location.href = 'employee_dashboard.html'; }
+      return;
+    }
+    // Non-employee roles should never end up on the employee dashboard.
+    if (page === 'employee_dashboard.html') {
+      window.location.href = role === 'hr' ? 'hr_dashboard.html' : 'dashboard.html';
+      return;
+    }
+
+    // 🔒 HR role: locked to its own dashboard + its own standalone
+    // Recruitment page only. HR is an Admin Panel role on the backend
+    // (so its token can technically call other admin GET/POST actions),
+    // but on the frontend it should never be able to *navigate* into
+    // Employees/Salary/Branches/etc. — and it uses hr_recruitment.html
+    // (self-contained, no shared sidebar), not the admin recruitment.html.
+    const HR_ALLOWED_PAGES = ['hr_dashboard.html', 'hr_recruitment.html'];
+    if (role === 'hr') {
+      if (!HR_ALLOWED_PAGES.includes(page)) {
+        window.location.href = 'hr_dashboard.html';
+      }
+      return;
+    }
+
+    // super_admin / branch_manager use the main Admin Dashboard, not the
+    // HR-only landing page.
+    if (page === 'hr_dashboard.html') {
       window.location.href = 'dashboard.html';
     }
   }

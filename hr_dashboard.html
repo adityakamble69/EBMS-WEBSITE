@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HR Dashboard — Codeline.AI EBMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent: #A8AFC4;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --error: #F87171;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       Standalone HR top navbar — hardcoded here, NOT connected to
+       sidebar.html / app.js's injectSidebar() in any way. HR's
+       area is fully self-contained: this page + hr_recruitment.html,
+       linked only via this top navbar.
+       ============================================================ */
+    .hr-top-navbar {
+      position: sticky; top: 0; z-index: 600;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px;
+      padding: 12px 24px;
+      background: rgba(20, 20, 23, 0.65);
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .hr-navbar-logo { display: flex; align-items: center; gap: 10px; }
+    .hr-navbar-logo-icon {
+      width: 32px; height: 32px; background: linear-gradient(135deg, #1C1C20, #2E2E34);
+      border: 1px solid var(--glass-border); border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; font-size: 15px;
+    }
+    .hr-navbar-logo-text { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px; color: var(--text-primary); }
+    .hr-navbar-logo-text span { color: var(--accent-glow); font-weight: 500; }
+    .hr-navbar-logo-text small { color: var(--text-dim); font-weight: 500; font-size: 10px; margin-left: 4px; text-transform: uppercase; letter-spacing: 0.6px; }
+    .hr-navbar-actions { display: flex; align-items: center; gap: 8px; }
+    .hr-nav-btn {
+      padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+      background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-muted);
+      text-decoration: none; cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .hr-nav-btn:hover { background: var(--glass-strong); color: var(--text-primary); }
+    .hr-nav-btn.active { background: var(--glass-strong); color: var(--text-primary); border-color: rgba(255,255,255,0.18); font-weight: 600; }
+    .hr-nav-btn.logout { color: #FC9999; }
+    .hr-nav-btn.logout:hover { background: rgba(248, 113, 113, 0.12); border-color: rgba(248, 113, 113, 0.24); }
+    @media (max-width: 700px) {
+      .hr-navbar-logo-text small { display: none; }
+      .hr-nav-btn { padding: 8px 10px; font-size: 12px; }
+    }
+
+    .main { display: flex; flex-direction: column; min-height: 100vh; }
+
+    .topbar {
+      height: 60px;
+      background: rgba(20, 20, 23, 0.55);
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      padding-top: env(safe-area-inset-top);
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    @media (max-width: 600px) { .topbar { padding-left: 16px; padding-right: 16px; } }
+
+    .topbar-title { font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600; flex: 1; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .topbar-date { font-size: 12.5px; color: var(--text-dim); }
+    @media (max-width: 480px) { .topbar-date { display: none; } }
+
+    .hamburger {
+      display: none; font-size: 20px; cursor: pointer; color: var(--text-muted);
+      padding: 10px; margin: -10px; border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .hamburger:active { background: rgba(255, 255, 255, 0.08); color: var(--text-primary); }
+    @media (max-width: 768px) { .hamburger { display: block; } }
+
+    .page-content { padding: 24px; flex: 1; }
+    @media (max-width: 600px) { .page-content { padding: 16px; } }
+
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; overflow-wrap: break-word; }
+    @media (max-width: 420px) { .page-header h1 { font-size: 19px; } }
+    .page-header p { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+    .breadcrumb { font-size: 12px; color: var(--text-dim); margin-bottom: 6px; }
+    .breadcrumb span { color: var(--accent-glow); }
+
+    .role-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; background: var(--glass); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur)); border-radius: 20px;
+      font-size: 12px; color: var(--accent-glow); margin-bottom: 20px;
+    }
+
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;
+    }
+    @media (max-width: 1100px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; } }
+
+    .stat-card {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s, background 0.2s; cursor: pointer;
+    }
+    .stat-card:hover { border-color: rgba(255, 255, 255, 0.18); background: var(--glass-strong); transform: translateY(-2px); }
+    .stat-card:active { transform: translateY(0px) scale(0.98); }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .stat-card.blue::before { background: linear-gradient(90deg, #3F3F46, #A1A1AA); }
+    .stat-card.cyan::before { background: linear-gradient(90deg, #155E63, #22D3EE); }
+    .stat-card.green::before { background: linear-gradient(90deg, #065F46, #34D399); }
+    .stat-card.yellow::before { background: linear-gradient(90deg, #78350F, #FBBF24); }
+    .stat-card.purple::before { background: linear-gradient(90deg, #4C1D95, #A78BFA); }
+    .stat-card.pink::before { background: linear-gradient(90deg, #831843, #F472B6); }
+
+    .stat-row { display: flex; align-items: flex-start; justify-content: space-between; }
+    .stat-label { font-size: 12.5px; color: var(--text-dim); font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; }
+    .stat-icon {
+      width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; font-size: 18px; flex-shrink: 0; border: 1px solid var(--glass-border);
+    }
+    .stat-icon.blue { background: rgba(255, 255, 255, 0.05); }
+    .stat-icon.cyan { background: rgba(34, 211, 238, 0.10); }
+    .stat-icon.green { background: rgba(52, 211, 153, 0.10); }
+    .stat-icon.yellow { background: rgba(251, 191, 36, 0.10); }
+    .stat-icon.purple { background: rgba(167, 139, 250, 0.10); }
+    .stat-icon.pink { background: rgba(244, 114, 182, 0.10); }
+
+    .stat-value { font-family: 'Space Grotesk', sans-serif; font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .stat-change { font-size: 12px; color: var(--text-dim); }
+
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.05) 75%);
+      background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+    .skel-val { height: 36px; width: 80px; margin-bottom: 4px; }
+    .skel-text { height: 14px; width: 60%; }
+
+    .quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+    @media (max-width: 768px) { .quick-actions { grid-template-columns: 1fr; } }
+
+    .qa-btn {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur)); border-radius: var(--radius);
+      padding: 16px 14px; text-align: center; cursor: pointer; transition: all 0.18s;
+      text-decoration: none; display: block; color: inherit;
+    }
+    .qa-btn:hover { border-color: rgba(255, 255, 255, 0.18); background: var(--glass-strong); transform: translateY(-2px); }
+    .qa-icon { font-size: 22px; margin-bottom: 6px; }
+    .qa-label { font-size: 12.5px; color: var(--text-muted); font-weight: 500; }
+
+    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 900px) { .bottom-grid { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; }
+    .panel-title { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14.5px; }
+    .panel-link { font-size: 12px; color: var(--accent-glow); cursor: pointer; text-decoration: none; }
+    .panel-body { max-height: 380px; overflow-y: auto; }
+
+    .panel-full { margin-bottom: 16px; }
+
+    .stage-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); gap: 12px;
+    }
+    .stage-row:last-child { border-bottom: none; }
+    .stage-name { font-size: 13px; color: var(--text-muted); }
+    .stage-bar-wrap { flex: 1; height: 6px; background: rgba(255,255,255,0.05); border-radius: 4px; margin: 0 12px; overflow: hidden; }
+    .stage-bar { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #4C1D95, #A78BFA); }
+    .stage-count { font-size: 13px; font-weight: 600; color: var(--text-primary); min-width: 24px; text-align: right; }
+
+    .emp-row { display: flex; align-items: center; gap: 12px; padding: 10px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+    .emp-row:last-child { border-bottom: none; }
+    .emp-avatar {
+      width: 36px; height: 36px; border-radius: 50%; background: var(--glass-strong);
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+      font-weight: 600; color: var(--accent-glow); border: 1.5px solid var(--glass-border); flex-shrink: 0;
+    }
+    .emp-info { flex: 1; min-width: 0; }
+    .emp-name { font-size: 13.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .emp-role { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+    .status-pill { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; flex-shrink: 0; }
+    .pill-active { background: rgba(52, 211, 153, 0.12); color: #6EE7B7; border: 1px solid rgba(52, 211, 153, 0.2); }
+    .pill-pending { background: rgba(255, 255, 255, 0.08); color: var(--accent-glow); border: 1px solid var(--glass-border); }
+
+    #loadingOverlay {
+      position: fixed; inset: 0; background: var(--bg-base); z-index: 9999;
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      gap: 16px; transition: opacity 0.4s;
+    }
+    .loading-logo { font-size: 40px; animation: pulse 1.5s ease-in-out infinite; }
+    .loading-text { color: var(--text-muted); font-size: 13px; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: .7; } }
+  </style>
+</head>
+
+<body>
+
+  <div id="loadingOverlay">
+    <div class="loading-logo">⚡</div>
+    <div class="loading-text">HR Dashboard is loading...</div>
+  </div>
+
+  <div class="hr-top-navbar">
+    <div class="hr-navbar-logo">
+      <div class="hr-navbar-logo-icon">⚡</div>
+      <div class="hr-navbar-logo-text">Codeline<span>.AI</span> <small>HR</small></div>
+    </div>
+    <div class="hr-navbar-actions">
+      <span class="hr-nav-btn" id="navbarUserBadge" style="cursor:default;">👤 Loading…</span>
+      <a class="hr-nav-btn active" href="hr_dashboard.html">📊 Dashboard</a>
+      <a class="hr-nav-btn" href="hr_recruitment.html">🧑‍💼 Recruitment</a>
+      <button class="hr-nav-btn logout" onclick="localStorage.clear(); window.location.href='index.html';">🚪 Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">HR Dashboard</div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="topbarDate"></div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="breadcrumb">Home / <span>HR Dashboard</span></div>
+
+      <div class="page-header">
+        <h1 id="pageTitle">🧑‍💼 HR Dashboard</h1>
+        <p id="pageSubtitle">Aapka recruitment overview load ho raha hai...</p>
+      </div>
+
+      <div class="role-badge">👤 <span id="roleBadgeText">HR — Recruitment Only</span></div>
+
+      <div class="stats-grid">
+        <div class="stat-card cyan" onclick="goToRecruitment()">
+          <div class="stat-label">Total Candidates</div>
+          <div class="stat-row">
+            <div>
+              <div class="stat-value" id="stat-total"><span class="skeleton skel-val"></span></div>
+              <div class="stat-change" id="stat-total-sub"><span class="skeleton skel-text"></span></div>
+            </div>
+            <div class="stat-icon cyan">🧑‍💼</div>
+          </div>
+        </div>
+        <div class="stat-card blue" onclick="goToRecruitment()">
+          <div class="stat-label">Open Job Openings</div>
+          <div class="stat-row">
+            <div>
+              <div class="stat-value" id="stat-jobs"><span class="skeleton skel-val"></span></div>
+              <div class="stat-change" id="stat-jobs-sub"><span class="skeleton skel-text"></span></div>
+            </div>
+            <div class="stat-icon blue">💼</div>
+          </div>
+        </div>
+        <div class="stat-card yellow" onclick="goToRecruitment()">
+          <div class="stat-label">In Pipeline</div>
+          <div class="stat-row">
+            <div>
+              <div class="stat-value" id="stat-pipeline"><span class="skeleton skel-val"></span></div>
+              <div class="stat-change" id="stat-pipeline-sub"><span class="skeleton skel-text"></span></div>
+            </div>
+            <div class="stat-icon yellow">⏳</div>
+          </div>
+        </div>
+        <div class="stat-card purple" onclick="goToRecruitment()">
+          <div class="stat-label">In Interviews</div>
+          <div class="stat-row">
+            <div>
+              <div class="stat-value" id="stat-interview"><span class="skeleton skel-val"></span></div>
+              <div class="stat-change" id="stat-interview-sub"><span class="skeleton skel-text"></span></div>
+            </div>
+            <div class="stat-icon purple">🎤</div>
+          </div>
+        </div>
+        <div class="stat-card pink" onclick="goToRecruitment()">
+          <div class="stat-label">Offered</div>
+          <div class="stat-row">
+            <div>
+              <div class="stat-value" id="stat-offered"><span class="skeleton skel-val"></span></div>
+              <div class="stat-change" id="stat-offered-sub"><span class="skeleton skel-text"></span></div>
+            </div>
+            <div class="stat-icon pink">📨</div>
+          </div>
+        </div>
+        <div class="stat-card green" onclick="goToRecruitment()">
+          <div class="stat-label">Hired</div>
+          <div class="stat-row">
+            <div>
+              <div class="stat-value" id="stat-hired"><span class="skeleton skel-val"></span></div>
+              <div class="stat-change" id="stat-hired-sub"><span class="skeleton skel-text"></span></div>
+            </div>
+            <div class="stat-icon green">✅</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <a class="qa-btn" href="hr_recruitment.html">
+          <div class="qa-icon">🧑‍💼</div>
+          <div class="qa-label">Open Recruitment Tracker</div>
+        </a>
+        <a class="qa-btn" href="hr_recruitment.html">
+          <div class="qa-icon">➕</div>
+          <div class="qa-label">Move Candidates Forward</div>
+        </a>
+        <a class="qa-btn" href="hr_recruitment.html">
+          <div class="qa-icon">✅</div>
+          <div class="qa-label">Hire a Candidate</div>
+        </a>
+      </div>
+
+      <div class="panel panel-full">
+        <div class="panel-header">
+          <div class="panel-title">🎯 Pipeline Breakdown</div>
+          <a class="panel-link" href="hr_recruitment.html">Open Tracker →</a>
+        </div>
+        <div class="panel-body" id="pipelineBreakdown" style="max-height:none;">
+          <div style="padding:20px; text-align:center; color:var(--text-dim);">Loading...</div>
+        </div>
+      </div>
+
+      <div class="bottom-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">✅ Recently Hired</div>
+            <a class="panel-link" href="hr_recruitment.html">View All →</a>
+          </div>
+          <div class="panel-body" id="recentlyHired">
+            <div style="padding:20px; text-align:center; color:var(--text-dim);">Loading...</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">💼 Open Job Openings</div>
+            <a class="panel-link" href="hr_recruitment.html">View All →</a>
+          </div>
+          <div class="panel-body" id="openJobsList">
+            <div style="padding:20px; text-align:center; color:var(--text-dim);">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const cachedUser = AppSession.getUser();
+    const TOKEN = AppSession.getToken();
+
+    const STAGE_LABELS = {
+      applied: 'Applied', screening: 'Screening', hr_calling: 'HR Calling',
+      interview: 'Interview', round1: 'Round 1', round2: 'Round 2',
+      offered: 'Offered', hold: 'On Hold', hired: 'Hired', rejected: 'Rejected'
+    };
+    const STAGE_ORDER = ['applied', 'screening', 'hr_calling', 'interview', 'round1', 'round2', 'offered', 'hold', 'hired', 'rejected'];
+
+    let ALL_CANDIDATES = [];
+    let ALL_JOBS = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setUserInfo();
+      setDateInfo();
+      loadDashboard();
+      setTimeout(() => {
+        document.getElementById('loadingOverlay').style.opacity = '0';
+        setTimeout(() => document.getElementById('loadingOverlay').style.display = 'none', 400);
+      }, 600);
+    });
+
+    function setUserInfo() {
+      const greeting = getGreeting();
+      document.getElementById('pageTitle').textContent = `${greeting}, ${cachedUser.name.split(' ')[0]}! 👋`;
+      document.getElementById('pageSubtitle').innerHTML = `Aapki recruitment pipeline ka overview`;
+
+      // Top navbar user badge (this page has no sidebar to source it from)
+      document.getElementById('navbarUserBadge').textContent = `👤 ${cachedUser.name} (HR)`;
+    }
+
+    function getGreeting() {
+      const h = new Date().getHours();
+      if (h < 12) return 'Good Morning';
+      if (h < 17) return 'Good Afternoon';
+      return 'Good Evening';
+    }
+
+    function setDateInfo() {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById('topbarDate').textContent = dateStr;
+    }
+
+    function goToRecruitment() {
+      navigateWithLoader('hr_recruitment.html');
+    }
+
+    async function loadDashboard() {
+      try {
+        const [candRes, jobRes] = await Promise.all([
+          fetch(`${API_URL}?action=getCandidates&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' }),
+          fetch(`${API_URL}?action=getJobOpenings&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' })
+        ]);
+        const candData = await candRes.json();
+        const jobData = await jobRes.json();
+
+        ALL_CANDIDATES = candData.status === 'success' ? (candData.data || []) : [];
+        ALL_JOBS = jobData.status === 'success' ? (jobData.data || []) : [];
+
+        renderStats();
+        renderPipelineBreakdown();
+        renderRecentlyHired();
+        renderOpenJobs();
+      } catch (err) {
+        showToast('Network error — dashboard data load nahi ho payi.');
+      }
+    }
+
+    function countByStage(stage) {
+      return ALL_CANDIDATES.filter(c => c.stage === stage).length;
+    }
+
+    function renderStats() {
+      const total = ALL_CANDIDATES.length;
+      const openJobs = ALL_JOBS.filter(j => j.status === 'open').length;
+      const hired = countByStage('hired');
+      const rejected = countByStage('rejected');
+      const pipeline = total - hired - rejected;
+      const interview = countByStage('interview') + countByStage('round1') + countByStage('round2');
+      const offered = countByStage('offered');
+
+      setStatCard('total', total, total ? `${rejected} rejected` : 'No candidates yet');
+      setStatCard('jobs', openJobs, `${ALL_JOBS.length} total openings`);
+      setStatCard('pipeline', pipeline, 'Active in pipeline');
+      setStatCard('interview', interview, 'Interview + Round 1/2');
+      setStatCard('offered', offered, 'Awaiting confirmation');
+      setStatCard('hired', hired, 'Converted to employees');
+    }
+
+    function setStatCard(id, value, subtitle) {
+      document.getElementById('stat-' + id).textContent = value;
+      document.getElementById('stat-' + id + '-sub').textContent = subtitle;
+    }
+
+    function renderPipelineBreakdown() {
+      const wrap = document.getElementById('pipelineBreakdown');
+      const total = ALL_CANDIDATES.length || 1;
+
+      if (ALL_CANDIDATES.length === 0) {
+        wrap.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-dim);">Abhi koi candidate registered nahi hai</div>`;
+        return;
+      }
+
+      wrap.innerHTML = STAGE_ORDER.map(stage => {
+        const count = countByStage(stage);
+        const pct = Math.round((count / total) * 100);
+        return `
+          <div class="stage-row">
+            <div class="stage-name" style="min-width:90px;">${STAGE_LABELS[stage]}</div>
+            <div class="stage-bar-wrap"><div class="stage-bar" style="width:${pct}%;"></div></div>
+            <div class="stage-count">${count}</div>
+          </div>`;
+      }).join('');
+    }
+
+    function initials(name) {
+      if (!name) return '?';
+      return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    function renderRecentlyHired() {
+      const wrap = document.getElementById('recentlyHired');
+      const hired = ALL_CANDIDATES
+        .filter(c => c.stage === 'hired')
+        .slice(0, 8);
+
+      if (hired.length === 0) {
+        wrap.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-dim);">Abhi tak koi candidate hire nahi hua</div>`;
+        return;
+      }
+
+      wrap.innerHTML = hired.map(c => `
+        <div class="emp-row">
+          <div class="emp-avatar">${initials(c.name)}</div>
+          <div class="emp-info">
+            <div class="emp-name">${c.name}</div>
+            <div class="emp-role">${c.role || c.department || '—'}</div>
+          </div>
+          <span class="status-pill pill-active">Hired</span>
+        </div>
+      `).join('');
+    }
+
+    function renderOpenJobs() {
+      const wrap = document.getElementById('openJobsList');
+      const openJobs = ALL_JOBS.filter(j => j.status === 'open').slice(0, 8);
+
+      if (openJobs.length === 0) {
+        wrap.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-dim);">Koi open job opening nahi hai</div>`;
+        return;
+      }
+
+      wrap.innerHTML = openJobs.map(j => `
+        <div class="emp-row">
+          <div class="emp-avatar">💼</div>
+          <div class="emp-info">
+            <div class="emp-name">${j.title}</div>
+            <div class="emp-role">Branch: ${j.branch_id || '—'}</div>
+          </div>
+          <span class="status-pill pill-pending">Open</span>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+
+</html>
