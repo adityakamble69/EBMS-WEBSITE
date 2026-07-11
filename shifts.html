@@ -745,6 +745,19 @@
       return d.toISOString().split('T')[0];
     }
 
+    // Backend sends assignment dates as "dd-MM-yyyy" (display format, via
+    // formatDateOnly()), but the grid keys its cells as "yyyy-MM-dd" (via
+    // toDateStr(), used for the date headers and the API's from_date/to_date
+    // too). Without converting, assignMap lookups never match and every
+    // cell shows "+ Add" even when a shift is already assigned.
+    function ddmmyyyyToIso(dateStr) {
+      if (!dateStr) return dateStr;
+      const parts = String(dateStr).split('-');
+      if (parts.length !== 3) return dateStr; // already ISO or unexpected format — pass through
+      const [dd, mm, yyyy] = parts;
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
     function getVisibleRange() {
       const d = new Date(anchorDate);
       if (currentView === 'week') {
@@ -846,7 +859,7 @@
       const assignMap = {};
       rosterAssignments.forEach(a => {
         if (!assignMap[a.emp_id]) assignMap[a.emp_id] = {};
-        assignMap[a.emp_id][a.date] = a;
+        assignMap[a.emp_id][ddmmyyyyToIso(a.date)] = a;
       });
 
       // Branch scoping mirrors backend: super_admin sees all, others see own branch

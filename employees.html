@@ -366,6 +366,26 @@
             cursor: not-allowed;
         }
 
+        .scroll-sentinel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 22px 0 8px;
+            color: var(--text-dim);
+            font-size: 13px;
+            min-height: 20px;
+        }
+
+        .scroll-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--glass-border);
+            border-top-color: var(--accent-glow);
+            border-radius: 50%;
+            animation: pd-spin 0.8s linear infinite;
+        }
+
         .btn-secondary {
             background: var(--glass);
             border: 1px solid var(--glass-border);
@@ -999,7 +1019,7 @@
             gap: 8px;
         }
 
-        .pd-cal-nav button {
+        .pd-cal-nav-btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--glass-border);
             color: var(--text-primary);
@@ -1010,7 +1030,7 @@
             transition: background 0.15s;
         }
 
-        .pd-cal-nav button:hover {
+        .pd-cal-nav-btn:hover {
             background: rgba(255, 255, 255, 0.1);
         }
 
@@ -1072,6 +1092,57 @@
             outline: 2px solid var(--accent-glow);
             outline-offset: -2px;
         }
+
+        /* Present but didn't follow the shift timing (late in / early out) */
+        .pd-cal-cell.pd-cal-irregular {
+            background: rgba(168, 85, 247, 0.18);
+            color: #C084FC;
+            cursor: pointer;
+        }
+
+        .pd-cal-cell.pd-cal-irregular:hover {
+            background: rgba(168, 85, 247, 0.32);
+        }
+
+        .pd-cal-cell.pd-cal-irregular.pd-cal-weeklyoff {
+            background: linear-gradient(135deg, rgba(168, 175, 196, 0.25), rgba(168, 85, 247, 0.22));
+        }
+
+        /* No attendance record on a working day that has already passed */
+        .pd-cal-cell.pd-cal-absent {
+            background: rgba(248, 113, 113, 0.16);
+            color: var(--error);
+        }
+
+        .pd-cal-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .pd-cal-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        .pd-cal-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .pd-cal-legend-dot.present { background: var(--success); }
+        .pd-cal-legend-dot.irregular { background: #C084FC; }
+        .pd-cal-legend-dot.absent { background: var(--error); }
+        .pd-cal-legend-dot.weeklyoff { background: var(--accent-glow); }
 
         .pd-day-modal-overlay {
             position: fixed;
@@ -1164,6 +1235,39 @@
         .pd-day-modal-row.out-time .pd-day-modal-time {
             color: #60A5FA;
         }
+
+        .pd-day-modal-row.shift-time .pd-day-modal-time {
+            color: var(--accent-glow);
+            font-size: 16px;
+        }
+
+        /* Small "Admin-only" tag next to the Shift Timing card label */
+        .pd-admin-only-tag {
+            display: inline-block;
+            margin-left: 6px;
+            font-size: 9.5px;
+            font-weight: 600;
+            letter-spacing: 0;
+            text-transform: none;
+            color: var(--text-dim);
+            cursor: default;
+        }
+
+        /* Calendar cell marker for a day with an admin shift override —
+           a small dot in the corner, layered on top of whatever
+           present/absent/irregular colour the cell already has. */
+        .pd-cal-cell.pd-cal-hasshift::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-glow);
+        }
+
+        .pd-cal-legend-dot.hasshift { background: var(--accent-glow); }
     </style>
 </head>
 
@@ -1204,12 +1308,12 @@
         <div class="filter-deck">
             <input type="text" id="filterSearch" class="search-input-box" placeholder="Name, ID, or Email to search..."
                 oninput="triggerSearch()" />
-            <select id="filterBranch" class="dropdown-select" onchange="loadEmployeesData()">
+            <select id="filterBranch" class="dropdown-select" onchange="resetAndLoad()">
                 <option value="">All Branches</option>
                 <option value="BR001">Branch 1 (Nagpur Main)</option>
                 <option value="BR002">Branch 2 (Dharampeth)</option>
             </select>
-            <select id="filterStatus" class="dropdown-select" onchange="loadEmployeesData()">
+            <select id="filterStatus" class="dropdown-select" onchange="resetAndLoad()">
                 <option value="active">Active Status</option>
                 <option value="inactive">Inactive Status</option>
                 <option value="">All Status Records</option>
@@ -1239,11 +1343,12 @@
         </div>
 
         <div class="pagination-bar">
-            <div id="paginationInfo">Showing 0-0 of 0 records</div>
-            <div style="display:flex; gap:8px;">
-                <button id="btnPrevPage" class="btn-nav" onclick="changePage(-1)" disabled>Previous</button>
-                <button id="btnNextPage" class="btn-nav" onclick="changePage(1)" disabled>Next</button>
-            </div>
+            <div id="paginationInfo">Showing 0 of 0 employees</div>
+        </div>
+
+        <div id="scrollSentinel" class="scroll-sentinel">
+            <div class="scroll-spinner" id="scrollSpinner" style="display:none;"></div>
+            <span id="scrollSentinelText"></span>
         </div>
     </div>
 
@@ -1369,6 +1474,10 @@
                 <label>Out-Time</label>
                 <div class="pd-day-modal-time" id="pdDayModalOut">—</div>
             </div>
+            <div class="pd-day-modal-row shift-time" id="pdDayModalShiftRow">
+                <label>Shift Assigned (by Admin)</label>
+                <div class="pd-day-modal-time" id="pdDayModalShift">—</div>
+            </div>
         </div>
     </div>
 
@@ -1463,8 +1572,45 @@
         let CURRENT_PAGE_TRACKER = 1;
         let TOTAL_PAGES_LIMIT = 1;
         let DEBOUNCE_TIMER_HOOK;
+        let IS_LOADING_PAGE = false;
+        let LOADED_EMPLOYEE_COUNT = 0;
 
-        document.addEventListener('DOMContentLoaded', () => { loadEmployeesData(); });
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEmployeesData();
+            setupInfiniteScroll();
+        });
+
+        window.addEventListener('resize', () => {
+            clearTimeout(window._resizeLoadCheck);
+            window._resizeLoadCheck = setTimeout(checkAndLoadMoreIfNeeded, 250);
+        });
+
+        function setupInfiniteScroll() {
+            const sentinel = document.getElementById('scrollSentinel');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !IS_LOADING_PAGE && CURRENT_PAGE_TRACKER < TOTAL_PAGES_LIMIT) {
+                        CURRENT_PAGE_TRACKER += 1;
+                        loadEmployeesData({ append: true });
+                    }
+                });
+            }, { rootMargin: '200px' });
+            observer.observe(sentinel);
+        }
+
+        function checkAndLoadMoreIfNeeded() {
+            if (IS_LOADING_PAGE) return;
+            if (CURRENT_PAGE_TRACKER >= TOTAL_PAGES_LIMIT) return;
+            // No scrollbar yet on the page -> the sentinel is already sitting
+            // inside the viewport, so a scroll event will never fire on its
+            // own. Keep pulling pages until the list is tall enough to scroll,
+            // or until every page has been loaded.
+            const noScrollbarYet = document.documentElement.scrollHeight <= window.innerHeight + 4;
+            if (noScrollbarYet) {
+                CURRENT_PAGE_TRACKER += 1;
+                loadEmployeesData({ append: true });
+            }
+        }
 
         function toggleModal(isVisible) {
             document.getElementById('addEmployeeModal').style.display = isVisible ? 'flex' : 'none';
@@ -1473,39 +1619,74 @@
 
         function triggerSearch() {
             clearTimeout(DEBOUNCE_TIMER_HOOK);
-            DEBOUNCE_TIMER_HOOK = setTimeout(() => { CURRENT_PAGE_TRACKER = 1; loadEmployeesData(); }, 400);
+            DEBOUNCE_TIMER_HOOK = setTimeout(() => { resetAndLoad(); }, 400);
         }
 
-        async function loadEmployeesData() {
+        function resetAndLoad() {
+            CURRENT_PAGE_TRACKER = 1;
+            TOTAL_PAGES_LIMIT = 1;
+            loadEmployeesData();
+        }
+
+        async function loadEmployeesData(opts = {}) {
+            const append = !!opts.append;
             const searchVal = encodeURIComponent(document.getElementById('filterSearch').value);
             const branchVal = document.getElementById('filterBranch').value;
             const statusVal = document.getElementById('filterStatus').value;
 
             const TARGET_API_URL_CONSTRUCT = `${API_URL}?action=getEmployees&token=${SESSION_TOKEN_VERIFIER}&page=${CURRENT_PAGE_TRACKER}&limit=10&search=${searchVal}&branch_id=${branchVal}&status=${statusVal}`;
 
+            IS_LOADING_PAGE = true;
+            setSentinelState(append ? 'loading' : 'hidden');
+            if (!append) {
+                document.getElementById('employeeRowsContainer').innerHTML =
+                    `<tr><td colspan="7" style="padding: 32px; text-align: center; color: var(--text-dim);">Directory is loading... Please wait.</td></tr>`;
+            }
+
             try {
                 const res = await fetch(TARGET_API_URL_CONSTRUCT);
                 const payload = await res.json();
 
                 if (payload.status === 'success') {
-                    renderDataMatrixRows(payload.data.data);
-                    adjustPaginationUINode(payload.data);
+                    renderDataMatrixRows(payload.data.data, append);
+                    adjustPaginationUINode(payload.data, append);
                 } else {
                     showToast(payload.message || 'Error executing request dataset.');
+                    if (append) CURRENT_PAGE_TRACKER -= 1; // allow retry on next scroll
                 }
             } catch (err) {
                 showToast('Critical interface connection fallback.');
+                if (append) CURRENT_PAGE_TRACKER -= 1;
+            } finally {
+                IS_LOADING_PAGE = false;
             }
         }
 
-        function renderDataMatrixRows(recordsArray) {
+        function setSentinelState(state) {
+            const spinner = document.getElementById('scrollSpinner');
+            const text = document.getElementById('scrollSentinelText');
+            if (state === 'loading') {
+                spinner.style.display = '';
+                text.textContent = 'Loading more employees…';
+            } else if (state === 'done') {
+                spinner.style.display = 'none';
+                text.textContent = 'All employees loaded';
+            } else {
+                spinner.style.display = 'none';
+                text.textContent = '';
+            }
+        }
+
+        function renderDataMatrixRows(recordsArray, append = false) {
             const container = document.getElementById('employeeRowsContainer');
             if (!recordsArray || recordsArray.length === 0) {
-                container.innerHTML = `<tr><td colspan="7" style="padding: 24px; text-align: center; color: var(--text-dim);">No active matching logs found.</td></tr>`;
+                if (!append) {
+                    container.innerHTML = `<tr><td colspan="7" style="padding: 24px; text-align: center; color: var(--text-dim);">No active matching logs found.</td></tr>`;
+                }
                 return;
             }
 
-            container.innerHTML = recordsArray.map(emp => {
+            const rowsHtml = recordsArray.map(emp => {
                 const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'EE';
                 return `
         <tr>
@@ -1527,19 +1708,34 @@
         </tr>
       `;
             }).join('');
+
+            if (append) {
+                container.insertAdjacentHTML('beforeend', rowsHtml);
+            } else {
+                container.innerHTML = rowsHtml;
+            }
         }
 
-        function adjustPaginationUINode(pag) {
+        function adjustPaginationUINode(pag, append = false) {
             CURRENT_PAGE_TRACKER = pag.page;
             TOTAL_PAGES_LIMIT = pag.totalPages;
-            document.getElementById('paginationInfo').textContent = `Showing page ${CURRENT_PAGE_TRACKER} of ${TOTAL_PAGES_LIMIT || 1} (${pag.total} total employees)`;
-            document.getElementById('btnPrevPage').disabled = CURRENT_PAGE_TRACKER <= 1;
-            document.getElementById('btnNextPage').disabled = CURRENT_PAGE_TRACKER >= TOTAL_PAGES_LIMIT;
-        }
+            LOADED_EMPLOYEE_COUNT = append
+                ? LOADED_EMPLOYEE_COUNT + (pag.data ? pag.data.length : 0)
+                : (pag.data ? pag.data.length : 0);
+            document.getElementById('paginationInfo').textContent =
+                `Showing ${LOADED_EMPLOYEE_COUNT} of ${pag.total} employees`;
 
-        function changePage(step) {
-            CURRENT_PAGE_TRACKER += step;
-            loadEmployeesData();
+            if (CURRENT_PAGE_TRACKER >= TOTAL_PAGES_LIMIT) {
+                setSentinelState(LOADED_EMPLOYEE_COUNT > 0 ? 'done' : 'hidden');
+            } else {
+                setSentinelState('hidden');
+                // If the page doesn't scroll yet (short list, big screen), the
+                // sentinel is already visible and a real scroll event will never
+                // fire to trigger the next load. Proactively fetch the next
+                // page in that case until either the list overflows the
+                // viewport (so genuine scrolling takes over) or data runs out.
+                requestAnimationFrame(checkAndLoadMoreIfNeeded);
+            }
         }
 
         async function submitEmployeeData(e) {
@@ -1582,18 +1778,25 @@
         let pdCacheData = null;
         let pdDepartmentsMap = {};
         let pdDesignationsMap = {};
+        let pdShiftTemplatesList = [];
+        let pdShiftTemplatesMap = {};
         let pdLookupsLoaded = false;
         let pdActiveTab = 'profile';
         let pdAttendanceLoaded = false;
         let pdAttendanceCache = [];
         let pdTasksLoaded = false;
         let pdTasksCache = [];
+        // Shift roster (assigned by admin from shifts.html) — read-only here.
+        let pdShiftRosterLoaded = false;
+        let pdShiftRosterCache = [];
 
         function openProfileDrawer(empId) {
             pdCurrentEmpId = empId;
             pdActiveTab = 'profile';
             pdAttendanceLoaded = false;
             pdTasksLoaded = false;
+            pdShiftRosterLoaded = false;
+            pdShiftRosterCache = [];
             pdCalYear = null;
             pdCalMonth = null;
             document.getElementById('profileDrawerOverlay').classList.add('open');
@@ -1630,12 +1833,14 @@
 
         async function loadProfileLookups() {
             try {
-                const [deptRes, desigRes] = await Promise.all([
+                const [deptRes, desigRes, shiftRes] = await Promise.all([
                     fetch(`${API_URL}?action=getDepartments&token=${SESSION_TOKEN_VERIFIER}`),
-                    fetch(`${API_URL}?action=getDesignations&token=${SESSION_TOKEN_VERIFIER}`)
+                    fetch(`${API_URL}?action=getDesignations&token=${SESSION_TOKEN_VERIFIER}`),
+                    fetch(`${API_URL}?action=getShifts&token=${SESSION_TOKEN_VERIFIER}`)
                 ]);
                 const deptPayload = await deptRes.json();
                 const desigPayload = await desigRes.json();
+                const shiftPayload = await shiftRes.json();
 
                 if (deptPayload.status === 'success') {
                     (deptPayload.data || []).forEach(d => {
@@ -1646,6 +1851,11 @@
                     (desigPayload.data || []).forEach(d => {
                         pdDesignationsMap[d.designation_id] = d.name || d.designation_name || d.designation_id;
                     });
+                }
+                if (shiftPayload.status === 'success') {
+                    pdShiftTemplatesList = shiftPayload.data || [];
+                    pdShiftTemplatesMap = {};
+                    pdShiftTemplatesList.forEach(s => { pdShiftTemplatesMap[s.shift_id] = s; });
                 }
                 pdLookupsLoaded = true;
                 if (pdCacheData) renderProfileDrawer(pdCacheData);
@@ -1672,6 +1882,17 @@
             const d = new Date(value);
             if (isNaN(d.getTime())) return String(value);
             return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        // Human-readable label for an employee's standard/default shift —
+        // this is the one "proper" shift assigned to them (Morning/
+        // Afternoon/Evening etc., from shifts.html templates), not a
+        // date-specific override. Only Admin/HR can set this.
+        function pdShiftLabel(defaultShiftId) {
+            if (!defaultShiftId) return 'Not set';
+            const tmpl = pdShiftTemplatesMap[defaultShiftId];
+            if (!tmpl) return 'Not set';
+            return `${tmpl.shift_name} (${tmpl.start_time || '—'}–${tmpl.end_time || '—'})`;
         }
 
         function renderProfileDrawer(node) {
@@ -1765,6 +1986,14 @@
                                         <option value="Intern">Intern</option>
                                     </select>
                                 </div>
+                                <div class="pd-field">
+                                    <label>Shift <span class="pd-admin-only-tag" title="This is the employee's regular/standard shift — set by Admin/HR here">🔒 Admin-only</span></label>
+                                    <div class="pd-value" id="pdLblShift">${pdShiftLabel(node.default_shift_id)}</div>
+                                    <select id="pdInputShift" class="pd-input">
+                                        <option value="">Not set</option>
+                                        ${pdShiftTemplatesList.map(s => `<option value="${s.shift_id}" ${String(node.default_shift_id) === String(s.shift_id) ? 'selected' : ''}>${s.shift_name} (${s.start_time || '—'}–${s.end_time || '—'})</option>`).join('')}
+                                    </select>
+                                </div>
                                 <div class="pd-field full">
                                     <label>Mobile</label>
                                     <div class="pd-value" id="pdLblMobile">${node.mobile || '—'}</div>
@@ -1821,6 +2050,7 @@
                 department_id: document.getElementById('pdInputDepartment').value,
                 designation_id: document.getElementById('pdInputDesignation').value,
                 employment_type: document.getElementById('pdInputEmploymentType').value,
+                default_shift_id: document.getElementById('pdInputShift').value,
                 mobile: document.getElementById('pdInputMobile').value,
                 address: document.getElementById('pdInputAddress').value
             };
@@ -1878,6 +2108,39 @@
         // and handleGetAttendance() only knows how to filter by ?email=
         // (see appscript_attendance.gs). So we resolve+pass the employee's
         // email from the cached profile instead of emp_id.
+        // Returns "yyyy-MM-dd" for a JS Date, in local time (matches what
+        // getShiftRoster's from_date/to_date params expect).
+        function pdIsoDate(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${dd}`;
+        }
+
+        // Shift roster is admin-assigned only (shifts.html, super_admin-locked
+        // on the backend) — this profile drawer only ever READS it, never
+        // writes it. Range: 6 months back to 6 months ahead of today, so both
+        // past history and any future-dated assignments show up without
+        // needing a refetch on every calendar month navigation.
+        async function fetchPdShiftRoster(empId) {
+            const now = new Date();
+            const from = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+            const to = new Date(now.getFullYear(), now.getMonth() + 7, 0);
+            try {
+                const res = await fetch(`${API_URL}?action=getShiftRoster&token=${SESSION_TOKEN_VERIFIER}&emp_id=${encodeURIComponent(empId)}&from_date=${pdIsoDate(from)}&to_date=${pdIsoDate(to)}`);
+                const payload = await res.json();
+                if (payload.status === 'success') {
+                    pdShiftRosterCache = payload.data || [];
+                } else {
+                    pdShiftRosterCache = [];
+                }
+            } catch (err) {
+                pdShiftRosterCache = [];
+            } finally {
+                pdShiftRosterLoaded = true;
+            }
+        }
+
         async function fetchPdAttendance(empId) {
             const body = document.getElementById('pdTabAttendance');
             body.innerHTML = `<div class="pd-loading-state"><div class="pd-spinner"></div>Loading attendance…</div>`;
@@ -1887,8 +2150,11 @@
                 return;
             }
             try {
-                const res = await fetch(`${API_URL}?action=getAttendance&token=${SESSION_TOKEN_VERIFIER}&email=${encodeURIComponent(email)}&limit=90`);
-                const payload = await res.json();
+                const [attRes] = await Promise.all([
+                    fetch(`${API_URL}?action=getAttendance&token=${SESSION_TOKEN_VERIFIER}&email=${encodeURIComponent(email)}&limit=90`),
+                    fetchPdShiftRoster(empId)
+                ]);
+                const payload = await attRes.json();
                 if (payload.status === 'success') {
                     pdAttendanceLoaded = true;
                     pdAttendanceCache = (payload.data && payload.data.data) || [];
@@ -1947,6 +2213,56 @@
             return `${dd}-${mm}-${year}`;
         }
 
+        // Shift roster rows already arrive keyed "dd-MM-yyyy" (formatDateOnly
+        // on the backend) — same format pdDateKey() produces, so cells can
+        // look assignments up directly without re-parsing dates.
+        function pdBuildShiftMap(roster) {
+            const map = {};
+            (roster || []).forEach(a => {
+                if (!a.date) return;
+                map[a.date] = {
+                    shiftName: a.shift_name || 'Unknown Shift',
+                    startTime: a.start_time || '',
+                    endTime: a.end_time || ''
+                };
+            });
+            return map;
+        }
+
+        // ── Day status colouring rules ──────────────────────────────
+        // Shift is 9:00 AM – 6:00 PM (matches the "Shift Timing" summary
+        // card above). PD_GRACE_MIN is how many minutes of late-in /
+        // early-out are still tolerated before a present day is flagged
+        // as "irregular" instead of a clean "present".
+        const PD_SHIFT_START_MIN = 9 * 60;   // 09:00
+        const PD_SHIFT_END_MIN = 18 * 60;    // 18:00
+        const PD_GRACE_MIN = 15;
+
+        function pdTimeToMinutes(t) {
+            if (!t) return null;
+            const [h, m] = String(t).split(':').map(Number);
+            if (isNaN(h) || isNaN(m)) return null;
+            return h * 60 + m;
+        }
+
+        // Returns 'present' | 'irregular' | 'absent' | null
+        // (null = nothing to show yet, e.g. a future day)
+        function pdDayStatus(record, isWeeklyOff, isFuture, isToday) {
+            if (record) {
+                const inMin = pdTimeToMinutes(record.inTime);
+                const outMin = pdTimeToMinutes(record.outTime);
+                const lateIn = inMin !== null && inMin > PD_SHIFT_START_MIN + PD_GRACE_MIN;
+                const earlyOut = outMin !== null && outMin < PD_SHIFT_END_MIN - PD_GRACE_MIN;
+                // Missing out-time on a past day (not today) means the
+                // employee never punched out — flag it. On today's date
+                // it just means they're still checked in, so don't flag.
+                const missingPunch = inMin === null || (outMin === null && !isToday);
+                return (lateIn || earlyOut || missingPunch) ? 'irregular' : 'present';
+            }
+            if (isWeeklyOff || isFuture) return null;
+            return 'absent';
+        }
+
         function renderPdAttendance(logs) {
             const body = document.getElementById('pdTabAttendance');
             const attMap = pdBuildAttendanceMap(logs);
@@ -1969,13 +2285,33 @@
 
             const node = pdCacheData || {};
             const weeklyOffDay = node.weekly_off || '';
+            const shiftMap = pdBuildShiftMap(pdShiftRosterCache);
+
+            // "Shift Timing" card headline = the employee's PROPER/standard
+            // shift (default_shift_id, set by Admin/HR on the Profile tab) —
+            // this is the answer to "what shift is this person on", always
+            // visible regardless of any given day's punches.
+            // If today happens to have a date-specific override assigned
+            // from the Shift Roster (shifts.html), that's called out as a
+            // secondary note — it does NOT replace the proper shift.
+            const defaultShiftTmpl = node.default_shift_id ? pdShiftTemplatesMap[node.default_shift_id] : null;
+            const todayKey = pdDateKey(new Date().getDate(), new Date().getMonth(), new Date().getFullYear());
+            const todayOverride = shiftMap[todayKey];
+
+            const shiftValueHtml = defaultShiftTmpl
+                ? `${defaultShiftTmpl.start_time || '—'} – ${defaultShiftTmpl.end_time || '—'}`
+                : 'Not set';
+            let shiftSubHtml = defaultShiftTmpl ? defaultShiftTmpl.shift_name : 'Ask Admin to assign a shift';
+            if (todayOverride && (!defaultShiftTmpl || todayOverride.shiftName !== defaultShiftTmpl.shift_name)) {
+                shiftSubHtml += ` · Today overridden: ${todayOverride.shiftName}`;
+            }
 
             body.innerHTML = `
                 <div class="pd-att-summary-row">
                     <div class="pd-att-summary-card">
-                        <label>Shift Timing</label>
-                        <div class="pd-att-summary-value">9:00 AM – 6:00 PM</div>
-                        <div class="pd-att-summary-sub">Morning Shift</div>
+                        <label>Shift Timing <span class="pd-admin-only-tag" title="Only Admin/HR can assign or change this">🔒 Admin-only</span></label>
+                        <div class="pd-att-summary-value">${shiftValueHtml}</div>
+                        <div class="pd-att-summary-sub">${shiftSubHtml}</div>
                     </div>
                     <div class="pd-att-summary-card">
                         <label>Weekly Off</label>
@@ -1990,17 +2326,25 @@
                 </div>
                 <div class="pd-cal-card">
                     <div class="pd-cal-header">
-                        <button type="button" onclick="pdCalNav(-1)">◀ Prev</button>
+                        <button type="button" class="pd-cal-nav-btn" onclick="pdCalNav(-1)">◀ Prev</button>
                         <div class="pd-cal-title" id="pdCalTitle"></div>
-                        <button type="button" onclick="pdCalNav(1)">Next ▶</button>
+                        <button type="button" class="pd-cal-nav-btn" onclick="pdCalNav(1)">Next ▶</button>
                     </div>
                     <div class="pd-cal-grid" id="pdCalGrid"></div>
+                    <div class="pd-cal-legend">
+                        <div class="pd-cal-legend-item"><span class="pd-cal-legend-dot present"></span>Present</div>
+                        <div class="pd-cal-legend-item"><span class="pd-cal-legend-dot irregular"></span>Irregular Timing</div>
+                        <div class="pd-cal-legend-item"><span class="pd-cal-legend-dot absent"></span>Absent</div>
+                        <div class="pd-cal-legend-item"><span class="pd-cal-legend-dot weeklyoff"></span>Weekly Off</div>
+                        <div class="pd-cal-legend-item"><span class="pd-cal-legend-dot hasshift"></span>Shift Override</div>
+                    </div>
                 </div>`;
 
-            // Stash the map/weekly-off on window-scope vars so nav clicks
+            // Stash the maps/weekly-off on window-scope vars so nav clicks
             // (which only re-run the grid, not this whole innerHTML swap)
             // can reuse them without re-fetching.
             window._pdAttMap = attMap;
+            window._pdShiftMap = shiftMap;
             window._pdWeeklyOffDay = weeklyOffDay;
             pdRenderCalendarGrid();
         }
@@ -2014,6 +2358,7 @@
 
         function pdRenderCalendarGrid() {
             const attMap = window._pdAttMap || {};
+            const shiftMap = window._pdShiftMap || {};
             const weeklyOffDay = window._pdWeeklyOffDay || '';
             const year = pdCalYear, month = pdCalMonth;
 
@@ -2027,23 +2372,40 @@
             let cells = PD_WEEKDAY_NAMES.map(d => `<div class="pd-cal-daylabel">${d.slice(0, 3)}</div>`).join('');
             for (let i = 0; i < firstDow; i++) cells += `<div class="pd-cal-cell pd-cal-empty"></div>`;
 
+            const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
             let monthMinutes = 0;
             for (let day = 1; day <= daysInMonth; day++) {
                 const dow = new Date(year, month, day).getDay();
                 const key = pdDateKey(day, month, year);
                 const record = attMap[key];
+                const shiftAssignment = shiftMap[key];
                 const isWeeklyOff = weeklyOffDay && PD_WEEKDAY_NAMES[dow] === weeklyOffDay;
                 const isToday = isCurrentMonth && today.getDate() === day;
+                const isFuture = new Date(year, month, day) > todayDateOnly;
+
+                const status = pdDayStatus(record, isWeeklyOff, isFuture, isToday);
+
                 let cls = 'pd-cal-cell';
                 if (isWeeklyOff) cls += ' pd-cal-weeklyoff';
-                if (record) cls += ' pd-cal-present';
+                if (status === 'present') cls += ' pd-cal-present';
+                if (status === 'irregular') cls += ' pd-cal-irregular';
+                if (status === 'absent') cls += ' pd-cal-absent';
                 if (isToday) cls += ' pd-cal-today';
+                // A day with an admin-assigned shift override gets a marker
+                // even if it's a future day with no attendance yet — this is
+                // what surfaces "admin gave this intern a different shift on
+                // this date" when the day is clicked.
+                if (shiftAssignment) cls += ' pd-cal-hasshift';
 
                 if (record) {
                     monthMinutes += pdMinutesBetween(record.inTime, record.outTime);
                 }
 
-                const clickAttr = record ? `onclick="pdOpenDayModal('${key}')"` : '';
+                // Clickable if there's either an attendance record OR a shift
+                // assignment for the day — so a future shift-only day (no
+                // punch yet) can still be opened to see which shift was given.
+                const clickAttr = (record || shiftAssignment) ? `onclick="pdOpenDayModal('${key}')"` : '';
                 cells += `<div class="${cls}" ${clickAttr}>${day}</div>`;
             }
 
@@ -2066,12 +2428,27 @@
 
         function pdOpenDayModal(key) {
             const record = (window._pdAttMap || {})[key];
+            const shiftAssignment = (window._pdShiftMap || {})[key];
             const parts = key.split('-'); // dd-MM-yyyy
             const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
             const title = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('pdDayModalTitle').textContent = title;
             document.getElementById('pdDayModalIn').textContent = (record && record.inTime) ? record.inTime : '—';
             document.getElementById('pdDayModalOut').textContent = (record && record.outTime) ? record.outTime : 'Still In';
+
+            // Shift row: only shows what the admin actually assigned for
+            // THIS specific date via the Shift Roster — never a guessed
+            // default. If nothing was assigned, it says so plainly.
+            const shiftRow = document.getElementById('pdDayModalShiftRow');
+            const shiftEl = document.getElementById('pdDayModalShift');
+            if (shiftAssignment) {
+                shiftEl.textContent = `${shiftAssignment.shiftName} (${shiftAssignment.startTime || '—'} – ${shiftAssignment.endTime || '—'})`;
+                shiftRow.style.display = '';
+            } else {
+                shiftEl.textContent = 'No shift assigned';
+                shiftRow.style.display = '';
+            }
+
             document.getElementById('pdDayModalOverlay').classList.add('open');
         }
 

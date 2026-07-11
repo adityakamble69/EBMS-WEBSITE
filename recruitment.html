@@ -77,9 +77,21 @@
         placeholder="🔍  Naam, mobile, role se search karein…" oninput="filterAndRender()" />
     </div>
 
-    <!-- Pipeline Board -->
-    <div class="pipeline-board" id="pipelineBoard">
-      <!-- filled by renderSkeletonBoard() on load -->
+    <!-- Candidates Table -->
+    <div class="candidates-table-wrap">
+      <table class="candidates-table">
+        <thead>
+          <tr>
+            <th>Naam</th>
+            <th>Details</th>
+            <th>Stage</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="candidatesTableBody">
+          <!-- filled by renderSkeletonBoard() / renderPipeline() -->
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -134,23 +146,21 @@
     let allCandidates = [];
     let activeCandidateId = null;
 
-    // Column labels used both by the skeleton loader and the real board,
-    // so the layout doesn't jump when real data replaces the skeleton.
-    const PIPELINE_COLUMNS = [
-      'Applied', 'Screening', 'HR Calling', 'Interview',
-      'Round 1', 'Round 2', 'Offered', 'Hold', 'Hired / Rejected'
+    // Order in which candidates are listed in the table (pipeline order,
+    // final stages at the bottom).
+    const STAGE_ORDER = [
+      'applied', 'screening', 'hr_calling', 'interview',
+      'round1', 'round2', 'offered', 'hold', 'hired', 'rejected'
     ];
 
     function renderSkeletonBoard() {
-      return PIPELINE_COLUMNS.map(label => `
-        <div class="pipeline-col">
-          <div class="pipeline-col-head">
-            <span class="skeleton-bar skeleton-title"></span>
-            <span class="skeleton-bar skeleton-count"></span>
-          </div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-        </div>`).join('');
+      return Array.from({ length: 6 }).map(() => `
+        <tr class="skeleton-row">
+          <td><span class="skeleton-bar" style="width:140px"></span></td>
+          <td><span class="skeleton-bar" style="width:64px"></span></td>
+          <td><span class="skeleton-bar" style="width:80px"></span></td>
+          <td><span class="skeleton-bar" style="width:110px"></span></td>
+        </tr>`).join('');
     }
 
     function setRefreshLoading(isLoading) {
@@ -171,7 +181,7 @@
     async function loadCandidates() {
       setRefreshLoading(true);
       setStatsLoading(true);
-      document.getElementById('pipelineBoard').innerHTML = renderSkeletonBoard();
+      document.getElementById('candidatesTableBody').innerHTML = renderSkeletonBoard();
       try {
         const res = await fetch(
           `${API_URL}?action=getCandidates&token=${TOKEN}&_ts=${Date.now()}`,
@@ -196,11 +206,13 @@
     }
 
     function renderBoardError(message) {
-      document.getElementById('pipelineBoard').innerHTML = `
-        <div class="rec-loading" style="grid-column:1/-1;color:var(--danger);flex-direction:column;gap:10px">
-          <span>${message}</span>
-          <button class="btn-action" onclick="loadCandidates()">↻ Retry</button>
-        </div>`;
+      document.getElementById('candidatesTableBody').innerHTML = `
+        <tr><td colspan="4">
+          <div class="rec-loading" style="color:var(--danger);flex-direction:column;gap:10px">
+            <span>${message}</span>
+            <button class="btn-action" onclick="loadCandidates()">↻ Retry</button>
+          </div>
+        </td></tr>`;
     }
 
     function updateStats() {
@@ -230,37 +242,18 @@
     }
 
     function renderPipeline(candidates) {
-      const board = document.getElementById('pipelineBoard');
-      const cols = [
-        { key: 'applied', label: 'Applied', cls: 'col-applied' },
-        { key: 'screening', label: 'Screening', cls: 'col-screening' },
-        { key: 'hr_calling', label: 'HR Calling', cls: 'col-hr_calling' },
-        { key: 'interview', label: 'Interview', cls: 'col-interview' },
-        { key: 'round1', label: 'Round 1', cls: 'col-round1' },
-        { key: 'round2', label: 'Round 2', cls: 'col-round2' },
-        { key: 'offered', label: 'Offered', cls: 'col-offered' },
-        { key: 'hold', label: 'Hold', cls: 'col-hold' },
-        { key: 'final', label: 'Hired / Rejected', cls: 'col-final' }
-      ];
-      board.innerHTML = cols.map(col => {
-        const list = col.key === 'final'
-          ? candidates.filter(c => c.stage === 'hired' || c.stage === 'rejected')
-          : candidates.filter(c => c.stage === col.key);
-        const cards = list.length === 0
-          ? '<div class="col-empty-hint">Koi candidate nahi hai</div>'
-          : list.map(c => renderCard(c)).join('');
-        return `
-          <div class="pipeline-col ${col.cls}">
-            <div class="pipeline-col-head">
-              <span class="col-title">${col.label}</span>
-              <span class="col-count">${list.length}</span>
-            </div>
-            ${cards}
-          </div>`;
-      }).join('');
+      const tbody = document.getElementById('candidatesTableBody');
+      if (!candidates.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="table-empty-hint">Koi candidate nahi mila</td></tr>`;
+        return;
+      }
+      const sorted = [...candidates].sort(
+        (a, b) => STAGE_ORDER.indexOf(a.stage) - STAGE_ORDER.indexOf(b.stage)
+      );
+      tbody.innerHTML = sorted.map(c => renderTableRow(c)).join('');
     }
 
-    function renderCard(c) {
+    function renderTableRow(c) {
       const isFinal = c.stage === 'hired' || c.stage === 'rejected';
       const avatarHtml = c.photo_url
         ? `<img class="c-avatar" src="${c.photo_url}" alt="${c.name}" onerror="this.style.display='none'" />`
@@ -271,41 +264,37 @@
         const nl = NEXT_LABEL[c.stage];
         const extra = EXTRA_ACTION[c.stage];
         const extraBtn = extra
-          ? `<button class="btn-move btn-hold" onclick="event.stopPropagation(); moveStage('${c.candidate_id}','${extra.stage}')">${extra.label}</button>`
+          ? `<button class="btn-move btn-hold" onclick="moveStage('${c.candidate_id}','${extra.stage}')">${extra.label}</button>`
           : '';
         actionsHtml = `
-          <div class="c-actions">
-            <button class="btn-view" onclick="event.stopPropagation(); openDrawer('${c.candidate_id}')">Details</button>
-            <button class="btn-move" onclick="event.stopPropagation(); moveStage('${c.candidate_id}','${ns}')">${nl}</button>
-            ${extraBtn}
-            <button class="btn-move btn-reject" onclick="event.stopPropagation(); moveStage('${c.candidate_id}','rejected')">✕ Reject</button>
-          </div>`;
+          <button class="btn-move" onclick="moveStage('${c.candidate_id}','${ns}')">${nl}</button>
+          ${extraBtn}
+          <button class="btn-move btn-reject" onclick="moveStage('${c.candidate_id}','rejected')">✕ Reject</button>`;
       } else {
-        actionsHtml = `
-          <div class="c-actions">
-            <button class="btn-view" onclick="event.stopPropagation(); openDrawer('${c.candidate_id}')">Details</button>
-          </div>`;
+        actionsHtml = `<span class="no-action-hint">—</span>`;
       }
-      const finalPill = isFinal
-        ? `<span class="stage-pill stage-${c.stage}">${STAGE_LABELS[c.stage]}</span>`
-        : '';
+      const stageLabel = STAGE_LABELS[c.stage] || c.stage;
       return `
-        <div class="candidate-card" onclick="openDrawer('${c.candidate_id}')">
-          <div class="c-header">
-            ${avatarHtml}
-            <div>
-              <div class="c-name">${c.name || '—'}</div>
-              <div class="c-contact">${c.mobile || ''}</div>
+        <tr class="cand-row">
+          <td class="td-name">
+            <div class="row-name-block">
+              ${avatarHtml}
+              <div>
+                <div class="c-name">${c.name || '—'}</div>
+                <div class="c-contact">${c.mobile || ''}${c.role ? ' · ' + c.role : ''}</div>
+              </div>
             </div>
-          </div>
-          <div class="c-meta">${c.role || ''} ${c.department ? '· ' + c.department : ''}</div>
-          <div class="c-tags">
-            ${c.qualification ? `<span class="c-tag">${c.qualification}</span>` : ''}
-            ${c.gender ? `<span class="c-tag">${c.gender}</span>` : ''}
-          </div>
-          ${finalPill}
-          ${actionsHtml}
-        </div>`;
+          </td>
+          <td class="td-details">
+            <button class="btn-view" onclick="openDrawer('${c.candidate_id}')">Details</button>
+          </td>
+          <td class="td-stage">
+            <span class="current-stage-badge badge-${c.stage}">${stageLabel.toUpperCase()}</span>
+          </td>
+          <td class="td-action">
+            <div class="row-actions">${actionsHtml}</div>
+          </td>
+        </tr>`;
     }
 
     function openDrawer(candidateId) {
@@ -576,19 +565,13 @@
       animation: shimmer 1.3s infinite;
     }
 
-    /* ── Pipeline Board ── */
-    .pipeline-board {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(200px, 1fr));
-      gap: 12px;
+    /* ── Candidates Table ── */
+    .candidates-table-wrap {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
       overflow-x: auto;
-      padding-bottom: 8px;
-    }
-
-    @media (max-width: 1100px) {
-      .pipeline-board {
-        grid-template-columns: repeat(5, 220px);
-      }
+      backdrop-filter: blur(16px);
     }
 
     @media (max-width: 768px) {
@@ -597,100 +580,72 @@
       }
     }
 
-    .pipeline-col {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
-      padding: 12px;
-      min-height: 220px;
-      backdrop-filter: blur(16px);
+    .candidates-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 620px;
     }
 
-    .pipeline-col-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      padding: 0 2px;
-    }
-
-    .pipeline-col-head .col-title {
-      font-size: 11.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .pipeline-col-head .col-count {
+    .candidates-table thead th {
+      text-align: left;
       font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
       color: var(--text-dim);
-      background: var(--glass-bg);
-      padding: 1px 8px;
-      border-radius: 20px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
     }
 
-    /* Column title colors using style.css accent palette */
-    .col-applied .col-title {
-      color: #93C5FD;
+    .candidates-table tbody .cand-row {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
     }
 
-    .col-screening .col-title {
-      color: #FCD34D;
+    .candidates-table tbody .cand-row:last-child {
+      border-bottom: none;
     }
 
-    .col-hr_calling .col-title {
-      color: #FBBF24;
-    }
-
-    .col-interview .col-title {
-      color: #C4B5FD;
-    }
-
-    .col-round1 .col-title,
-    .col-round2 .col-title {
-      color: #A5B4FC;
-    }
-
-    .col-offered .col-title {
-      color: var(--success);
-    }
-
-    .col-hold .col-title {
-      color: #FB923C;
-    }
-
-    .col-final .col-title {
-      color: var(--text-muted);
-    }
-
-    .col-empty-hint {
-      font-size: 11.5px;
-      color: var(--text-dim);
-      text-align: center;
-      padding: 20px 4px;
-    }
-
-    /* ── Candidate Card ── */
-    .candidate-card {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-sm);
-      padding: 10px 12px;
-      margin-bottom: 8px;
-      transition: background 0.15s, border-color 0.15s;
-      cursor: pointer;
-    }
-
-    .candidate-card:hover {
+    .candidates-table tbody .cand-row:hover {
       background: var(--glass-hover);
-      border-color: var(--glass-border-hi);
     }
 
-    .c-header {
+    .candidates-table td {
+      padding: 12px 16px;
+      vertical-align: middle;
+    }
+
+    .table-empty-hint {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 12.5px;
+      padding: 32px 16px !important;
+    }
+
+    .row-name-block {
       display: flex;
       align-items: center;
-      gap: 9px;
-      margin-bottom: 4px;
+      gap: 10px;
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .no-action-hint {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .td-stage .current-stage-badge {
+      margin-bottom: 0;
+    }
+
+    .skeleton-row td {
+      padding: 14px 16px;
     }
 
     .c-avatar {
@@ -726,36 +681,6 @@
       font-size: 11px;
       color: var(--text-dim);
       margin-top: 1px;
-    }
-
-    .c-meta {
-      font-size: 11px;
-      color: var(--text-dim);
-      margin-top: 3px;
-    }
-
-    .c-tags {
-      display: flex;
-      gap: 5px;
-      flex-wrap: wrap;
-      margin-top: 6px;
-    }
-
-    .c-tag {
-      font-size: 10px;
-      font-weight: 600;
-      padding: 2px 7px;
-      border-radius: 20px;
-      background: var(--glass-bg);
-      color: var(--text-muted);
-      border: 1px solid var(--glass-border);
-    }
-
-    .c-actions {
-      display: flex;
-      gap: 6px;
-      margin-top: 8px;
-      flex-wrap: wrap;
     }
 
     .btn-move {
@@ -794,25 +719,6 @@
 
     .btn-view:hover {
       background: rgba(108, 142, 255, 0.22);
-    }
-
-    .stage-pill {
-      display: inline-block;
-      padding: 2px 9px;
-      border-radius: 20px;
-      font-size: 10px;
-      font-weight: 700;
-      margin-top: 5px;
-    }
-
-    .stage-hired {
-      background: var(--success-dim);
-      color: var(--success);
-    }
-
-    .stage-rejected {
-      background: var(--danger-dim);
-      color: var(--danger);
     }
 
     .btn-move.btn-hold {
