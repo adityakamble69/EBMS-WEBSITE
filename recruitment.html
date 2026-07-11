@@ -107,6 +107,69 @@
     </div>
   </div>
 
+  <!-- Hire Candidate Modal — asks Branch / Department / Joining Date / Reporting Manager / Shift -->
+  <div class="modal-overlay" id="hireModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>✅ Hire Candidate</h3>
+        <button
+          style="background:none; border:none; color:#fff; font-size:24px; cursor:pointer; padding:10px; margin:-10px; border-radius:8px; line-height:1;"
+          onclick="closeHireModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="hireModalCandName" style="margin:0 0 16px; color:var(--text-muted); font-size:13.5px;"></p>
+        <form id="hireForm" onsubmit="submitHireForm(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Branch *</label>
+              <select id="hireBranch" required onchange="onHireBranchChange()">
+                <option value="">Select branch…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Department *</label>
+              <select id="hireDepartment" required>
+                <option value="">Select department…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Designation</label>
+              <select id="hireDesignation">
+                <option value="">Select designation…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Joining Date *</label>
+              <input type="date" id="hireJoiningDate" required />
+            </div>
+            <div class="form-group">
+              <label>Reporting Manager</label>
+              <select id="hireReportingManager">
+                <option value="">None</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Shift</label>
+              <select id="hireShift">
+                <option value="">Select shift…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Employment Type</label>
+              <select id="hireEmploymentType">
+                <option value="Internship">Internship</option>
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-action" id="hireSubmitBtn"
+            style="width: 100%; justify-content: center; margin-top:20px;">✓ Confirm Hire</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
   <script>
     AppSession.protect();
@@ -266,8 +329,9 @@
         const extraBtn = extra
           ? `<button class="btn-move btn-hold" onclick="moveStage('${c.candidate_id}','${extra.stage}')">${extra.label}</button>`
           : '';
+        const nextClick = ns === 'hired' ? `openHireModal('${c.candidate_id}')` : `moveStage('${c.candidate_id}','${ns}')`;
         actionsHtml = `
-          <button class="btn-move" onclick="moveStage('${c.candidate_id}','${ns}')">${nl}</button>
+          <button class="btn-move btn-primary" onclick="${nextClick}">${nl}</button>
           ${extraBtn}
           <button class="btn-move btn-reject" onclick="moveStage('${c.candidate_id}','rejected')">✕ Reject</button>`;
       } else {
@@ -335,9 +399,10 @@
         const extraBtn = extra
           ? `<button class="btn-stage-action btn-hold-drawer" onclick="moveStage('${c.candidate_id}','${extra.stage}')">${extra.label}</button>`
           : '';
+        const nextClick = ns === 'hired' ? `openHireModal('${c.candidate_id}')` : `moveStage('${c.candidate_id}','${ns}')`;
         stageActionsHtml = `
           <div class="stage-action-row">
-            <button class="btn-stage-action btn-approve" onclick="moveStage('${c.candidate_id}','${ns}')">${nl}</button>
+            <button class="btn-stage-action btn-approve" onclick="${nextClick}">${nl}</button>
             ${extraBtn}
             <button class="btn-stage-action btn-reject-drawer" onclick="moveStage('${c.candidate_id}','rejected')">✕ Reject</button>
           </div>`;
@@ -410,15 +475,15 @@
       setTimeout(() => { el.classList.remove('active', 'done'); }, 300);
     }
 
-    async function moveStage(candidateId, newStage) {
+    async function moveStage(candidateId, newStage, extraFields) {
       showTopBar();
       try {
         const res = await fetch(API_URL, {
           method: 'POST',
-          body: JSON.stringify({
+          body: JSON.stringify(Object.assign({
             token: TOKEN, action: 'updateCandidateStage',
             candidate_id: candidateId, stage: newStage
-          })
+          }, extraFields || {}))
         });
         const out = await res.json();
         if (out.status === 'success') {
@@ -428,10 +493,145 @@
           updateStats();
           filterAndRender();
           if (activeCandidateId === candidateId) renderDrawer(allCandidates[idx]);
+          return true;
         } else {
           showToast(out.message || 'Error occurred.');
+          return false;
         }
-      } catch (e) { showToast('Network error.'); } finally { hideTopBar(); }
+      } catch (e) { showToast('Network error.'); return false; } finally { hideTopBar(); }
+    }
+
+    // ============================================================
+    // HIRE MODAL — Branch / Department / Designation / Joining Date /
+    // Reporting Manager / Shift, collected before candidate becomes
+    // an employee (updateCandidateStage → 'hired').
+    // ============================================================
+    let hireLookupsLoaded = false;
+    let hireLookupsLoading = null;
+    let hireBranches = [];
+    let hireDepartments = [];
+    let hireDesignations = [];
+    let hireShifts = [];
+    let hireEmployees = [];
+    let hireCandidateId = null;
+
+    async function loadHireLookups() {
+      if (hireLookupsLoaded) return;
+      if (hireLookupsLoading) return hireLookupsLoading;
+      hireLookupsLoading = (async () => {
+        try {
+          const [branchRes, deptRes, desigRes, shiftRes, empRes] = await Promise.all([
+            fetch(`${API_URL}?action=getBranches&token=${TOKEN}`),
+            fetch(`${API_URL}?action=getDepartments&token=${TOKEN}`),
+            fetch(`${API_URL}?action=getDesignations&token=${TOKEN}`),
+            fetch(`${API_URL}?action=getShifts&token=${TOKEN}`),
+            fetch(`${API_URL}?action=getEmployees&token=${TOKEN}&limit=1000&status=active`)
+          ]);
+          const [branchP, deptP, desigP, shiftP, empP] = await Promise.all(
+            [branchRes, deptRes, desigRes, shiftRes, empRes].map(r => r.json())
+          );
+          hireBranches    = branchP.status === 'success' ? (branchP.data || []).filter(b => b.status === 'active') : [];
+          hireDepartments = deptP.status   === 'success' ? (deptP.data || [])   : [];
+          hireDesignations = desigP.status === 'success' ? (desigP.data || []) : [];
+          hireShifts      = shiftP.status  === 'success' ? (shiftP.data || [])  : [];
+          hireEmployees   = empP.status    === 'success' ? (empP.data && empP.data.data ? empP.data.data : []) : [];
+          hireLookupsLoaded = true;
+        } catch (e) {
+          showToast('Hire form ke dropdowns load nahi ho paye — network error.');
+        }
+      })();
+      return hireLookupsLoading;
+    }
+
+    function fillSelect(selectEl, items, valueKey, labelFn, placeholder) {
+      const current = selectEl.value;
+      selectEl.innerHTML = `<option value="">${placeholder}</option>` +
+        items.map(it => `<option value="${it[valueKey]}">${labelFn(it)}</option>`).join('');
+      if (current && items.some(it => String(it[valueKey]) === String(current))) {
+        selectEl.value = current;
+      }
+    }
+
+    async function openHireModal(candidateId) {
+      hireCandidateId = candidateId;
+      const c = allCandidates.find(x => x.candidate_id === candidateId);
+      if (!c) return;
+
+      document.getElementById('hireModalCandName').textContent =
+        `${c.name} — ${c.role || 'Candidate'}${c.department ? ' · ' + c.department : ''}`;
+      document.getElementById('hireJoiningDate').valueAsDate = new Date();
+      document.getElementById('hireModal').classList.add('open');
+
+      const submitBtn = document.getElementById('hireSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Loading form…';
+
+      await loadHireLookups();
+
+      fillSelect(document.getElementById('hireBranch'), hireBranches, 'branch_id',
+        b => `${b.branch_id} — ${b.branch_name || b.name || b.branch_id}`, 'Select branch…');
+      fillSelect(document.getElementById('hireDepartment'), hireDepartments, 'department_id',
+        d => d.name || d.department_name || d.department_id, 'Select department…');
+      fillSelect(document.getElementById('hireDesignation'), hireDesignations, 'designation_id',
+        d => d.name || d.designation_name || d.designation_id, 'Select designation…');
+
+      onHireBranchChange(); // populates shift + manager lists scoped to (initially empty) branch
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = '✓ Confirm Hire';
+    }
+
+    function onHireBranchChange() {
+      const branchId = document.getElementById('hireBranch').value;
+
+      const scopedShifts = branchId
+        ? hireShifts.filter(s => !s.branch_id || s.branch_id === branchId)
+        : hireShifts;
+      fillSelect(document.getElementById('hireShift'), scopedShifts, 'shift_id',
+        s => `${s.shift_name} (${s.start_time || ''}–${s.end_time || ''})`, 'Select shift…');
+
+      const scopedEmployees = branchId
+        ? hireEmployees.filter(e => e.branch_id === branchId)
+        : hireEmployees;
+      fillSelect(document.getElementById('hireReportingManager'), scopedEmployees, 'emp_id',
+        e => `${e.name} (${e.emp_id})`, 'None');
+    }
+
+    function closeHireModal() {
+      document.getElementById('hireModal').classList.remove('open');
+      hireCandidateId = null;
+      document.getElementById('hireForm').reset();
+    }
+
+    async function submitHireForm(event) {
+      event.preventDefault();
+      if (!hireCandidateId) return;
+
+      const branchId = document.getElementById('hireBranch').value;
+      const departmentId = document.getElementById('hireDepartment').value;
+      if (!branchId || !departmentId) {
+        showToast('Branch aur Department dono select karna zaroori hai.');
+        return;
+      }
+
+      const submitBtn = document.getElementById('hireSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Hiring…';
+
+      const ok = await moveStage(hireCandidateId, 'hired', {
+        branch_id: branchId,
+        department_id: departmentId,
+        designation_id: document.getElementById('hireDesignation').value,
+        joining_date: document.getElementById('hireJoiningDate').value,
+        reporting_manager: document.getElementById('hireReportingManager').value,
+        default_shift_id: document.getElementById('hireShift').value,
+        employment_type: document.getElementById('hireEmploymentType').value
+      });
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = '✓ Confirm Hire';
+
+      if (ok) closeHireModal();
     }
 
     document.addEventListener('DOMContentLoaded', loadCandidates);
@@ -439,6 +639,97 @@
 
   <!-- Recruitment page styles — only use style.css variables, no hardcoded colors -->
   <style>
+    /* ── Hire Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: rgba(24, 24, 27, 0.75);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      border-radius: var(--radius);
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 540px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .form-group input,
+    .form-group select {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.18s, background 0.18s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .form-group select option {
+      background: #18181B;
+      color: #fff;
+    }
+
     /* ── Stats Bar ── */
     .rec-stats-bar {
       display: flex;
@@ -583,7 +874,7 @@
     .candidates-table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 620px;
+      min-width: 640px;
     }
 
     .candidates-table thead th {
@@ -631,8 +922,9 @@
 
     .row-actions {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .no-action-hint {
@@ -683,51 +975,84 @@
       margin-top: 1px;
     }
 
+    /* ── Table action buttons (Details / next-stage / hold / reject) ── */
+    .btn-view,
     .btn-move {
-      font-size: 10.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
       font-weight: 600;
-      padding: 4px 9px;
-      border-radius: var(--radius-xs);
+      letter-spacing: 0.2px;
+      padding: 8px 16px;
+      border-radius: 999px;
       cursor: pointer;
-      border: 1px solid var(--glass-border);
-      background: var(--glass-bg);
-      color: var(--text-primary);
-      transition: background 0.15s;
+      border: 1px solid transparent;
+      white-space: nowrap;
+      transition: transform 0.15s ease, box-shadow 0.2s ease,
+        background 0.2s ease, border-color 0.2s ease, filter 0.15s ease;
     }
 
+    .btn-view:hover,
     .btn-move:hover {
-      background: var(--glass-hover);
+      transform: translateY(-1.5px);
     }
 
-    .btn-move.btn-reject {
-      color: var(--danger);
-      border-color: rgba(248, 113, 113, 0.25);
-      background: var(--danger-dim);
+    .btn-view:active,
+    .btn-move:active {
+      transform: translateY(0);
     }
 
+    /* Details — ghost / outline button */
     .btn-view {
-      font-size: 10.5px;
-      font-weight: 600;
-      padding: 4px 9px;
-      border-radius: var(--radius-xs);
-      cursor: pointer;
-      border: 1px solid rgba(108, 142, 255, 0.3);
-      background: var(--accent-dim);
-      color: var(--accent-hi);
-      transition: background 0.15s;
+      background: transparent;
+      border-color: var(--glass-border-hi);
+      color: var(--text-primary);
     }
 
     .btn-view:hover {
-      background: rgba(108, 142, 255, 0.22);
+      background: var(--glass-hover);
+      border-color: rgba(108, 142, 255, 0.5);
+      color: var(--accent-hi);
     }
 
+    /* Next-stage — solid gradient, the PRIMARY action in the row */
+    .btn-move.btn-primary {
+      background: linear-gradient(135deg, #6C8EFF, #5B72E8);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(108, 142, 255, 0.35);
+    }
+
+    .btn-move.btn-primary:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 5px 16px rgba(108, 142, 255, 0.45);
+    }
+
+    /* Reject — quiet danger, secondary weight */
+    .btn-move.btn-reject {
+      background: transparent;
+      border-color: rgba(248, 113, 113, 0.35);
+      color: var(--danger);
+      box-shadow: none;
+    }
+
+    .btn-move.btn-reject:hover {
+      background: rgba(248, 113, 113, 0.14);
+      border-color: rgba(248, 113, 113, 0.6);
+    }
+
+    /* Hold — quiet warning, secondary weight */
     .btn-move.btn-hold {
-      background: rgba(251, 146, 60, 0.14);
+      background: transparent;
+      border-color: rgba(251, 146, 60, 0.35);
       color: #FB923C;
+      box-shadow: none;
     }
 
     .btn-move.btn-hold:hover {
-      background: rgba(251, 146, 60, 0.24);
+      background: rgba(251, 146, 60, 0.16);
+      border-color: rgba(251, 146, 60, 0.6);
     }
 
     /* ── Drawer ── */
@@ -903,51 +1228,54 @@
 
     .btn-stage-action {
       flex: 1;
-      padding: 10px 12px;
-      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      border-radius: 999px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      border: 1px solid var(--glass-border);
-      background: var(--glass-bg);
+      border: 1px solid transparent;
+      background: transparent;
       color: var(--text-primary);
-      transition: background 0.15s, transform 0.15s;
+      transition: transform 0.15s ease, box-shadow 0.2s ease,
+        background 0.2s ease, border-color 0.2s ease, filter 0.15s ease;
       font-family: 'Inter', sans-serif;
     }
 
     .btn-stage-action:hover {
-      background: var(--glass-hover);
-      transform: translateY(-1px);
+      transform: translateY(-1.5px);
     }
 
     .btn-stage-action.btn-approve {
-      background: var(--success-dim);
-      border-color: rgba(52, 211, 153, 0.3);
-      color: var(--success);
+      background: linear-gradient(135deg, #34D399, #10B981);
+      color: #06281c;
+      box-shadow: 0 2px 8px rgba(52, 211, 153, 0.35);
     }
 
     .btn-stage-action.btn-approve:hover {
-      background: rgba(52, 211, 153, 0.2);
+      filter: brightness(1.08);
+      box-shadow: 0 5px 16px rgba(52, 211, 153, 0.45);
     }
 
     .btn-stage-action.btn-reject-drawer {
-      background: var(--danger-dim);
-      border-color: rgba(248, 113, 113, 0.25);
+      background: transparent;
+      border-color: rgba(248, 113, 113, 0.35);
       color: var(--danger);
     }
 
     .btn-stage-action.btn-reject-drawer:hover {
-      background: rgba(248, 113, 113, 0.2);
+      background: rgba(248, 113, 113, 0.14);
+      border-color: rgba(248, 113, 113, 0.6);
     }
 
     .btn-stage-action.btn-hold-drawer {
-      background: rgba(251, 146, 60, 0.14);
-      border-color: rgba(251, 146, 60, 0.3);
+      background: transparent;
+      border-color: rgba(251, 146, 60, 0.35);
       color: #FB923C;
     }
 
     .btn-stage-action.btn-hold-drawer:hover {
-      background: rgba(251, 146, 60, 0.24);
+      background: rgba(251, 146, 60, 0.16);
+      border-color: rgba(251, 146, 60, 0.6);
     }
 
     .current-stage-badge {
