@@ -68,6 +68,7 @@
       -webkit-backdrop-filter: blur(32px) saturate(160%);
       box-shadow: 0 32px 80px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
       overflow: hidden;
+      position: relative;
     }
 
     /* ── Header ── */
@@ -126,160 +127,75 @@
       margin-top: 1px;
     }
 
-    /* ── Steps ── */
     .body {
-      padding: 26px 24px 28px;
+      padding: 22px 24px 26px;
     }
 
-    .step {
-      display: none;
-    }
-
-    .step.active {
-      display: block;
-    }
-
-    /* 2-dot progress */
-    .progress-dots {
+    /* ── Location status strip (always visible at the top, no
+         separate "step" screen — just an inline indicator) ── */
+    .loc-strip {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 6px;
-      margin-bottom: 28px;
-    }
-
-    .dot-step {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--dim);
-      transition: all 0.3s ease;
-    }
-
-    .dot-step.done {
-      background: var(--success);
-      transform: scale(1.1);
-    }
-
-    .dot-step.cur {
-      background: var(--accent);
-      width: 20px;
-      border-radius: 3px;
-    }
-
-    /* ── Icon ring ── */
-    .icon-ring {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      margin: 0 auto 18px;
-    }
-
-    .ring-blue {
-      background: var(--accent-dim);
-      border: 1.5px solid rgba(108, 142, 255, 0.28);
-      animation: pulse-b 2.2s ease-in-out infinite;
-    }
-
-    @keyframes pulse-b {
-
-      0%,
-      100% {
-        box-shadow: 0 0 0 0 rgba(108, 142, 255, 0.18);
-      }
-
-      50% {
-        box-shadow: 0 0 0 12px rgba(108, 142, 255, 0);
-      }
-    }
-
-    .step-center {
-      text-align: center;
-    }
-
-    .step-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .step-sub {
-      font-size: 13px;
+      gap: 9px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 10px 13px;
+      font-size: 12.5px;
       color: var(--muted);
-      line-height: 1.65;
-      margin-bottom: 22px;
+      margin-bottom: 16px;
+      transition: all 0.25s ease;
     }
 
-    /* ── Pills ── */
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 6px 14px;
-      border-radius: 99px;
-      font-size: 12px;
-      font-weight: 600;
-      margin: 0 auto 20px;
-    }
-
-    .pill-waiting {
-      background: var(--warning-dim);
-      color: var(--warning);
-      border: 1px solid rgba(251, 191, 36, 0.2);
-    }
-
-    .pill-ok {
+    .loc-strip.ok {
       background: var(--success-dim);
+      border-color: rgba(52, 211, 153, 0.25);
       color: var(--success);
-      border: 1px solid rgba(52, 211, 153, 0.2);
     }
 
-    .pill-denied {
+    .loc-strip.bad {
       background: var(--danger-dim);
+      border-color: rgba(248, 113, 113, 0.25);
       color: var(--danger);
-      border: 1px solid rgba(248, 113, 113, 0.2);
     }
 
-    .pill .pdot {
+    .loc-strip .pdot {
       width: 7px;
       height: 7px;
       border-radius: 50%;
       flex-shrink: 0;
     }
 
-    .pdot-y {
-      background: var(--warning);
+    .pdot-y { background: var(--warning); animation: blinkDot 1.3s ease-in-out infinite; }
+    .pdot-g { background: var(--success); }
+    .pdot-r { background: var(--danger); }
+
+    @keyframes blinkDot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
     }
 
-    .pdot-g {
-      background: var(--success);
+    .loc-strip span.txt {
+      flex: 1;
+      line-height: 1.4;
     }
 
-    .pdot-r {
-      background: var(--danger);
+    .btn-retry-loc {
+      flex-shrink: 0;
+      background: rgba(248, 113, 113, 0.16);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: var(--danger);
+      font-size: 11.5px;
+      font-weight: 700;
+      font-family: 'Space Grotesk', sans-serif;
+      padding: 6px 11px;
+      border-radius: 7px;
+      cursor: pointer;
     }
+
+    .btn-retry-loc:hover { background: rgba(248, 113, 113, 0.26); }
 
     /* ── Info / Error boxes ── */
-    .info-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 12px 14px;
-      font-size: 12.5px;
-      color: var(--muted);
-      line-height: 1.6;
-      margin-bottom: 18px;
-    }
-
-    .info-box strong {
-      color: var(--text);
-    }
-
     .err {
       background: var(--danger-dim);
       border: 1px solid rgba(248, 113, 113, 0.22);
@@ -310,49 +226,33 @@
       transition: all 0.2s ease;
     }
 
-    .btn+.btn {
-      margin-top: 10px;
-    }
+    .btn+.btn { margin-top: 10px; }
 
     .btn-blue {
       background: linear-gradient(135deg, #3A5EE8, #6C8EFF);
       color: #fff;
       box-shadow: 0 5px 18px rgba(108, 142, 255, 0.28);
     }
-
-    .btn-blue:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 26px rgba(108, 142, 255, 0.40);
-    }
+    .btn-blue:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(108, 142, 255, 0.40); }
 
     .btn-in {
       background: linear-gradient(135deg, #059669, #34D399);
       color: #fff;
       box-shadow: 0 5px 18px rgba(52, 211, 153, 0.28);
     }
-
-    .btn-in:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 26px rgba(52, 211, 153, 0.42);
-    }
+    .btn-in:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(52, 211, 153, 0.42); }
 
     .btn-out {
       background: linear-gradient(135deg, #92400E, #FBBF24);
       color: #111;
       box-shadow: 0 5px 18px rgba(251, 191, 36, 0.22);
     }
+    .btn-out:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(251, 191, 36, 0.35); }
 
-    .btn-out:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 26px rgba(251, 191, 36, 0.35);
-    }
-
-    .btn:active {
-      transform: translateY(0) !important;
-    }
+    .btn:active { transform: translateY(0) !important; }
 
     .btn:disabled {
-      opacity: 0.48;
+      opacity: 0.42;
       cursor: not-allowed;
       transform: none !important;
     }
@@ -362,7 +262,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 9px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .tc {
@@ -387,50 +287,72 @@
       font-weight: 700;
     }
 
-    .tc-in .tc-val {
-      color: var(--success);
-    }
+    .tc-in .tc-val { color: var(--success); }
+    .tc-out .tc-val { color: var(--warning); }
 
-    .tc-out .tc-val {
-      color: var(--warning);
-    }
-
-    /* ── Employee meta ── */
+    /* ── Employee identity block ── */
     .emp-meta {
       text-align: center;
-      margin-bottom: 18px;
-      font-size: 13px;
-      color: var(--muted);
+      margin-bottom: 14px;
     }
 
     .emp-meta strong {
       color: var(--text);
       display: block;
-      font-size: 15px;
+      font-size: 17px;
+      font-family: 'Space Grotesk', sans-serif;
       margin-bottom: 3px;
     }
 
-    /* ── Success detail ── */
-    .success-detail {
+    .emp-meta .emp-id {
+      font-size: 11.5px;
+      color: var(--dim);
+    }
+
+    /* Read-only Mobile / Email chips — static once saved on this device */
+    .profile-chips {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .chip {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--r-sm);
-      padding: 14px 16px;
-      text-align: center;
-      margin-bottom: 18px;
+      padding: 9px 11px;
+      overflow: hidden;
     }
 
-    .success-detail strong {
-      color: var(--text);
-      display: block;
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-
-    .success-detail span {
+    .chip .chip-label {
+      font-size: 9.5px;
       color: var(--dim);
-      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 3px;
     }
+
+    .chip .chip-val {
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Today's date badge */
+    .date-badge {
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-bottom: 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .date-badge strong { color: var(--text); }
 
     /* ── Complete banner ── */
     .complete-banner {
@@ -439,14 +361,10 @@
       border-radius: var(--r-sm);
       padding: 16px;
       text-align: center;
-      margin-bottom: 16px;
+      margin-bottom: 4px;
     }
 
-    .complete-banner .cb-icon {
-      font-size: 26px;
-      margin-bottom: 8px;
-    }
-
+    .complete-banner .cb-icon { font-size: 26px; margin-bottom: 8px; }
     .complete-banner .cb-title {
       font-family: 'Space Grotesk', sans-serif;
       font-weight: 700;
@@ -454,11 +372,7 @@
       color: var(--success);
       margin-bottom: 4px;
     }
-
-    .complete-banner .cb-sub {
-      font-size: 12px;
-      color: var(--muted);
-    }
+    .complete-banner .cb-sub { font-size: 12px; color: var(--muted); }
 
     /* ── Spinner ── */
     .spin {
@@ -471,28 +385,27 @@
       display: none;
       flex-shrink: 0;
     }
+    .spin.dark { border-color: rgba(0, 0, 0, 0.15); border-top-color: #111; }
+    @keyframes rot { to { transform: rotate(360deg); } }
 
-    .spin.dark {
-      border-color: rgba(0, 0, 0, 0.15);
-      border-top-color: #111;
+    /* ── Form fields (first-time-on-this-device registration) ── */
+    .step-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-align: center;
     }
 
-    @keyframes rot {
-      to {
-        transform: rotate(360deg);
-      }
+    .step-sub {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 18px;
+      text-align: center;
     }
 
-    .divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
-      margin: 20px 0;
-    }
-
-    /* ── Form fields (employee self-details) ── */
-    .field {
-      margin-bottom: 12px;
-    }
+    .field { margin-bottom: 12px; }
 
     .field label {
       display: block;
@@ -515,27 +428,55 @@
       transition: border-color 0.2s ease;
     }
 
-    .field input:focus {
-      border-color: var(--accent);
+    .field input:focus { border-color: var(--accent); }
+    .field input::placeholder { color: var(--dim); }
+
+    /* ── Success checkmark overlay — flashes over the punch view for
+         ~1.5s after a successful Check In/Out, then fades away leaving
+         the same screen (updated) visible underneath. ── */
+    .success-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 7, 10, 0.88);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      z-index: 50;
     }
 
-    .field input::placeholder {
-      color: var(--dim);
+    .success-overlay.show {
+      opacity: 1;
+      pointer-events: all;
     }
 
-    .link-btn {
-      display: block;
-      text-align: center;
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 14px;
-      cursor: pointer;
-      text-decoration: underline;
-      text-underline-offset: 2px;
+    .success-overlay .ov-ring {
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      background: var(--success-dim);
+      border: 1.5px solid rgba(52, 211, 153, 0.32);
+      transform: scale(0.6);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    .link-btn:hover {
-      color: var(--accent);
+    .success-overlay.show .ov-ring { transform: scale(1); }
+
+    .success-overlay .ov-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text);
     }
   </style>
 </head>
@@ -558,48 +499,22 @@
 
     <div class="body">
 
-      <div class="progress-dots">
-        <div class="dot-step cur" id="dp1"></div>
-        <div class="dot-step" id="dp2"></div>
-        <div class="dot-step" id="dp3"></div>
+      <!-- ══ Location status — auto-requested on page load, always
+           visible as a small strip, never a separate full screen ══ -->
+      <div class="loc-strip" id="locStrip">
+        <span class="pdot pdot-y" id="locDot"></span>
+        <span class="txt" id="locStripText">Detecting your location…</span>
+        <button class="btn-retry-loc" id="btnRetryLoc" onclick="requestLocation()" style="display:none;">Retry</button>
       </div>
+      <div class="err" id="errLoc"></div>
 
-      <!-- ══ STEP 1 : Location ══════════════════════════ -->
-      <div class="step active" id="s1">
-        <div class="step-center">
-          <div style="display:flex;justify-content:center;">
-            <div class="icon-ring ring-blue">📍</div>
-          </div>
-          <div class="step-title">Location Verify</div>
-          <div class="step-sub">You need to be within the office boundary to punch. Your branch will be detected automatically from your location.</div>
-          <div class="pill pill-waiting" id="locPill">
-            <span class="pdot pdot-y"></span>
-            <span id="locPillText">Waiting for GPS location…</span>
-          </div>
-        </div>
-
-        <div class="info-box">
-          <strong>📌 Office Boundary:</strong><br />
-          GPS will verify whether you're within any registered branch's office boundary — <strong id="branchLabel">your branch will be detected automatically</strong>.
-        </div>
-
-        <div class="err" id="errLoc"></div>
-
-        <button class="btn btn-blue" id="btnLoc" onclick="requestLocation()">
-          📍 &nbsp;<span id="btnLocText">Allow Location</span>
-        </button>
-      </div>
-
-      <!-- ══ STEP 2 : Employee Details (first-time only) ═ -->
-      <div class="step" id="s2">
-        <div class="step-center">
-          <div style="display:flex;justify-content:center;">
-            <div class="icon-ring ring-blue">🧾</div>
-          </div>
-          <div class="step-title">Enter Your Details</div>
-          <div class="step-sub">First time here? Fill in your details once — they'll auto-fill on this
-            phone next time.</div>
-        </div>
+      <!-- ══ FIRST-TIME registration form — only ever shown once per
+           device. After a successful verify, this device is locked to
+           this employee and the form never appears again on it. ══ -->
+      <div id="firstTimeForm" style="display:none;">
+        <div class="step-title">Enter Your Details</div>
+        <div class="step-sub">First time on this device — fill this once. After verifying, this device
+          will always punch in/out as you.</div>
 
         <div class="err" id="errDetails"></div>
 
@@ -625,20 +540,28 @@
         </button>
       </div>
 
-      <!-- ══ STEP 3 : Punch IN / OUT ════════════════════ -->
-      <div class="step" id="s3">
-
-        <div style="display:flex;justify-content:center;margin-bottom:16px;">
-          <div class="pill pill-ok">
-            <span class="pdot pdot-g"></span>
-            <span id="distLabel">Location Verified ✓</span>
-          </div>
-        </div>
+      <!-- ══ Punch view — shown directly for any returning device.
+           Name/Mobile/Email are read-only (static — locked to this
+           device once saved). No "switch employee" escape hatch. ══ -->
+      <div id="punchView" style="display:none;">
 
         <div class="emp-meta">
           <strong id="showName">—</strong>
-          <span id="showEmpId" style="font-size:11.5px;color:var(--dim);">—</span>
+          <span class="emp-id" id="showEmpId">—</span>
         </div>
+
+        <div class="profile-chips">
+          <div class="chip">
+            <div class="chip-label">Mobile</div>
+            <div class="chip-val" id="showMobile">—</div>
+          </div>
+          <div class="chip">
+            <div class="chip-label">Email</div>
+            <div class="chip-val" id="showEmail">—</div>
+          </div>
+        </div>
+
+        <div class="date-badge">Today — <strong id="todayDateDisp">—</strong></div>
 
         <div class="time-row">
           <div class="tc tc-in">
@@ -660,47 +583,23 @@
 
         <div class="err" id="errPunch"></div>
 
-        <button class="btn btn-in" id="btnIn" onclick="doPunch('in')" style="display:none;">
+        <button class="btn btn-in" id="btnIn" onclick="doPunch('in')" style="display:none;" disabled>
           <span class="spin" id="spIn"></span> ✅ &nbsp;Punch IN
         </button>
-        <button class="btn btn-out" id="btnOut" onclick="doPunch('out')" style="display:none;">
+        <button class="btn btn-out" id="btnOut" onclick="doPunch('out')" style="display:none;" disabled>
           <span class="spin dark" id="spOut"></span> 🕐 &nbsp;Punch OUT
         </button>
-
-        <div class="link-btn" onclick="switchEmployee()">Not you? Switch Employee</div>
-      </div>
-
-      <!-- ══ STEP 4 : Success ═══════════════════════════ -->
-      <div class="step" id="s4">
-        <div class="step-center">
-          <div style="display:flex;justify-content:center;">
-            <div class="icon-ring" id="successRing"
-              style="background:var(--success-dim);border:1.5px solid rgba(52,211,153,0.3);">✅</div>
-          </div>
-          <div class="step-title" id="successTitle">Punch Successful!</div>
-          <div class="step-sub" id="successMsg">Your attendance has been recorded.</div>
-        </div>
-
-        <div class="time-row">
-          <div class="tc tc-in">
-            <div class="tc-label">⬆ IN Time</div>
-            <div class="tc-val" id="finalIn">—</div>
-          </div>
-          <div class="tc tc-out">
-            <div class="tc-label">⬇ OUT Time</div>
-            <div class="tc-val" id="finalOut">—</div>
-          </div>
-        </div>
-
-        <div class="success-detail">
-          <strong id="finalName">—</strong>
-          <span id="finalDate">—</span>
-        </div>
-
-        <button class="btn btn-blue" onclick="resetFlow()">↩ &nbsp;Done</button>
       </div>
 
     </div><!-- /body -->
+
+    <!-- ══ Success checkmark flash — appears briefly after a punch,
+         then fades to reveal the same (updated) punch view. ══ -->
+    <div class="success-overlay" id="successOverlay">
+      <div class="ov-ring" id="ovRing">✅</div>
+      <div class="ov-title" id="ovTitle">Punched IN!</div>
+    </div>
+
   </div>
 
   <script>
@@ -709,18 +608,19 @@
     // ═══════════════════════════════════════════════════
     const API_URL = 'https://script.google.com/macros/s/AKfycbyUp8iouhK5Bu6A7hSq0tgDDRAxmm7Am0HLhHSxe4vb1NmtZCW9rJAlsAGd8jWE16xQnw/exec';
 
-    let OFFICE_LAT = null, OFFICE_LNG = null, OFFICE_RADIUS = null;
-    let OFFICE_BRANCH_ID = null, OFFICE_BRANCH_NAME = null;
+    // Universal link — no ?branch=BR001 needed. Page asks for GPS on
+    // load, backend checks every registered branch's geofence and
+    // tells us which one (if any) the employee is standing inside.
 
-    // ✅ UNIVERSAL LINK: no ?branch=BR001 needed anymore. The page asks
-    // for GPS first, then the backend checks every registered branch's
-    // geofence and tells us which one (if any) the employee is inside.
-
-    // Employee details are captured once on this phone (Step 2) and then
-    // remembered locally so future visits skip straight to Punch IN/OUT.
+    // Employee details are captured ONCE on this device (first-time
+    // form) and then remembered locally — this device is permanently
+    // locked to that employee from then on. There is intentionally NO
+    // "switch employee" escape hatch, so a device can't be used to
+    // punch in/out as someone else.
     const KIOSK_KEY = 'ebms_self_punch_employee';
 
     let userLat = null, userLng = null;
+    let locationVerified = false;
     let lastPunch = null;   // null | 'in' | 'both'
     let todayIn = '—', todayOut = '—';
     let empInfo = {};
@@ -730,9 +630,6 @@
     }
     function saveEmployee(emp) {
       try { localStorage.setItem(KIOSK_KEY, JSON.stringify(emp)); } catch (e) {}
-    }
-    function clearSavedEmployee() {
-      try { localStorage.removeItem(KIOSK_KEY); } catch (e) {}
     }
 
     // ── Live clock ────────────────────────────────────
@@ -745,101 +642,104 @@
     }
     tick(); setInterval(tick, 1000);
 
-    // ── Progress (2 dots only) ────────────────────────
-    function setProgress(step) {
-      for (let i = 1; i <= 3; i++) {
-        const el = document.getElementById('dp' + i);
-        el.className = 'dot-step' + (i < step ? ' done' : i === step ? ' cur' : '');
-      }
-    }
-    function showStep(n) {
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      document.getElementById('s' + n).classList.add('active');
-      setProgress(Math.min(n, 3));
+    // ── Location strip helpers ─────────────────────────
+    function setLocStrip(state, text) {
+      const strip = document.getElementById('locStrip');
+      const dot = document.getElementById('locDot');
+      const txt = document.getElementById('locStripText');
+      const retryBtn = document.getElementById('btnRetryLoc');
+      strip.className = 'loc-strip' + (state === 'ok' ? ' ok' : state === 'bad' ? ' bad' : '');
+      dot.className = 'pdot ' + (state === 'ok' ? 'pdot-g' : state === 'bad' ? 'pdot-r' : 'pdot-y');
+      txt.textContent = text;
+      retryBtn.style.display = state === 'bad' ? 'inline-block' : 'none';
     }
 
-    // (Distance/geofence matching now happens server-side in
-    // findBranchByLocation — see appscript_branch_location.gs)
+    function setPunchButtonsEnabled(enabled) {
+      document.getElementById('btnIn').disabled = !enabled;
+      document.getElementById('btnOut').disabled = !enabled;
+    }
 
     // ── Find which branch's geofence the employee is currently inside
-    // (fully public — no login/QR checksum). Called AFTER we already
-    // have the user's GPS coordinates. ──────────────────────────────
+    // (fully public — no login/QR checksum). ──────────────────────
     async function findMyBranch(lat, lng) {
       const res = await fetch(`${API_URL}?action=findBranchByLocation&lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`);
       return res.json();
     }
 
-    // ── STEP 1 : Location (GPS first, then backend detects branch) ──
+    // ── Location — auto-requested on page load, no separate screen ──
     function requestLocation() {
-      const pill = document.getElementById('locPill');
       const errEl = document.getElementById('errLoc');
-      const btn = document.getElementById('btnLoc');
+      const retryBtn = document.getElementById('btnRetryLoc');
       errEl.style.display = 'none';
-      pill.className = 'pill pill-waiting';
-      pill.innerHTML = '<span class="pdot pdot-y"></span> Fetching GPS…';
-      btn.disabled = true;
+      retryBtn.style.display = 'none';
+      locationVerified = false;
+      setPunchButtonsEnabled(false);
+      setLocStrip('wait', 'Fetching GPS location…');
 
       if (!navigator.geolocation) {
-        showErr(errEl, 'Geolocation isn\'t supported in this browser. Please try a different device.');
-        btn.disabled = false; return;
+        setLocStrip('bad', 'Geolocation isn\'t supported in this browser.');
+        showErr(errEl, 'Please try a different device/browser.');
+        return;
       }
 
       navigator.geolocation.getCurrentPosition(
         async pos => {
           userLat = pos.coords.latitude; userLng = pos.coords.longitude;
-          pill.innerHTML = '<span class="pdot pdot-y"></span> Detecting branch…';
+          setLocStrip('wait', 'Detecting your branch…');
 
           try {
             const out = await findMyBranch(userLat, userLng);
             if (out.status === 'success' && out.data) {
-              OFFICE_LAT = out.data.latitude; OFFICE_LNG = out.data.longitude;
-              OFFICE_RADIUS = out.data.radius;
-              OFFICE_BRANCH_ID = out.data.branch_id; OFFICE_BRANCH_NAME = out.data.branch_name;
               const dist = Math.round(out.data.distance);
-
-              document.getElementById('branchLabel').textContent = OFFICE_BRANCH_NAME || OFFICE_BRANCH_ID;
-              pill.className = 'pill pill-ok';
-              pill.innerHTML = '<span class="pdot pdot-g"></span> ' + (OFFICE_BRANCH_NAME || OFFICE_BRANCH_ID) + ' verified ✓ (' + dist + 'm)';
-              document.getElementById('distLabel').textContent = 'Only ' + dist + 'm from ' + (OFFICE_BRANCH_NAME || OFFICE_BRANCH_ID) + ' — Verified ✓';
+              const branchLabel = out.data.branch_name || out.data.branch_id;
+              setLocStrip('ok', branchLabel + ' verified ✓ (' + dist + 'm away)');
+              locationVerified = true;
               afterLocationVerified();
             } else {
-              pill.className = 'pill pill-denied';
-              pill.innerHTML = '<span class="pdot pdot-r"></span> Not within any office boundary';
+              setLocStrip('bad', 'Not within any office boundary');
               showErr(errEl, '⚠️ ' + (out.message || 'You are not within any registered branch\'s office boundary.'));
-              btn.disabled = false;
             }
           } catch (e) {
-            showErr(errEl, '⚠️ Network error — could not detect branch. Check your internet and try again.');
-            pill.className = 'pill pill-denied';
-            pill.innerHTML = '<span class="pdot pdot-r"></span> Network error';
-            btn.disabled = false;
+            setLocStrip('bad', 'Network error — could not detect branch');
+            showErr(errEl, '⚠️ Check your internet and tap Retry.');
           }
         },
         err => {
-          const m = { 1: 'Location permission denied. Please allow it in your browser settings.', 2: 'GPS signal not found. Please turn on WiFi.', 3: 'Location request timed out. Please try again.' };
-          showErr(errEl, m[err.code] || 'Location error: ' + err.message);
-          pill.className = 'pill pill-denied';
-          pill.innerHTML = '<span class="pdot pdot-r"></span> Location Error';
-          btn.disabled = false;
+          const m = { 1: 'Location permission denied. Please allow it in your browser settings.', 2: 'GPS signal not found. Please turn on WiFi/Location.', 3: 'Location request timed out.' };
+          setLocStrip('bad', 'Location error');
+          showErr(errEl, '⚠️ ' + (m[err.code] || err.message) + ' Tap Retry once fixed.');
         },
         { enableHighAccuracy: true, timeout: 14000, maximumAge: 0 }
       );
     }
 
-    // ── After GPS is verified: either skip straight to Punch (device
-    // already has employee details saved) or show the one-time details
-    // form (Step 2). ──────────────────────────────────────────────
+    // ── After GPS+branch verified: enable punching. Punch view /
+    // first-time form was already rendered on load (independent of
+    // location), we just unlock the action buttons here. ──────────
     function afterLocationVerified() {
-      const saved = getSavedEmployee();
-      if (saved && saved.emp_id) {
-        empInfo = saved;
-        goToPunchStep();
-      } else {
-        setTimeout(() => showStep(2), 500);
+      if (document.getElementById('punchView').style.display !== 'none') {
+        setPunchButtonsEnabled(lastPunch !== 'both');
       }
     }
 
-    // ── STEP 2 : Employee details form (first time on this phone) ──
+    // ── Decide which section to render: returning-device punch view,
+    // or first-time registration form. Runs immediately on load —
+    // independent of location, so Name/Mobile/Email/Date show right
+    // away; only the actual Check In/Out buttons wait on GPS. ──────
+    function renderInitialView() {
+      const saved = getSavedEmployee();
+      if (saved && saved.emp_id) {
+        empInfo = saved;
+        document.getElementById('firstTimeForm').style.display = 'none';
+        document.getElementById('punchView').style.display = 'block';
+        renderPunchView();
+      } else {
+        document.getElementById('punchView').style.display = 'none';
+        document.getElementById('firstTimeForm').style.display = 'block';
+      }
+    }
+
+    // ── First-time registration submit ─────────────────
     async function submitDetails() {
       const errEl = document.getElementById('errDetails');
       errEl.style.display = 'none';
@@ -872,8 +772,13 @@
             email:  data.data.email,
             mobile: data.data.mobile
           };
+          // 🔒 Locked to this device from now on — no switch-employee
+          // option exists anywhere in this page.
           saveEmployee(empInfo);
-          goToPunchStep();
+
+          document.getElementById('firstTimeForm').style.display = 'none';
+          document.getElementById('punchView').style.display = 'block';
+          renderPunchView();
         } else {
           showErr(errEl, data.message || 'Details did not match. Please double-check and try again.');
           btn.disabled = false; sp.style.display = 'none';
@@ -884,10 +789,17 @@
       }
     }
 
-    // ── STEP 3 : Punch screen — fetch today's IN/OUT status ────────
-    async function goToPunchStep() {
+    // ── Punch view — populate identity + today's IN/OUT status ─────
+    async function renderPunchView() {
       document.getElementById('showName').textContent = empInfo.name || empInfo.emp_id;
       document.getElementById('showEmpId').textContent = empInfo.emp_id;
+      document.getElementById('showMobile').textContent = empInfo.mobile || '—';
+      document.getElementById('showEmail').textContent = empInfo.email || '—';
+      document.getElementById('todayDateDisp').textContent =
+        new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+      // Buttons stay disabled until location verifies (see afterLocationVerified)
+      setPunchButtonsEnabled(false);
 
       try {
         const todayStr = istDateStr();
@@ -895,10 +807,6 @@
         const d = await r.json();
         if (d.status === 'success') {
           const logs = (d.data && d.data.data) || [];
-          // Backend already filters by emp_id (self-punch session) + date,
-          // so the attendance sheet's own row for today (if any) is logs[0].
-          // Row has no emp_id column anymore — match on Email as a safety
-          // check in case more than one row ever comes back.
           const mine = logs.find(l => String(l['Email'] || '').toLowerCase() === String(empInfo.email || '').toLowerCase()) || logs[0];
           if (mine) {
             todayIn = mine['In-Time'] || '—';
@@ -910,7 +818,7 @@
             lastPunch = null; todayIn = '—'; todayOut = '—';
           }
         }
-      } catch (e) { /* silent — still show punch screen */ }
+      } catch (e) { /* silent — still show punch view */ }
 
       document.getElementById('inDisp').textContent = todayIn !== '—' ? fmt12(todayIn) : '—';
       document.getElementById('outDisp').textContent = todayOut !== '—' ? fmt12(todayOut) : '—';
@@ -933,21 +841,11 @@
         btnOut.style.display = 'none';
       }
 
-      showStep(3);
+      // If location already verified by the time this resolves, unlock now.
+      if (locationVerified) setPunchButtonsEnabled(lastPunch !== 'both');
     }
 
-    // ── "Not you? Switch Employee" — clears saved details on this phone
-    function switchEmployee() {
-      clearSavedEmployee();
-      empInfo = {};
-      lastPunch = null; todayIn = '—'; todayOut = '—';
-      const ids = ['inpEmpId', 'inpName', 'inpEmail', 'inpMobile'];
-      ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-      document.getElementById('errDetails').style.display = 'none';
-      showStep(2);
-    }
-
-    // ── STEP 3 : Punch ────────────────────────────────
+    // ── Punch (Check In / Check Out) ────────────────────
     async function doPunch(type) {
       const errEl = document.getElementById('errPunch');
       errEl.style.display = 'none';
@@ -970,11 +868,8 @@
         date: dateStr,
         time: timeStr
       };
-      // No token / checksum — geofence + one-time detail verification
-      // (Step 2) is the identity proof for this self-service kiosk flow.
-      // method/latitude/longitude/remarks removed — the new
-      // handleMarkAttendance() in appscript_attendance.gs only reads
-      // emp_id, date and time; the old fields were silently ignored.
+      // No token / checksum — geofence + the one-time device registration
+      // is the identity proof for this self-service kiosk flow.
 
       try {
         const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
@@ -984,28 +879,23 @@
           if (type === 'in') todayIn = (data.data && data.data['In-Time']) ? data.data['In-Time'] : timeStr;
           else todayOut = (data.data && data.data['Out-Time']) ? data.data['Out-Time'] : timeStr;
 
-          document.getElementById('finalIn').textContent = todayIn !== '—' ? fmt12(todayIn) : '—';
-          document.getElementById('finalOut').textContent = todayOut !== '—' ? fmt12(todayOut) : '—';
-          document.getElementById('finalName').textContent = empInfo.name;
-          document.getElementById('finalDate').textContent = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+          document.getElementById('inDisp').textContent = todayIn !== '—' ? fmt12(todayIn) : '—';
+          document.getElementById('outDisp').textContent = todayOut !== '—' ? fmt12(todayOut) : '—';
 
-          const ring = document.getElementById('successRing');
-          const title = document.getElementById('successTitle');
-          const msg = document.getElementById('successMsg');
           if (type === 'in') {
-            ring.style.cssText = 'background:var(--success-dim);border:1.5px solid rgba(52,211,153,0.3);';
-            ring.textContent = '✅';
-            title.textContent = 'Punched IN!';
-            msg.textContent = 'Your IN time has been recorded. Good morning! 🌅';
+            lastPunch = 'in';
+            document.getElementById('btnIn').style.display = 'none';
+            document.getElementById('btnOut').style.display = 'flex';
+            flashSuccess('✅', 'Punched IN!');
           } else {
-            ring.style.cssText = 'background:var(--warning-dim);border:1.5px solid rgba(251,191,36,0.28);';
-            ring.textContent = '🕐';
-            title.textContent = 'Punched OUT!';
-            msg.textContent = 'Your OUT time has been recorded. Have a nice evening! 🌇';
+            lastPunch = 'both';
+            document.getElementById('btnOut').style.display = 'none';
+            document.getElementById('completeBanner').style.display = 'block';
+            flashSuccess('🕐', 'Punched OUT!');
           }
 
           sp.style.display = 'none';
-          showStep(4);
+          setPunchButtonsEnabled(locationVerified && lastPunch !== 'both');
         } else {
           showErr(errEl, data.message || 'Punch could not be recorded. Please try again.');
           sp.style.display = 'none'; btn.disabled = false;
@@ -1016,14 +906,14 @@
       }
     }
 
-    // ── Reset (back to punch screen, same employee on this device) ──
-    function resetFlow() {
-      document.getElementById('inDisp').textContent = '—';
-      document.getElementById('outDisp').textContent = '—';
-      document.getElementById('completeBanner').style.display = 'none';
-      document.getElementById('btnIn').style.display = 'none';
-      document.getElementById('btnOut').style.display = 'none';
-      goToPunchStep();
+    // ── Brief checkmark flash — 1.5s, then fades back to the same
+    // (now-updated) punch view. No separate "success screen". ──────
+    function flashSuccess(icon, title) {
+      const overlay = document.getElementById('successOverlay');
+      document.getElementById('ovRing').textContent = icon;
+      document.getElementById('ovTitle').textContent = title;
+      overlay.classList.add('show');
+      setTimeout(() => overlay.classList.remove('show'), 1500);
     }
 
     // ── Helpers ───────────────────────────────────────
@@ -1049,11 +939,11 @@
 
     // ── Boot ──────────────────────────────────────────
     window.addEventListener('load', () => {
-      // Universal link — no ?branch= param needed. Location is now
-      // requested automatically on page open (browser shows its native
-      // permission popup) — employee just taps "Allow". The button
-      // (#btnLoc) stays visible as a manual retry path in case GPS
-      // fails or permission is denied on the first attempt.
+      // Render Name/Mobile/Email/Date (or the first-time form)
+      // immediately — doesn't wait on GPS.
+      renderInitialView();
+      // Location is requested automatically, silently, right away.
+      // Only the Check In/Out buttons stay locked until it succeeds.
       requestLocation();
     });
   </script>

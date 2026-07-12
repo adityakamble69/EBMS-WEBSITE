@@ -1874,6 +1874,21 @@
       return new Date(now.getTime() + IST_OFFSET_MS - now.getTimezoneOffset() * 60 * 1000);
     }
 
+    // Backend (formatDateOnly / formatDateOnly) now sends plain "dd-MM-yyyy"
+    // strings for every date field (joining_date, attendance Date, shift
+    // roster date, etc). new Date("18-11-2025") is NOT reliably parseable
+    // by JS (wrong / Invalid Date) — this helper parses that exact format.
+    function parseDMY(str) {
+      if (!str) return null;
+      const s = String(str).trim();
+      const m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/); // dd-MM-yyyy
+      if (m) {
+        return new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+      }
+      const d = new Date(s); // fallback: ISO or other parseable formats
+      return isNaN(d.getTime()) ? null : d;
+    }
+
     // Convert any date/string to a "YYYY-MM-DD" IST string
     function toISTDateStr(val) {
       if (!val) return '';
@@ -1885,6 +1900,11 @@
         const str = String(val);
         // Already YYYY-MM-DD format? Return as-is
         if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+        // Backend's plain "dd-MM-yyyy" display format
+        if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(str)) {
+          const parsed = parseDMY(str);
+          return parsed ? formatDateYMD(parsed) : '';
+        }
         d = new Date(str);
       }
       if (isNaN(d.getTime())) return String(val).split('T')[0];
@@ -1902,8 +1922,9 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       if (!USER || !USER.employee_id) { window.location.href = 'index.html'; return; }
-      loadProfile();
-      loadShiftAndAttendanceStats();
+      // loadShiftAndAttendanceStats() needs EMPLOYEE_DATA.default_shift_id
+      // (set inside loadProfile()) for its fallback — wait for it first.
+      loadProfile().then(loadShiftAndAttendanceStats);
       loadCalendar();
       loadTasks();
       loadMyLeaves();
@@ -1959,8 +1980,9 @@
       document.getElementById('idCardRole').textContent = (USER.role || 'staff').replace(/_/g, ' ').toUpperCase();
       document.getElementById('idCardEmpId').textContent = emp.emp_id || '—';
       document.getElementById('idCardDept').textContent = emp.department_id || '—';
-      document.getElementById('idCardJoin').textContent = emp.joining_date
-        ? new Date(emp.joining_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'numeric', year: 'numeric' })
+      const idCardJoinD = parseDMY(emp.joining_date);
+      document.getElementById('idCardJoin').textContent = idCardJoinD
+        ? idCardJoinD.toLocaleDateString('en-IN', { day: 'numeric', month: 'numeric', year: 'numeric' })
         : '—';
       document.getElementById('idCardMobile').textContent = emp.mobile || '—';
 
@@ -2300,11 +2322,13 @@
       document.getElementById('infoEmail').textContent = emp.email || '—';
       document.getElementById('infoMobile').textContent = emp.mobile || '—';
 
-      // Date of joining — backend field is "joining_date" (see appscript_employees.gs)
-      if (emp.joining_date) {
-        const d = new Date(emp.joining_date);
-        document.getElementById('infoJoinDate').textContent = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-        const days = Math.floor((TODAY - d) / (1000 * 60 * 60 * 24));
+      // Date of joining — backend field is "joining_date", sent as plain
+      // "dd-MM-yyyy" (formatDateOnly()), so it must go through parseDMY(),
+      // not new Date(), or it comes out as "Invalid Date".
+      const joinD = parseDMY(emp.joining_date);
+      if (joinD) {
+        document.getElementById('infoJoinDate').textContent = joinD.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const days = Math.floor((TODAY - joinD) / (1000 * 60 * 60 * 24));
         if (days >= 0) document.getElementById('infoJoinDays').textContent = `${days} Days with us`;
       } else {
         document.getElementById('infoJoinDate').textContent = '—';
@@ -2388,38 +2412,75 @@
     /* ── Section 2: Shift + Monthly Hours ── */
     async function loadShiftAndAttendanceStats() {
       const todayStr = formatDateYMD(new Date());
+      let matchedRoster = null;
       try {
         const res = await fetch(`${API_URL}?action=getShiftRoster&token=${TOKEN}&from_date=${todayStr}&to_date=${todayStr}&_ts=${Date.now()}`, { cache: 'no-store' });
         const payload = await res.json();
         if (payload.status === 'success' && Array.isArray(payload.data)) {
-          const mine = payload.data.find(a => a.emp_id === USER.employee_id && a.date === todayStr);
-          if (mine) {
-            document.getElementById('statShiftTime').textContent = `${formatTime12Hour(mine.start_time)} – ${formatTime12Hour(mine.end_time)}`;
-            document.getElementById('statShiftName').textContent = mine.shift_name || '—';
+          // NOTE: backend now returns date as "dd-MM-yyyy" (formatDateOnly()),
+          // not "yyyy-MM-dd" like todayStr — compare via toISTDateStr(), not ===.
+          matchedRoster = payload.data.find(a => a.emp_id === USER.employee_id && toISTDateStr(a.date) === todayStr);
+        }
+      } catch (e) { /* keep default */ }
+
+      if (matchedRoster) {
+        // Date-specific roster override exists for today — use it.
+        document.getElementById('statShiftTime').textContent = `${formatTime12Hour(matchedRoster.start_time)} – ${formatTime12Hour(matchedRoster.end_time)}`;
+        document.getElementById('statShiftName').textContent = matchedRoster.shift_name || '—';
+      } else if (EMPLOYEE_DATA && EMPLOYEE_DATA.default_shift_id) {
+        // No override for today — fall back to the employee's standard
+        // shift (employees.default_shift_id), which the old code never
+        // checked at all.
+        try {
+          const res2 = await fetch(`${API_URL}?action=getShifts&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+          const payload2 = await res2.json();
+          const tmpl = (payload2.status === 'success' ? payload2.data : []).find(s => s.shift_id === EMPLOYEE_DATA.default_shift_id);
+          if (tmpl) {
+            document.getElementById('statShiftTime').textContent = `${formatTime12Hour(tmpl.start_time)} – ${formatTime12Hour(tmpl.end_time)}`;
+            document.getElementById('statShiftName').textContent = tmpl.shift_name + ' (Standard)';
           } else {
             document.getElementById('statShiftTime').textContent = '—';
             document.getElementById('statShiftName').textContent = 'No shift assigned today';
           }
+        } catch (e) {
+          document.getElementById('statShiftTime').textContent = '—';
+          document.getElementById('statShiftName').textContent = 'No shift assigned today';
         }
-      } catch (e) { /* keep default */ }
+      } else {
+        document.getElementById('statShiftTime').textContent = '—';
+        document.getElementById('statShiftName').textContent = 'No shift assigned today';
+      }
 
-      // Monthly hours from attendance
+      // Monthly hours from attendance.
+      // NOTE: the attendance sheet/backend no longer has emp_id / in_time /
+      // out_time / status columns — the new schema is just
+      // Name / Phone / Email / Date / In-Time / Out-Time (see
+      // appscript_attendance.gs). The backend getAttendance route also has
+      // no from_date/to_date support (only a single ?date= filter) — for an
+      // 'employee' session it already auto-scopes to that employee's own
+      // Email, so we just fetch and filter down to the current month here.
       try {
         const firstDay = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH, 1));
         const lastDay = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH + 1, 0));
-        const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&emp_id=${USER.employee_id}&from_date=${firstDay}&to_date=${lastDay}&limit=200`);
+        const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&limit=200`);
         const payload = await res.json();
         if (payload.status === 'success') {
           const logs = (payload.data && payload.data.data) || [];
-          const mine = logs.filter(l => l.emp_id === USER.employee_id);
+          const mine = logs.filter(l => {
+            const dk = toISTDateStr(l['Date']);
+            return dk >= firstDay && dk <= lastDay;
+          });
           let totalMinutes = 0;
           let presentDays = 0;
           mine.forEach(l => {
-            if (l.in_time && l.out_time) {
-              const mins = diffMinutes(l.in_time, l.out_time);
-              if (mins > 0) totalMinutes += mins;
+            const inT = l['In-Time'], outT = l['Out-Time'];
+            if (inT) {
+              presentDays++; // punched in that day = present
+              if (outT) {
+                const mins = diffMinutes(inT, outT);
+                if (mins > 0) totalMinutes += mins;
+              }
             }
-            if (l.status === 'present') presentDays++;
           });
           const hrs = Math.floor(totalMinutes / 60);
           const mins = totalMinutes % 60;
@@ -2475,13 +2536,18 @@
       let holidaySet = new Set();
 
       try {
-        const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&emp_id=${USER.employee_id}&from_date=${firstDay}&to_date=${lastDay}&limit=200`);
+        // NOTE: attendance sheet/backend schema is now just
+        // Name/Phone/Email/Date/In-Time/Out-Time — no emp_id, no
+        // from_date/to_date filter support server-side (an 'employee'
+        // session token already auto-scopes to their own Email). We fetch
+        // and then keep only rows that fall in the visible month.
+        const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&limit=200`);
         const payload = await res.json();
         if (payload.status === 'success') {
           const logs = (payload.data && payload.data.data) || [];
-          logs.filter(l => l.emp_id === USER.employee_id).forEach(l => {
-            const dateKey = toISTDateStr(l.date);
-            attendanceMap[dateKey] = l;
+          logs.forEach(l => {
+            const dateKey = toISTDateStr(l['Date']);
+            if (dateKey >= firstDay && dateKey <= lastDay) attendanceMap[dateKey] = l;
           });
         }
       } catch (e) { /* ignore, render what we have */ }
@@ -2529,8 +2595,9 @@
           cls += ' cal-leave';
         } else if (attendanceMap[dateKey]) {
           const log = attendanceMap[dateKey];
-          if (log.status === 'present' && log.late_minutes > 0) cls += ' cal-late';
-          else if (log.status === 'present') cls += ' cal-present';
+          // "Present" now just means an In-Time was punched that day —
+          // the status/late_minutes columns don't exist anymore.
+          if (log['In-Time']) cls += ' cal-present';
           else cls += ' cal-absent';
         } else {
           cls += ' cal-absent';
@@ -2539,8 +2606,8 @@
         let tipText = dateKey;
         if (attendanceMap[dateKey]) {
           const log = attendanceMap[dateKey];
-          const inT = log.in_time ? log.in_time : '—';
-          const outT = log.out_time ? log.out_time : '—';
+          const inT = log['In-Time'] ? log['In-Time'] : '—';
+          const outT = log['Out-Time'] ? log['Out-Time'] : '—';
           tipText = `${dateKey}\nIN: ${inT}  OUT: ${outT}`;
         }
         html += `<div class="${cls}" title="${tipText}">${day}</div>`;
@@ -2831,21 +2898,27 @@
       document.getElementById('punchTodayDate').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' });
 
       try {
-        const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&emp_id=${USER.employee_id}&date=${todayStr}&limit=5`);
+        // Attendance schema is now Name/Phone/Email/Date/In-Time/Out-Time —
+        // no emp_id column. An 'employee' session token already auto-scopes
+        // ?date= results to this employee's own Email server-side, so the
+        // first row back (if any) is "mine".
+        const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&date=${todayStr}&limit=5`);
         const payload = await res.json();
         if (payload.status === 'success') {
           const logs = (payload.data && payload.data.data) || [];
-          const mine = logs.find(l => l.emp_id === USER.employee_id && toISTDateStr(l.date) === todayStr);
+          const mine = logs.find(l => toISTDateStr(l['Date']) === todayStr);
           if (mine) {
-            document.getElementById('punchInTime').textContent = mine.in_time ? formatTime12Hour(mine.in_time) : '—';
-            document.getElementById('punchOutTime').textContent = mine.out_time ? formatTime12Hour(mine.out_time) : '—';
+            const inTime = mine['In-Time'];
+            const outTime = mine['Out-Time'];
+            document.getElementById('punchInTime').textContent = inTime ? formatTime12Hour(inTime) : '—';
+            document.getElementById('punchOutTime').textContent = outTime ? formatTime12Hour(outTime) : '—';
 
             // Live badge — show if punched in but not yet out
             const badge = document.getElementById('punchLiveBadge');
-            if (mine.in_time && !mine.out_time) {
+            if (inTime && !outTime) {
               badge.style.display = 'inline-flex';
               badge.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#34D399;display:inline-block;animation:pulse 1.5s ease-in-out infinite;"></span> Punched In';
-            } else if (mine.in_time && mine.out_time) {
+            } else if (inTime && outTime) {
               badge.style.display = 'inline-flex';
               badge.style.background = 'rgba(108,142,255,0.12)';
               badge.style.color = '#818CF8';
@@ -2854,15 +2927,15 @@
             }
 
             // Hours worked
-            if (mine.in_time && mine.out_time) {
-              const mins = diffMinutes(mine.in_time, mine.out_time);
+            if (inTime && outTime) {
+              const mins = diffMinutes(inTime, outTime);
               document.getElementById('punchHoursToday').textContent = `${Math.floor(mins / 60)}h ${mins % 60}m`;
-            } else if (mine.in_time) {
+            } else if (inTime) {
               // Calculate live hours since punch in
               // Handle both "HH:MM" string and Google Sheets decimal (0.4847 = 11:38)
               const now = new Date();
               let inMins = 0;
-              const inStr = String(mine.in_time).trim();
+              const inStr = String(inTime).trim();
               if (!isNaN(parseFloat(inStr)) && !inStr.includes(':')) {
                 inMins = Math.round(parseFloat(inStr) * 24 * 60);
               } else {
@@ -2881,7 +2954,7 @@
             }
 
             // Highlight card border green if punched in
-            if (mine.in_time) {
+            if (inTime) {
               const card = document.getElementById('punchStatusCard');
               if (card) card.style.borderColor = 'rgba(52,211,153,0.3)';
             }
