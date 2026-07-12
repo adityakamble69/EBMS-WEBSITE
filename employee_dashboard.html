@@ -527,33 +527,175 @@
       border-color: rgba(52, 211, 153, 0.25);
     }
 
+    /* Present but didn't follow the shift timing (late in / early out / missed punch-out) */
+    .cal-irregular {
+      background: rgba(168, 85, 247, 0.18);
+      color: #C084FC;
+      border-color: rgba(168, 85, 247, 0.3);
+    }
+
     .cal-absent {
       background: rgba(248, 113, 113, 0.16);
       color: #FCA5A5;
       border-color: rgba(248, 113, 113, 0.25);
     }
 
-    .cal-late {
-      background: rgba(251, 191, 36, 0.16);
-      color: #FCD34D;
-      border-color: rgba(251, 191, 36, 0.25);
-    }
-
+    /* Distinct from .cal-irregular (purple) so an approved leave day is
+       never visually confused with an irregular-timing punch day. */
     .cal-leave {
-      background: rgba(192, 132, 252, 0.16);
-      color: #D8B4FE;
-      border-color: rgba(192, 132, 252, 0.25);
+      background: rgba(96, 165, 250, 0.16);
+      color: #93C5FD;
+      border-color: rgba(96, 165, 250, 0.25);
     }
 
     .cal-off {
-      background: rgba(161, 161, 170, 0.08);
-      color: var(--text-dim);
-      border-color: rgba(255, 255, 255, 0.04);
+      background: rgba(212, 217, 230, 0.14);
+      color: var(--accent-glow);
+      border-color: rgba(212, 217, 230, 0.2);
     }
 
     .cal-future {
       background: rgba(255, 255, 255, 0.02);
       color: var(--text-dim);
+    }
+
+    /* Small corner dot marking a day where Admin/HR assigned a
+       date-specific shift override (Shift Roster), layered on top of
+       whatever present/irregular/absent/off colour the cell already has. */
+    .cal-cell.cal-hasshift::after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-glow);
+    }
+
+    .cal-cell.cal-clickable {
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+
+    .cal-cell.cal-clickable:hover {
+      filter: brightness(1.35);
+    }
+
+    /* ── Attendance day-detail popup ── */
+    .cal-day-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      z-index: 1300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .cal-day-modal-overlay.open {
+      display: flex;
+    }
+
+    .cal-day-modal-card {
+      background: rgba(24, 24, 27, 0.92);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(28px) saturate(160%);
+      border-radius: var(--radius);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 340px;
+      padding: 20px;
+    }
+
+    .cal-day-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .cal-day-modal-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .cal-day-modal-close {
+      background: var(--danger);
+      border: none;
+      color: #fff;
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .cal-day-modal-status {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-bottom: 14px;
+    }
+
+    .cal-day-modal-status.st-present { background: rgba(52, 211, 153, 0.16); color: var(--success); }
+    .cal-day-modal-status.st-irregular { background: rgba(168, 85, 247, 0.18); color: var(--purple); }
+    .cal-day-modal-status.st-absent { background: rgba(248, 113, 113, 0.16); color: var(--danger); }
+    .cal-day-modal-status.st-off { background: rgba(212, 217, 230, 0.16); color: var(--accent-glow); }
+    .cal-day-modal-status.st-leave { background: rgba(96, 165, 250, 0.16); color: #60A5FA; }
+
+    .cal-day-modal-row {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .cal-day-modal-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .cal-day-modal-row label {
+      display: block;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .cal-day-modal-row .cal-day-modal-time {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .cal-day-modal-row.in-time .cal-day-modal-time {
+      color: var(--success);
+    }
+
+    .cal-day-modal-row.out-time .cal-day-modal-time {
+      color: #60A5FA;
+    }
+
+    .cal-day-modal-row.shift-time .cal-day-modal-time {
+      color: var(--accent-glow);
+      font-size: 15px;
     }
 
     /* ── Section 5: Tasks ── */
@@ -1457,13 +1599,37 @@
       </div>
       <div class="calendar-legend">
         <span class="legend-dot"><span style="background:#34D399;"></span>Present</span>
+        <span class="legend-dot"><span style="background:#C084FC;"></span>Irregular Timing</span>
         <span class="legend-dot"><span style="background:#F87171;"></span>Absent</span>
-        <span class="legend-dot"><span style="background:#FBBF24;"></span>Late</span>
-        <span class="legend-dot"><span style="background:#C084FC;"></span>Leave</span>
-        <span class="legend-dot"><span style="background:#71717A;"></span>Off / Holiday</span>
+        <span class="legend-dot"><span style="background:#D4D9E6;"></span>Weekly Off</span>
+        <span class="legend-dot"><span style="background:#D4D9E6;"></span>Shift Override</span>
+        <span class="legend-dot"><span style="background:#60A5FA;"></span>Approved Leave</span>
       </div>
       <div class="calendar-grid" id="calendarGrid">
         <div class="empty-note" style="grid-column: 1 / -1;">Loading calendar...</div>
+      </div>
+    </div>
+
+    <!-- Attendance day-detail popup -->
+    <div class="cal-day-modal-overlay" id="calDayModalOverlay" onclick="calCloseDayModal()">
+      <div class="cal-day-modal-card" onclick="event.stopPropagation()">
+        <div class="cal-day-modal-header">
+          <h3 id="calDayModalTitle">—</h3>
+          <button type="button" class="cal-day-modal-close" onclick="calCloseDayModal()">✕</button>
+        </div>
+        <div class="cal-day-modal-status" id="calDayModalStatus"></div>
+        <div class="cal-day-modal-row in-time">
+          <label>In-Time</label>
+          <div class="cal-day-modal-time" id="calDayModalIn">—</div>
+        </div>
+        <div class="cal-day-modal-row out-time">
+          <label>Out-Time</label>
+          <div class="cal-day-modal-time" id="calDayModalOut">—</div>
+        </div>
+        <div class="cal-day-modal-row shift-time">
+          <label id="calDayModalShiftLabel">Shift</label>
+          <div class="cal-day-modal-time" id="calDayModalShift">—</div>
+        </div>
       </div>
     </div>
 
@@ -1919,6 +2085,118 @@
     let CAL_YEAR = _istNow.getFullYear();
     // TODAY = IST midnight (for future-date comparison in calendar)
     const TODAY = new Date(_istNow.getFullYear(), _istNow.getMonth(), _istNow.getDate());
+
+    // ── Shift-aware attendance status (Present / Irregular / Absent) ──
+    // Mirrors the same rules used in the Admin Panel's employee profile
+    // calendar (employees.html) so both views agree on what counts as
+    // "irregular timing". Falls back to a generic 9:00–18:00 window
+    // when the employee has no default shift and no roster override
+    // for that specific day.
+
+    // ── Shared request cache ──────────────────────────────────
+    // The Apps Script backend is slow per round-trip, and several parts
+    // of this page (calendar, monthly-hours card, leave history) were
+    // each independently re-fetching the SAME data (all attendance logs,
+    // all leaves, holidays for the year, shift templates) every time —
+    // including on every "Prev/Next" month click, even though none of
+    // that data is actually month-filtered server-side. This is what
+    // made switching to a past month feel slow.
+    //
+    // memoizeAsync caches the in-flight PROMISE, not just the resolved
+    // value — so if loadCalendar() and loadShiftAndAttendanceStats() both
+    // ask for the same thing at nearly the same time on page load (which
+    // they do), the second caller reuses the first caller's still-pending
+    // request instead of firing a duplicate one.
+    function memoizeAsync(fn) {
+      const cache = new Map();
+      const memoized = (key) => {
+        if (!cache.has(key)) {
+          cache.set(key, fn(key).catch(err => { cache.delete(key); throw err; }));
+        }
+        return cache.get(key);
+      };
+      memoized.invalidate = (key) => cache.delete(key);
+      memoized.invalidateAll = () => cache.clear();
+      return memoized;
+    }
+
+    const getShiftTemplatesCached = memoizeAsync(async () => {
+      try {
+        const res = await fetch(`${API_URL}?action=getShifts&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        return (payload.status === 'success' ? payload.data : []) || [];
+      } catch (e) { return []; }
+    });
+
+    const getAttendanceCached = memoizeAsync(async () => {
+      try {
+        const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&limit=200`, { cache: 'no-store' });
+        const payload = await res.json();
+        return (payload.status === 'success' && payload.data && payload.data.data) || [];
+      } catch (e) { return []; }
+    });
+
+    const getRawLeavesCached = memoizeAsync(async () => {
+      try {
+        const res = await fetch(`${API_URL}?action=getLeaves&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        return (payload.status === 'success' && payload.data && payload.data.data) || [];
+      } catch (e) { return []; }
+    });
+    async function getApprovedLeavesCached() {
+      const raw = await getRawLeavesCached('all');
+      return raw.filter(l => l.emp_id === USER.employee_id && l.status === 'approved');
+    }
+
+    const getHolidaysCached = memoizeAsync(async (year) => {
+      try {
+        const res = await fetch(`${API_URL}?action=getHolidays&token=${TOKEN}&year=${year}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        return (payload.status === 'success' ? payload.data : []) || [];
+      } catch (e) { return []; }
+    });
+
+    const getShiftRosterCachedRaw = memoizeAsync(async (rangeKey) => {
+      const [fromDate, toDate] = rangeKey.split('_');
+      try {
+        const res = await fetch(`${API_URL}?action=getShiftRoster&token=${TOKEN}&from_date=${fromDate}&to_date=${toDate}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        return (payload.status === 'success' && Array.isArray(payload.data)) ? payload.data : [];
+      } catch (e) { return []; }
+    });
+    function getShiftRosterCached(fromDate, toDate) {
+      return getShiftRosterCachedRaw(fromDate + '_' + toDate);
+    }
+    // ─────────────────────────────────────────────────────────
+
+    const CAL_DEFAULT_SHIFT_START_MIN = 9 * 60;   // 09:00 fallback
+    const CAL_DEFAULT_SHIFT_END_MIN = 18 * 60;    // 18:00 fallback
+    const CAL_GRACE_MIN = 15;
+
+    function timeToMinutes(t) {
+      if (!t) return null;
+      const str = String(t).trim();
+      if (str.includes('T')) { const p = str.split('T')[1].split(':'); return (+p[0] || 0) * 60 + (+p[1] || 0); }
+      if (str.includes(':')) { const p = str.split(':'); return (+p[0] || 0) * 60 + (+p[1] || 0); }
+      if (!isNaN(parseFloat(str))) return Math.round(parseFloat(str) * 24 * 60); // Sheets decimal time
+      return null;
+    }
+
+    // Returns 'present' | 'irregular' | 'absent' | null (null = nothing
+    // to show, e.g. a future day). isToday days with no punch-out yet
+    // are not flagged irregular — they're just still checked in.
+    function calDayStatus(log, isOffDay, isFuture, isToday, shiftStartMin, shiftEndMin) {
+      if (log && log['In-Time']) {
+        const inMin = timeToMinutes(log['In-Time']);
+        const outMin = log['Out-Time'] ? timeToMinutes(log['Out-Time']) : null;
+        const lateIn = inMin !== null && inMin > shiftStartMin + CAL_GRACE_MIN;
+        const earlyOut = outMin !== null && outMin < shiftEndMin - CAL_GRACE_MIN;
+        const missingPunch = (outMin === null && !isToday);
+        return (lateIn || earlyOut || missingPunch) ? 'irregular' : 'present';
+      }
+      if (isOffDay || isFuture) return null;
+      return 'absent';
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       if (!USER || !USER.employee_id) { window.location.href = 'index.html'; return; }
@@ -2412,16 +2690,19 @@
     /* ── Section 2: Shift + Monthly Hours ── */
     async function loadShiftAndAttendanceStats() {
       const todayStr = formatDateYMD(new Date());
-      let matchedRoster = null;
-      try {
-        const res = await fetch(`${API_URL}?action=getShiftRoster&token=${TOKEN}&from_date=${todayStr}&to_date=${todayStr}&_ts=${Date.now()}`, { cache: 'no-store' });
-        const payload = await res.json();
-        if (payload.status === 'success' && Array.isArray(payload.data)) {
-          // NOTE: backend now returns date as "dd-MM-yyyy" (formatDateOnly()),
-          // not "yyyy-MM-dd" like todayStr — compare via toISTDateStr(), not ===.
-          matchedRoster = payload.data.find(a => a.emp_id === USER.employee_id && toISTDateStr(a.date) === todayStr);
-        }
-      } catch (e) { /* keep default */ }
+      const firstDay = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH, 1));
+      const lastDay = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH + 1, 0));
+
+      // ⚡ Shares the same caches loadCalendar() uses (getShiftRosterCached,
+      // getShiftTemplatesCached, getAttendanceCached) instead of firing its
+      // own separate requests for the same data — cuts this card's load
+      // time roughly in half when both run on page load.
+      const [rosterToday, attendanceLogs] = await Promise.all([
+        getShiftRosterCached(todayStr, todayStr),
+        getAttendanceCached()
+      ]);
+
+      const matchedRoster = rosterToday.find(a => a.emp_id === USER.employee_id && toISTDateStr(a.date) === todayStr) || null;
 
       if (matchedRoster) {
         // Date-specific roster override exists for today — use it.
@@ -2431,18 +2712,12 @@
         // No override for today — fall back to the employee's standard
         // shift (employees.default_shift_id), which the old code never
         // checked at all.
-        try {
-          const res2 = await fetch(`${API_URL}?action=getShifts&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
-          const payload2 = await res2.json();
-          const tmpl = (payload2.status === 'success' ? payload2.data : []).find(s => s.shift_id === EMPLOYEE_DATA.default_shift_id);
-          if (tmpl) {
-            document.getElementById('statShiftTime').textContent = `${formatTime12Hour(tmpl.start_time)} – ${formatTime12Hour(tmpl.end_time)}`;
-            document.getElementById('statShiftName').textContent = tmpl.shift_name + ' (Standard)';
-          } else {
-            document.getElementById('statShiftTime').textContent = '—';
-            document.getElementById('statShiftName').textContent = 'No shift assigned today';
-          }
-        } catch (e) {
+        const templates = await getShiftTemplatesCached();
+        const tmpl = templates.find(s => s.shift_id === EMPLOYEE_DATA.default_shift_id);
+        if (tmpl) {
+          document.getElementById('statShiftTime').textContent = `${formatTime12Hour(tmpl.start_time)} – ${formatTime12Hour(tmpl.end_time)}`;
+          document.getElementById('statShiftName').textContent = tmpl.shift_name + ' (Standard)';
+        } else {
           document.getElementById('statShiftTime').textContent = '—';
           document.getElementById('statShiftName').textContent = 'No shift assigned today';
         }
@@ -2458,42 +2733,27 @@
       // appscript_attendance.gs). The backend getAttendance route also has
       // no from_date/to_date support (only a single ?date= filter) — for an
       // 'employee' session it already auto-scopes to that employee's own
-      // Email, so we just fetch and filter down to the current month here.
-      try {
-        const firstDay = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH, 1));
-        const lastDay = formatDateYMD(new Date(CAL_YEAR, CAL_MONTH + 1, 0));
-        const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&limit=200`);
-        const payload = await res.json();
-        if (payload.status === 'success') {
-          const logs = (payload.data && payload.data.data) || [];
-          const mine = logs.filter(l => {
-            const dk = toISTDateStr(l['Date']);
-            return dk >= firstDay && dk <= lastDay;
-          });
-          let totalMinutes = 0;
-          let presentDays = 0;
-          mine.forEach(l => {
-            const inT = l['In-Time'], outT = l['Out-Time'];
-            if (inT) {
-              presentDays++; // punched in that day = present
-              if (outT) {
-                const mins = diffMinutes(inT, outT);
-                if (mins > 0) totalMinutes += mins;
-              }
-            }
-          });
-          const hrs = Math.floor(totalMinutes / 60);
-          const mins = totalMinutes % 60;
-          document.getElementById('statMonthHours').textContent = `${hrs}h ${mins}m`;
-          document.getElementById('statMonthHoursSub').textContent = `${presentDays} days present`;
-        } else {
-          document.getElementById('statMonthHours').textContent = '—';
-          document.getElementById('statMonthHoursSub').textContent = 'No data yet';
+      // Email, so we just filter the cached logs down to the current month here.
+      const mine = attendanceLogs.filter(l => {
+        const dk = toISTDateStr(l['Date']);
+        return dk >= firstDay && dk <= lastDay;
+      });
+      let totalMinutes = 0;
+      let presentDays = 0;
+      mine.forEach(l => {
+        const inT = l['In-Time'], outT = l['Out-Time'];
+        if (inT) {
+          presentDays++; // punched in that day = present
+          if (outT) {
+            const mins = diffMinutes(inT, outT);
+            if (mins > 0) totalMinutes += mins;
+          }
         }
-      } catch (e) {
-        document.getElementById('statMonthHours').textContent = '—';
-        document.getElementById('statMonthHoursSub').textContent = 'Could not load';
-      }
+      });
+      const hrs = Math.floor(totalMinutes / 60);
+      const mins = totalMinutes % 60;
+      document.getElementById('statMonthHours').textContent = `${hrs}h ${mins}m`;
+      document.getElementById('statMonthHoursSub').textContent = `${presentDays} days present`;
     }
 
     function diffMinutes(inTime, outTime) {
@@ -2531,47 +2791,58 @@
       const daysInMonth = new Date(CAL_YEAR, CAL_MONTH + 1, 0).getDate();
       const startWeekday = new Date(CAL_YEAR, CAL_MONTH, 1).getDay();
 
+      // Only show a "switching month" placeholder if this is taking a
+      // moment — avoids a flash on the (usually instant, cached) common
+      // case of re-visiting an already-loaded month.
+      const gridEl = document.getElementById('calendarGrid');
+      const loadingTimer = setTimeout(() => {
+        gridEl.innerHTML = '<div class="empty-note" style="grid-column: 1 / -1;">Loading calendar...</div>';
+      }, 250);
+
       let attendanceMap = {};
       let leaveDatesSet = new Set();
       let holidaySet = new Set();
+      let shiftMap = {}; // dateKey (YYYY-MM-DD) -> { shift_name, start_time, end_time } roster override
 
-      try {
-        // NOTE: attendance sheet/backend schema is now just
-        // Name/Phone/Email/Date/In-Time/Out-Time — no emp_id, no
-        // from_date/to_date filter support server-side (an 'employee'
-        // session token already auto-scopes to their own Email). We fetch
-        // and then keep only rows that fall in the visible month.
-        const res = await fetch(`${API_URL}?action=getAttendance&token=${TOKEN}&limit=200`);
-        const payload = await res.json();
-        if (payload.status === 'success') {
-          const logs = (payload.data && payload.data.data) || [];
-          logs.forEach(l => {
-            const dateKey = toISTDateStr(l['Date']);
-            if (dateKey >= firstDay && dateKey <= lastDay) attendanceMap[dateKey] = l;
-          });
-        }
-      } catch (e) { /* ignore, render what we have */ }
+      // ⚡ All four independent lookups fire in parallel (instead of one
+      // after another) and are cached across month navigation — none of
+      // this data is actually re-fetched from a slow backend once loaded,
+      // which is what made clicking "Prev" into a past month feel slow.
+      const [attendanceLogs, approvedLeaves, holidays, rosterRows] = await Promise.all([
+        getAttendanceCached(),
+        getApprovedLeavesCached(),
+        getHolidaysCached(CAL_YEAR),
+        getShiftRosterCached(firstDay, lastDay)
+      ]);
 
-      try {
-        const res = await fetch(`${API_URL}?action=getLeaves&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
-        const payload = await res.json();
-        if (payload.status === 'success') {
-          const leaves = (payload.data && payload.data.data) || [];
-          leaves.filter(l => l.emp_id === USER.employee_id && l.status === 'approved').forEach(l => {
-            let d = new Date(l.from_date);
-            const to = new Date(l.to_date);
-            while (d <= to) { leaveDatesSet.add(formatDateYMD(d)); d.setDate(d.getDate() + 1); }
-          });
-        }
-      } catch (e) { /* ignore */ }
+      attendanceLogs.forEach(l => {
+        const dateKey = toISTDateStr(l['Date']);
+        if (dateKey >= firstDay && dateKey <= lastDay) attendanceMap[dateKey] = l;
+      });
 
-      try {
-        const res = await fetch(`${API_URL}?action=getHolidays&token=${TOKEN}&year=${CAL_YEAR}&_ts=${Date.now()}`, { cache: 'no-store' });
-        const payload = await res.json();
-        if (payload.status === 'success') {
-          (payload.data || []).forEach(h => holidaySet.add(toISTDateStr(h.date)));
-        }
-      } catch (e) { /* ignore */ }
+      approvedLeaves.forEach(l => {
+        let d = new Date(l.from_date);
+        const to = new Date(l.to_date);
+        while (d <= to) { leaveDatesSet.add(formatDateYMD(d)); d.setDate(d.getDate() + 1); }
+      });
+
+      holidays.forEach(h => holidaySet.add(toISTDateStr(h.date)));
+
+      rosterRows.forEach(a => {
+        if (a.emp_id !== USER.employee_id) return;
+        const dk = toISTDateStr(a.date);
+        if (dk) shiftMap[dk] = { shift_name: a.shift_name, start_time: a.start_time, end_time: a.end_time };
+      });
+
+      clearTimeout(loadingTimer);
+
+      // Employee's own standard shift (for late-in/early-out grace window
+      // on days that have no roster override).
+      let defaultTmpl = null;
+      if (EMPLOYEE_DATA && EMPLOYEE_DATA.default_shift_id) {
+        const templates = await getShiftTemplatesCached();
+        defaultTmpl = templates.find(s => s.shift_id === EMPLOYEE_DATA.default_shift_id) || null;
+      }
 
       const weeklyOff = (EMPLOYEE_DATA && EMPLOYEE_DATA.weekly_off) || null;
       const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -2584,36 +2855,140 @@
         const dateObj = new Date(CAL_YEAR, CAL_MONTH, day);
         const dateKey = formatDateYMD(dateObj);
         const isFuture = dateObj > TODAY;
+        const isToday = dateObj.getTime() === TODAY.getTime();
         const isOffDay = (weeklyOff && weekdayNames[dateObj.getDay()] === weeklyOff) || holidaySet.has(dateKey);
+        const dayShift = shiftMap[dateKey]; // roster override for this specific date, if any
+        const log = attendanceMap[dateKey];
+
+        const shiftStartMin = dayShift ? timeToMinutes(dayShift.start_time)
+          : (defaultTmpl ? timeToMinutes(defaultTmpl.start_time) : null);
+        const shiftEndMin = dayShift ? timeToMinutes(dayShift.end_time)
+          : (defaultTmpl ? timeToMinutes(defaultTmpl.end_time) : null);
 
         let cls = 'cal-cell';
+        let statusLabel = '';
+        let statusKey = ''; // used by the popup for its coloured badge
+
         if (isFuture) {
           cls += ' cal-future';
-        } else if (isOffDay) {
-          cls += ' cal-off';
         } else if (leaveDatesSet.has(dateKey)) {
           cls += ' cal-leave';
-        } else if (attendanceMap[dateKey]) {
-          const log = attendanceMap[dateKey];
-          // "Present" now just means an In-Time was punched that day —
-          // the status/late_minutes columns don't exist anymore.
-          if (log['In-Time']) cls += ' cal-present';
-          else cls += ' cal-absent';
+          statusLabel = 'Approved Leave';
+          statusKey = 'leave';
         } else {
-          cls += ' cal-absent';
+          const status = calDayStatus(
+            log, isOffDay, isFuture, isToday,
+            shiftStartMin !== null ? shiftStartMin : CAL_DEFAULT_SHIFT_START_MIN,
+            shiftEndMin !== null ? shiftEndMin : CAL_DEFAULT_SHIFT_END_MIN
+          );
+          if (status === 'present') { cls += ' cal-present'; statusLabel = 'Present'; statusKey = 'present'; }
+          else if (status === 'irregular') { cls += ' cal-irregular'; statusLabel = 'Irregular Timing'; statusKey = 'irregular'; }
+          else if (status === 'absent') { cls += ' cal-absent'; statusLabel = 'Absent'; statusKey = 'absent'; }
+          else if (isOffDay) { cls += ' cal-off'; statusLabel = 'Weekly Off'; statusKey = 'off'; }
         }
+        // Shift-override marker layers on top regardless of the status colour above.
+        if (dayShift) cls += ' cal-hasshift';
 
-        let tipText = dateKey;
-        if (attendanceMap[dateKey]) {
-          const log = attendanceMap[dateKey];
+        let tipText = `${dateKey}${statusLabel ? ' — ' + statusLabel : ''}`;
+        if (log) {
           const inT = log['In-Time'] ? log['In-Time'] : '—';
           const outT = log['Out-Time'] ? log['Out-Time'] : '—';
-          tipText = `${dateKey}\nIN: ${inT}  OUT: ${outT}`;
+          tipText += `\nIN: ${inT}  OUT: ${outT}`;
         }
-        html += `<div class="${cls}" title="${tipText}">${day}</div>`;
+        if (dayShift) {
+          tipText += `\nShift Override: ${dayShift.shift_name || ''} (${dayShift.start_time || '—'}–${dayShift.end_time || '—'})`;
+        }
+
+        // Clickable (opens the day-detail popup) whenever there's something
+        // to actually show: a punch record, a leave day, or a shift override.
+        const isClickable = !isFuture && (log || dayShift || statusKey === 'leave');
+        if (isClickable) {
+          cls += ' cal-clickable';
+          html += `<div class="${cls}" title="${tipText}" data-status="${statusKey}" onclick="calOpenDayModal('${dateKey}')">${day}</div>`;
+        } else {
+          html += `<div class="${cls}" title="${tipText}">${day}</div>`;
+        }
       }
 
+      // Stash for the day-detail popup (calOpenDayModal), so a click doesn't
+      // need to re-fetch anything already loaded for this month's grid.
+      window._calAttMap = attendanceMap;
+      window._calShiftMap = shiftMap;
+      window._calDefaultTmpl = defaultTmpl;
+      window._calLeaveDates = leaveDatesSet;
+      window._calWeeklyOff = weeklyOff;
+      window._calHolidaySet = holidaySet;
+
       document.getElementById('calendarGrid').innerHTML = html;
+    }
+
+    function calOpenDayModal(dateKey) {
+      const record = (window._calAttMap || {})[dateKey];
+      const dayShift = (window._calShiftMap || {})[dateKey];
+      const defaultTmpl = window._calDefaultTmpl;
+      const isLeave = (window._calLeaveDates || new Set()).has(dateKey);
+
+      const dateObj = parseYMD(dateKey);
+      const title = dateObj
+        ? dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+        : dateKey;
+      document.getElementById('calDayModalTitle').textContent = title;
+
+      // Status badge
+      const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const isOffDay = dateObj && ((window._calWeeklyOff && weekdayNames[dateObj.getDay()] === window._calWeeklyOff) || (window._calHolidaySet || new Set()).has(dateKey));
+      const isToday = dateObj && dateObj.getTime() === TODAY.getTime();
+      let statusKey = 'absent', statusLabel = 'Absent';
+      if (isLeave) {
+        statusKey = 'leave'; statusLabel = 'Approved Leave';
+      } else if (record && record['In-Time']) {
+        const shiftStartMin = dayShift ? timeToMinutes(dayShift.start_time) : (defaultTmpl ? timeToMinutes(defaultTmpl.start_time) : null);
+        const shiftEndMin = dayShift ? timeToMinutes(dayShift.end_time) : (defaultTmpl ? timeToMinutes(defaultTmpl.end_time) : null);
+        const status = calDayStatus(record, isOffDay, false, isToday,
+          shiftStartMin !== null ? shiftStartMin : CAL_DEFAULT_SHIFT_START_MIN,
+          shiftEndMin !== null ? shiftEndMin : CAL_DEFAULT_SHIFT_END_MIN);
+        statusKey = status; statusLabel = status === 'irregular' ? 'Irregular Timing' : 'Present';
+      } else if (isOffDay) {
+        statusKey = 'off'; statusLabel = 'Weekly Off';
+      }
+      const statusEl = document.getElementById('calDayModalStatus');
+      statusEl.className = 'cal-day-modal-status st-' + statusKey;
+      statusEl.textContent = statusLabel;
+
+      // In / Out time
+      document.getElementById('calDayModalIn').textContent = (record && record['In-Time']) ? record['In-Time'] : '—';
+      document.getElementById('calDayModalOut').textContent = (record && record['Out-Time'])
+        ? record['Out-Time']
+        : (record && record['In-Time'] ? (isToday ? 'Still In' : 'Not punched out') : '—');
+
+      // Shift row — prefer a date-specific Admin override; otherwise fall
+      // back to the employee's own standard shift so "which shift was this"
+      // is always answered, not just on override days.
+      const shiftLabel = document.getElementById('calDayModalShiftLabel');
+      const shiftEl = document.getElementById('calDayModalShift');
+      if (dayShift) {
+        shiftLabel.textContent = 'Shift Override (by Admin)';
+        shiftEl.textContent = `${dayShift.shift_name || 'Shift'} (${dayShift.start_time || '—'} – ${dayShift.end_time || '—'})`;
+      } else if (defaultTmpl) {
+        shiftLabel.textContent = 'Standard Shift';
+        shiftEl.textContent = `${defaultTmpl.shift_name || 'Shift'} (${defaultTmpl.start_time || '—'} – ${defaultTmpl.end_time || '—'})`;
+      } else {
+        shiftLabel.textContent = 'Shift';
+        shiftEl.textContent = 'No shift assigned';
+      }
+
+      document.getElementById('calDayModalOverlay').classList.add('open');
+    }
+
+    function calCloseDayModal() {
+      document.getElementById('calDayModalOverlay').classList.remove('open');
+    }
+
+    // dateKey is "YYYY-MM-DD" (from formatDateYMD) — plain local Date parse.
+    function parseYMD(dateKey) {
+      const m = String(dateKey || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return null;
+      return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
     }
 
     function changeCalendarMonth(delta) {
@@ -2790,7 +3165,9 @@
         if (out.status === 'success') {
           showToast('Leave request submitted!');
           document.getElementById('quickLeaveForm').reset();
+          getRawLeavesCached.invalidate('all');
           loadMyLeaves();
+          loadCalendar();
         } else {
           showToast(out.message || 'Error during submission.');
         }
@@ -2803,29 +3180,26 @@
 
     async function loadMyLeaves() {
       try {
-        const res = await fetch(`${API_URL}?action=getLeaves&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
-        const payload = await res.json();
-        if (payload.status === 'success') {
-          const mine = ((payload.data && payload.data.data) || []).filter(l => l.emp_id === USER.employee_id);
-          if (mine.length === 0) {
-            document.getElementById('myLeavesList').innerHTML = '<div class="empty-note">No leave history found.</div>';
-            return;
-          }
-          const badgeClass = { approved: 'badge-approved', rejected: 'badge-rejected', pending: 'badge-pending' };
-          document.getElementById('myLeavesList').innerHTML = mine.slice(0, 8).map(l => {
-            const from = l.from_date ? new Date(l.from_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—';
-            const to = l.to_date ? new Date(l.to_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—';
-            return `
-              <div class="leave-row-item">
-                <div class="leave-row-left">
-                  <div class="leave-type-text">${l.leave_type || '—'}</div>
-                  <div class="leave-dates-text">${from} – ${to} · ${l.days || '—'} day(s)</div>
-                </div>
-                <span class="badge ${badgeClass[l.status] || 'badge-pending'}">${l.status}</span>
-              </div>
-            `;
-          }).join('');
+        const raw = await getRawLeavesCached('all');
+        const mine = raw.filter(l => l.emp_id === USER.employee_id);
+        if (mine.length === 0) {
+          document.getElementById('myLeavesList').innerHTML = '<div class="empty-note">No leave history found.</div>';
+          return;
         }
+        const badgeClass = { approved: 'badge-approved', rejected: 'badge-rejected', pending: 'badge-pending' };
+        document.getElementById('myLeavesList').innerHTML = mine.slice(0, 8).map(l => {
+          const from = l.from_date ? new Date(l.from_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—';
+          const to = l.to_date ? new Date(l.to_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '—';
+          return `
+            <div class="leave-row-item">
+              <div class="leave-row-left">
+                <div class="leave-type-text">${l.leave_type || '—'}</div>
+                <div class="leave-dates-text">${from} – ${to} · ${l.days || '—'} day(s)</div>
+              </div>
+              <span class="badge ${badgeClass[l.status] || 'badge-pending'}">${l.status}</span>
+            </div>
+          `;
+        }).join('');
       } catch (e) { showToast('Could not load leaves.'); }
     }
 
