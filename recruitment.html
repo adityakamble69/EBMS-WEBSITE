@@ -516,35 +516,53 @@
     let hireAdmins = [];
     let hireCandidateId = null;
 
+    // Fetches one lookup action and safely returns its `.data` array.
+    // Any failure (network error, non-JSON response, status !== 'success',
+    // permission error on a restricted action, etc.) is swallowed here and
+    // resolves to [] instead of throwing — so ONE bad lookup (e.g. an HR
+    // user without permission for getAdminUsers) can no longer blank out
+    // every other dropdown in the Hire modal.
+    async function fetchHireLookup(action, extraParams) {
+      try {
+        const res = await fetch(`${API_URL}?action=${action}&token=${TOKEN}${extraParams || ''}`);
+        const out = await res.json();
+        if (out.status === 'success') return out.data || [];
+        console.warn(`Hire lookup "${action}" returned an error:`, out.message || out);
+        return [];
+      } catch (e) {
+        console.warn(`Hire lookup "${action}" failed:`, e);
+        return [];
+      }
+    }
+
     async function loadHireLookups() {
       if (hireLookupsLoaded) return;
       if (hireLookupsLoading) return hireLookupsLoading;
       hireLookupsLoading = (async () => {
-        try {
-          const [branchRes, deptRes, desigRes, shiftRes, empRes, adminRes] = await Promise.all([
-            fetch(`${API_URL}?action=getBranches&token=${TOKEN}`),
-            fetch(`${API_URL}?action=getDepartments&token=${TOKEN}`),
-            fetch(`${API_URL}?action=getDesignations&token=${TOKEN}`),
-            fetch(`${API_URL}?action=getShifts&token=${TOKEN}`),
-            fetch(`${API_URL}?action=getEmployees&token=${TOKEN}&limit=1000&status=active`),
-            fetch(`${API_URL}?action=getAdminUsers&token=${TOKEN}`)
-          ]);
-          const [branchP, deptP, desigP, shiftP, empP, adminP] = await Promise.all(
-            [branchRes, deptRes, desigRes, shiftRes, empRes, adminRes].map(r => r.json())
-          );
-          hireBranches    = branchP.status === 'success' ? (branchP.data || []).filter(b => b.status === 'active') : [];
-          hireDepartments = deptP.status   === 'success' ? (deptP.data || [])   : [];
-          hireDesignations = desigP.status === 'success' ? (desigP.data || []) : [];
-          hireShifts      = shiftP.status  === 'success' ? (shiftP.data || [])  : [];
-          hireEmployees   = empP.status    === 'success' ? (empP.data && empP.data.data ? empP.data.data : []) : [];
+        const [branchData, deptData, desigData, shiftData, empData, adminData] = await Promise.all([
+          fetchHireLookup('getBranches'),
+          fetchHireLookup('getDepartments'),
+          fetchHireLookup('getDesignations'),
+          fetchHireLookup('getShifts'),
+          fetchHireLookup('getEmployees', '&limit=1000&status=active'),
           // Admin/HR/Branch Manager users — so Reporting Manager dropdown
           // can also point to an admin, not just an already-hired employee.
           // Needs the new 'getAdminUsers' GET action (super_admin/hr
-          // only) — see appscript_auth.gs.
-          hireAdmins      = adminP.status  === 'success' ? (adminP.data || [])  : [];
-          hireLookupsLoaded = true;
-        } catch (e) {
-          showToast('Hire form ke dropdowns load nahi ho paye — network error.');
+          // only) — see appscript_auth.gs. If the logged-in user lacks
+          // permission for this one, it just resolves to [] and every
+          // other dropdown still loads fine.
+          fetchHireLookup('getAdminUsers')
+        ]);
+        hireBranches      = branchData.filter(b => b.status === 'active');
+        hireDepartments   = deptData;
+        hireDesignations  = desigData;
+        hireShifts        = shiftData;
+        hireEmployees     = (empData && empData.data) ? empData.data : [];
+        hireAdmins        = adminData;
+        hireLookupsLoaded = true;
+
+        if (!hireDepartments.length && !hireDesignations.length && !hireBranches.length) {
+          showToast('Hire form ke dropdowns load nahi ho paye — network/permission error. Page refresh karke dobara try karein.');
         }
       })();
       return hireLookupsLoading;
