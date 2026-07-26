@@ -2207,6 +2207,7 @@
       loadTasks();
       loadMyLeaves();
       loadTodayPunchStatus();
+      initOnboardingInstructions();
     });
 
     /* ── Navbar actions ── */
@@ -3340,6 +3341,93 @@
           }
         }
       } catch (e) { /* keep dashes */ }
+    }
+  </script>
+
+  <!-- ── Onboarding Instructions Modal (first-time dashboard visit, content from 'instructions' sheet) ── -->
+  <style>
+    .ob-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      z-index: 5000;
+      display: none; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .ob-overlay.open { display: flex; }
+    .ob-card {
+      background: rgba(18, 18, 20, 0.94);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 480px; width: 100%; max-height: 86vh;
+      overflow-y: auto;
+      backdrop-filter: blur(28px) saturate(160%); -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    .ob-header { padding: 24px 24px 14px; text-align: center; border-bottom: 1px solid var(--glass-border); }
+    .ob-header .ob-icon { font-size: 34px; margin-bottom: 8px; }
+    .ob-header h3 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; margin-bottom: 4px; }
+    .ob-header p { color: var(--text-muted); font-size: 13px; }
+    .ob-body { padding: 18px 24px; display: flex; flex-direction: column; gap: 12px; }
+    .ob-item { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 14px 16px; }
+    .ob-item-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; color: var(--text-primary); }
+    .ob-item-content { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+    .ob-footer { padding: 16px 24px 22px; position: sticky; bottom: 0; background: rgba(18, 18, 20, 0.95); }
+    .ob-btn {
+      width: 100%; padding: 12px; border-radius: 10px; border: none;
+      background: var(--accent-glow, #D4D9E6); color: #0A0A0B;
+      font-weight: 700; font-size: 14px; cursor: pointer;
+    }
+    .ob-btn:hover { opacity: 0.9; }
+  </style>
+
+  <div class="ob-overlay" id="onboardingModal">
+    <div class="ob-card">
+      <div class="ob-header">
+        <div class="ob-icon">👋</div>
+        <h3>Welcome to Codeline.AI EBMS</h3>
+        <p>Here's a quick overview before you get started</p>
+      </div>
+      <div class="ob-body" id="onboardingBody"></div>
+      <div class="ob-footer">
+        <button class="ob-btn" onclick="dismissOnboarding()">Got it, let's go →</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ── Onboarding Instructions (first-time dashboard visit) ── */
+    async function initOnboardingInstructions() {
+      try {
+        const token = AppSession.getToken();
+        const res = await fetch(`${API_URL}?action=getInstructions&token=${token}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const result = await res.json();
+        if (result.status !== 'success') return;
+
+        const { already_seen, instructions } = result.data;
+        if (already_seen || !instructions || !instructions.length) return;
+
+        const body = document.getElementById('onboardingBody');
+        body.innerHTML = instructions.map(item => `
+          <div class="ob-item">
+            <div class="ob-item-title">${item.title || ''}</div>
+            <div class="ob-item-content">${item.content || ''}</div>
+          </div>
+        `).join('');
+
+        document.getElementById('onboardingModal').classList.add('open');
+      } catch (e) { /* silent fail — never block the dashboard */ }
+    }
+
+    async function dismissOnboarding() {
+      document.getElementById('onboardingModal').classList.remove('open');
+      try {
+        const token = AppSession.getToken();
+        await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'markInstructionsSeen', token: token })
+        });
+      } catch (e) { /* silent fail */ }
     }
   </script>
 </body>
