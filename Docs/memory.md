@@ -8,6 +8,27 @@ Purpose: a running log so any contributor (human or AI) picking up this project 
 
 ## Session log
 
+### [2026-08-02] — Phase 11 §7.5 frontend + §7.7 calendar view shipped (backfilled entry)
+> ⚠️ **Backfilled:** this session happened after "Daily Tasks module: backend shipped" below, but was never logged at the time. Docs (`phases.md`, `PRD.md`) already reflect this work as shipped — this entry brings `memory.md`/`architecture.md` in sync with that reality. Reconstructed from `phases.md` §7.5/§7.7 checkbox notes; if any detail here is wrong, correct it against the live `employee_dashboard.html` rather than trusting this entry blindly.
+
+**What was done:**
+- Built the employee-facing frontend for §7.5 in `employee_dashboard.html`: a dedicated **"📝 Daily Tasks"** modal, opened via a navbar button next to "📅 Leave Requests", with a date-picker add form posting to `addDailyTask`/`updateDailyTask` (including the resubmit-after-`Correction Required` path).
+- Built §7.7: every past/today cell in the existing calendar is now clickable; the day-detail popup shows a **read-only** "📝 Daily Tasks" list for that date (title, times, description, approval badge, admin remark) via `getDailyTasks?date=...`. Empty state uses the PRD's exact copy: *"No tasks were added for this date."*
+- Deliberately kept add/edit out of the calendar popup — that's the navbar modal's job — after user feedback that an earlier draft mixed the two responsibilities.
+- Updated `phases.md` checkboxes: §7.5 and §7.7 both marked `[x]`. §7.6 stays `[ ]` — admin-side approval UI still doesn't exist, and that's now the only piece blocking that box.
+
+**File(s) touched:**
+- `employee_dashboard.html` (navbar Daily Tasks modal + calendar day-popup wiring).
+- `phases.md` (§7.5/§7.7 checkboxes flipped to `[x]`).
+
+**Currently being worked on / left mid-flight:**
+- ⚠️ Still not confirmed whether `setupDailyTasksSheet()` has actually been run on the live Spreadsheet (flagged as an open caveat on §7.5 in `phases.md`) — verify before relying on this in production.
+- §7.6 admin approval UI (`approveDailyTask`/`rejectDailyTask`/`requestCorrectionDailyTask` backend already shipped, no frontend yet) is the only remaining piece of the Daily Tasks module.
+
+**Next suggested step:** build §7.6 — admin/HR approval UI (likely a new page/section) wired to the already-shipped `approveDailyTask`/`rejectDailyTask`/`requestCorrectionDailyTask` routes.
+
+---
+
 ### [2026-08-02] — Phase 11 §7.5 + §7.6 Daily Tasks module: backend shipped
 **What was done:**
 - Reviewed `README.md` (schema/API/roles reference) and `employee_dashboard.html` (existing calendar module — `loadCalendar()`, `calOpenDayModal()`, `changeCalendarMonth()`) to understand exactly where §7.7's calendar date-click view will need to plug in later.
