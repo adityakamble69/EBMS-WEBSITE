@@ -55,6 +55,7 @@ A full-featured HR/Ops platform built entirely on **Google Sheets + Google Apps 
 | `bank_details` | emp_id, account_holder_name, account_number, ifsc_code, bank_name, passbook_url, submitted_at, status | One-time submission per employee. |
 | `employee_documents` | doc_id, emp_id, doc_category, file_name, file_url, uploaded_at | profile_photo / aadhaar_pdf / education_experience — one per category per employee. |
 | `instructions` **(new)** | instr_id, role, title, content, display_order, status, created_at | Onboarding popup content — see §6. |
+| `settings` **(new, Phase 11)** | setting_id, setting_key, setting_value, description, updated_at, updated_by | Central config for business-tunable values (`ANNUAL_LEAVES`, `NEW_EMPLOYEE_LEAVE_LOCK_DAYS`, `MONTHLY_ADMISSION_TARGET`) — read via `getSetting(key)`/`getSettingNumber(key)`. Admin-only write. |
 
 ---
 
@@ -83,6 +84,7 @@ A full-featured HR/Ops platform built entirely on **Google Sheets + Google Apps 
 | `appscript_salaryslip.gs` | Single salary-slip detail fetch (bundled with employee name/designation). |
 | `appscript_generateid_fix.gs` | Sequential, per-sheet ID generator (`EMP001`, `BR002`, etc.) — replaces old random-ID generator, ignores legacy junk IDs. |
 | `appscript_instructions.gs` **(new)** | Onboarding popup — role-based instructions fetch + "seen" tracking. See §6. |
+| `appscript_settings.gs` **(new, Phase 11)** | Central `settings` sheet — `getSetting(key)`/`getSettingNumber(key)` read helpers (used by other modules server-side, e.g. the leave lock), `getSettings`/`updateSetting` API routes (super_admin only), one-time `setupSettingsSheet()`. |
 
 **Convention used everywhere:** every date/time value is converted to a plain string (`dd-MM-yyyy` / `HH:mm`, IST) via `formatDateOnly()` / `formatTimeOnly()` **right before the response is sent** — never a raw `Date` object, because `JSON.stringify()` silently UTC-shifts those and breaks the frontend.
 
@@ -111,7 +113,7 @@ A full-featured HR/Ops platform built entirely on **Google Sheets + Google Apps 
 | Auth | `login`, `getProfile`, `getAdminUsers` | `login`, `logout`, `changePassword` |
 | Employees | `getEmployees`, `getEmployee` | `addEmployee`, `updateEmployee`, `deleteEmployee`, `setMyWeeklyOff` |
 | Attendance | `getAttendance` | `markAttendance`, `updateAttendance`, `verifyEmployeeSelf` |
-| Leaves | `getLeaves` | `applyLeave`, `approveLeave`, `rejectLeave` |
+| Leaves | `getLeaves`, `getLeaveSummary` | `applyLeave`, `approveLeave`, `rejectLeave` |
 | Payroll | `getSalaries`, `getSalarySlips`, `getSingleSalarySlip`, `migrateSalaries` | `setSalary`, `generateSlip` |
 | Documents | `getDocuments` | `generateDocument` |
 | Branches/Depts/Desigs | `getBranches`, `getDepartments`, `getDesignations`, `getAllDepartments`, `getAllDesignations` | `addBranch`, `updateBranch`, `addDepartment`, `updateDepartment`, `addDesignation`, `updateDesignation` |
@@ -127,6 +129,7 @@ A full-featured HR/Ops platform built entirely on **Google Sheets + Google Apps 
 | Geofence | `getBranchLocation`, `findBranchByLocation` (public) | — |
 | Dashboard | `getDashboard` | — |
 | **Instructions** | **`getInstructions`** | **`markInstructionsSeen`** |
+| **Settings (Phase 11)** | **`getSettings`** (super_admin only) | **`updateSetting`** (super_admin only) |
 
 ---
 
@@ -172,7 +175,7 @@ A full-featured HR/Ops platform built entirely on **Google Sheets + Google Apps 
 | `hr_recruitment.html` | hr | Full candidate/job-opening management (Kanban-style stage pipeline, Hire modal → converts candidate to employee). |
 | `attendance_qr.html` | employee (public kiosk) | Universal-link self-punch: GPS geofence detects the branch automatically, no QR-per-branch needed. |
 | `register.html` | Public (job applicants) | Candidate self-registration form with file uploads (photo, signature, Aadhaar, experience docs) straight to Google Drive. |
-| `settings.html` | super_admin | Branches / Departments / Designations management + password change. |
+| `settings.html` | super_admin | Branches / Departments / Designations management + password change + **Business Settings tab (Phase 11)** for `ANNUAL_LEAVES`, `NEW_EMPLOYEE_LEAVE_LOCK_DAYS`, `MONTHLY_ADMISSION_TARGET`, etc. |
 | `salary.html`, `leaves.html`, `shifts.html`, `employees.html`, etc. | admin roles | Module-specific admin screens. |
 
 All pages share a common `app.js` (defines `API_URL`, `AppSession` helper for token/user storage) and a consistent dark glassmorphism theme (`--bg-base`, `--glass-border`, `--radius` CSS variables).
@@ -197,11 +200,12 @@ All pages share a common `app.js` (defines `API_URL`, `AppSession` helper for to
 3. **Delete any duplicate `generateId()`** definition before pasting `appscript_generateid_fix.gs` (only one copy should exist).
 4. Run `setupInstructionsModule()` once (function dropdown → select it → Run) to create the `instructions` sheet and `instructions_seen` columns.
 5. Run `setupTasksSheet()` once if setting up Tasks fresh.
-6. Run `installNotificationTriggers()` once to enable the daily work-anniversary check.
-7. **Deploy → New deployment → Web app** — execute as *Me*, access to *Anyone*. Copy the deployment URL into `app.js` as `API_URL`.
-8. Upload/host the HTML files (Google Sites, any static host, or Apps Script `HtmlService` if preferred) alongside `app.js`.
-9. Log in with a seeded `admin_users` row (e.g. `admin@codelineai.com` / `Admin@123`) and start configuring branches, departments, designations, and shifts from **Settings**.
+6. Run `setupSettingsSheet()` once (Phase 11) to create the `settings` sheet and seed `ANNUAL_LEAVES`/`NEW_EMPLOYEE_LEAVE_LOCK_DAYS`/`MONTHLY_ADMISSION_TARGET` defaults.
+7. Run `installNotificationTriggers()` once to enable the daily work-anniversary check.
+8. **Deploy → New deployment → Web app** — execute as *Me*, access to *Anyone*. Copy the deployment URL into `app.js` as `API_URL`.
+9. Upload/host the HTML files (Google Sites, any static host, or Apps Script `HtmlService` if preferred) alongside `app.js`.
+10. Log in with a seeded `admin_users` row (e.g. `admin@codelineai.com` / `Admin@123`) and start configuring branches, departments, designations, and shifts from **Settings**.
 
 ---
 
-*This README reflects the state of the codebase as of the latest changes (Onboarding Instructions module). Keep it updated as new modules are added.*
+*This README reflects the state of the codebase as of the latest changes (Phase 11: Settings sheet, 30-day leave lock, Employee leave summary — 2026-08-02). Keep it updated as new modules are added.*

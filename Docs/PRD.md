@@ -84,15 +84,16 @@ A module is considered complete only when it has:
 ### 7.1 Employee profile — show names, not codes
 Employee Portal currently shows raw codes (`DEPT_001`) under the employee photo. Must resolve to human-readable names (Department Name, Designation Name, Branch Name, Employee Name, Course Name where applicable) **server-side**, before the response leaves the API — no internal IDs/codes should ever reach the UI.
 
-### 7.2 Employee leave summary
+### 7.2 Employee leave summary — ✅ SHIPPED 2026-08-02
 Employee dashboard's Leave Request section must show: Total Annual Leaves, Used, Remaining, Pending, Approved, Rejected.
 `Remaining = Total Annual Leaves − Approved/Used`. Pending and rejected leaves must **not** count against the used total.
 
-### 7.3 Central Settings sheet
+### 7.3 Central Settings sheet — ✅ SHIPPED 2026-08-02
 A new `settings` sheet (`setting_id | setting_key | setting_value | description | updated_at | updated_by`) becomes the single source for configurable values — starting with `ANNUAL_LEAVES`, `NEW_EMPLOYEE_LEAVE_LOCK_DAYS`, `MONTHLY_ADMISSION_TARGET`. No such value may be hardcoded in `.gs` files or frontend JS ever again; all reads go through a `getSetting(key)`-style helper backed by this sheet. Admin-only write access.
 
-### 7.4 New-employee leave lock (first 30 days)
+### 7.4 New-employee leave lock (first 30 days) — ✅ SHIPPED 2026-08-02 (⚠️ scope caveat below)
 An employee cannot apply for leave until `today - joining_date >= NEW_EMPLOYEE_LEAVE_LOCK_DAYS` (value from Settings, default 30). **Must be enforced server-side** inside `handleApplyLeave()` — a disabled frontend button is not sufficient. Error message: *"You cannot apply for leave during the first 30 days of employment."*
+> ⚠️ **As shipped:** only enforced when the caller's own session role is `employee` (true self-service). Admin/HR/branch_manager filing a leave request on an employee's behalf (`body.emp_id`) currently bypasses this lock — not yet confirmed with stakeholders whether that's correct or whether the lock should apply universally regardless of who files it.
 
 ### 7.5 Daily Task Management (employee-authored, admin-approved)
 New `daily_tasks` module — employee adds a task (title, description, date, start/completion time, status), submits for approval; admin/HR approves/rejects/requests correction. See §7.6 for the approval flow and `architecture.md` for the schema. Distinct from the existing Kanban `tasks` module (`appscript_tasks.gs`) — that one is admin-assigned top-down; this one is employee-authored bottom-up self-reporting. Confirm with stakeholders whether these should stay separate sheets/modules or eventually merge — **do not silently merge them without a decision**, since the permission models differ (Kanban tasks are assigned by admin; Daily Tasks are self-logged by the employee and then reviewed).
@@ -131,5 +132,5 @@ HR has no delete button/action for candidates. Status-based lifecycle instead (`
 | Update settings | No | No | Yes |
 
 ### Development priority (as given)
-**High:** 7.1 (readable names), 7.2 (leave summary), 7.4 (30-day lock), 7.5+7.6 (daily task + approval), 7.7 (calendar view), 7.10 (candidate add), 7.11 (delete restriction).
-**Medium:** 7.8 (targets), 7.3 (settings sheet integration), 7.9 (month-wise reports), report export.
+**High:** 7.1 (readable names) ✅, 7.2 (leave summary) ✅, 7.3 (settings sheet) ✅, 7.4 (30-day lock) ✅, 7.5+7.6 (daily task + approval), 7.7 (calendar view), 7.10 (candidate add), 7.11 (delete restriction).
+**Medium:** 7.8 (targets), 7.9 (month-wise reports), report export.

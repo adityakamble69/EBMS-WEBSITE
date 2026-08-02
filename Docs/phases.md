@@ -77,9 +77,9 @@ This project is already substantially built. Phases below are reconstructed from
 
 **High priority**
 - [x] Resolve `department_id`/`designation_id`/`branch_id` → readable names server-side on every employee-profile-facing response (`PRD.md` §7.1) — **shipped 2026-08-02**: `appscript_employees.gs` (`resolveEmployeeDisplayNames`/`Bulk`) + `employee_dashboard.html` (profile card + ID card). ⚠️ `employees.html` (admin panel) still has a related pre-existing bug — see `PRD.md` §7.1 note — not yet fixed.
-- [ ] Employee leave summary block (Total/Used/Remaining/Pending/Approved/Rejected) on `employee_dashboard.html` (§7.2)
-- [ ] `settings` sheet + `getSetting(key)` helper (§7.3) — needed by both the leave lock (§7.4) and targets (§7.8)
-- [ ] New-employee 30-day leave lock, enforced in `handleApplyLeave()` (§7.4)
+- [x] Employee leave summary block (Total/Used/Remaining/Pending/Approved/Rejected) on `employee_dashboard.html` (§7.2) — **shipped 2026-08-02**: `getLeaveSummary` GET action (`appscript_leaves.gs`), computed entirely server-side. ⚠️ Assumes calendar-year leave cycle (by `from_date`'s year) — not stakeholder-confirmed against a possible joining-anniversary cycle.
+- [x] `settings` sheet + `getSetting(key)` helper (§7.3) — **shipped 2026-08-02**: `appscript_settings.gs` (`getSetting`/`getSettingNumber`, `getSettings`/`updateSetting` routes, `setupSettingsSheet()`), seeded with `ANNUAL_LEAVES`, `NEW_EMPLOYEE_LEAVE_LOCK_DAYS`, `MONTHLY_ADMISSION_TARGET`. Frontend: `settings.html` new "Business Settings" tab (super_admin only). Needed by both §7.4 and §7.8.
+- [x] New-employee 30-day leave lock, enforced in `handleApplyLeave()` (§7.4) — **shipped 2026-08-02**: uses `getSettingNumber('NEW_EMPLOYEE_LEAVE_LOCK_DAYS', 30)`. ⚠️ Scope decision (not stakeholder-confirmed): only enforced for self-service (`session.role === 'employee'`) leave applications — admin/hr/branch_manager filing leave on someone's behalf currently bypasses it.
 - [ ] `daily_tasks` sheet + employee add/list/self-view routes (§7.5)
 - [ ] Daily task admin approval flow + routes (§7.6)
 - [ ] Calendar date-click → daily tasks for that date, on `employee_dashboard.html` (§7.7)

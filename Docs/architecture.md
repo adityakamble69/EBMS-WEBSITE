@@ -108,7 +108,7 @@ EBMS/
 
 See `README.md` §2 for the full authoritative column-by-column table (already accurate and detailed — don't duplicate it here, keep `README.md` as the single source of truth for schema and update it directly when columns change).
 
-Quick summary of tabs: `admin_users`, `employees`, `branches`, `departments`, `designations`, `attendance`, `shifts`, `shift_assignments`, `leave_requests`, `salaries`, `salary_slips`, `performance`, `tasks`, `assets`, `documents`, `notifications`, `holidays`, `expenses`, `job_openings`, `candidates`, `bank_details`, `employee_documents`, `instructions`.
+Quick summary of tabs: `admin_users`, `employees`, `branches`, `departments`, `designations`, `attendance`, `shifts`, `shift_assignments`, `leave_requests`, `salaries`, `salary_slips`, `performance`, `tasks`, `assets`, `documents`, `notifications`, `holidays`, `expenses`, `job_openings`, `candidates`, `bank_details`, `employee_documents`, `instructions`, `settings`.
 
 > **Note (2026-08-02):** `departments` (`dept_id | dept_name | created_at`) and `designations` (`desig_id | desig_name | created_at`) did not actually exist in the live Sheet until this date, despite being referenced in code — this caused a "Sheet not found" crash in `resolveEmployeeDisplayNames()` (Phase 11 §7.1). Both are now created and populated. `department_id`/`designation_id` on `employees` are real lookup **codes** (not plain display text — this was briefly misdiagnosed mid-session, then corrected against actual CSV data), matching the admin form's dropdown options 1:1:
 > - **Departments:** `DEPT001`=IT, `DEPT002`=Non-IT, `DEPT003`=Technical, `DEPT004`=Back Office / Admin. (A 5th dropdown option, "Other", has no `DEPT005` row yet — no employee has used it; add the row when one does.)
@@ -117,9 +117,10 @@ Quick summary of tabs: `admin_users`, `employees`, `branches`, `departments`, `d
 
 ### Planned tabs — Phase 11 (not yet built, see `PRD.md` §7 / `phases.md` Phase 11)
 
+> ✅ **`settings` shipped 2026-08-02** — see §4's quick tab summary above and `README.md` §2 for its schema. Removed from the "planned" table below since it's now live (`appscript_settings.gs`, `getSetting()`/`getSettingNumber()` helpers, `getSettings`/`updateSetting` routes, seeded via `setupSettingsSheet()`).
+
 | Sheet | Key columns | Notes |
 |---|---|---|
-| `settings` | setting_id, setting_key, setting_value, description, updated_at, updated_by | Central config — `ANNUAL_LEAVES`, `NEW_EMPLOYEE_LEAVE_LOCK_DAYS`, `MONTHLY_ADMISSION_TARGET`, etc. Admin-only write. All backend hardcoded constants that are business-tunable should migrate here over time (e.g. `TOKEN_EXPIRY_HOURS` is a candidate, though not required by this phase). |
 | `daily_tasks` | task_id, employee_id, task_title, task_description, task_date, start_time, completion_time, task_status, approval_status, employee_remark, admin_remark, approved_by, approved_at | Employee-authored, self-reported daily log — **not** the same as the existing `tasks` sheet (admin-assigned Kanban). Keep them separate unless a merge is explicitly decided. |
 | `employee_targets` | target_id, employee_id, target_type, target_month, target_year, assigned_target, achieved_target, status | `assigned_target` value should itself be sourced from `settings` (e.g. `MONTHLY_ADMISSION_TARGET`) unless overridden per-employee. |
 
