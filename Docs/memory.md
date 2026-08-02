@@ -8,6 +8,35 @@ Purpose: a running log so any contributor (human or AI) picking up this project 
 
 ## Session log
 
+### [2026-08-02] — Phase 11 §7.6 Daily Task admin approval UI shipped — module complete
+**What was done:**
+- Built `daily_tasks_admin.html`, a new standalone admin page for reviewing employee-submitted Daily Tasks. Follows `leaves.html`'s stats-row/filter-bar/table conventions and `tasks.html`'s review-modal pattern.
+  - Filters: approval status (clickable via stat cards), employee dropdown, from/to date range.
+  - Review modal shows task title/description/employee remark/prior admin remark (if resubmitted after correction), with an Admin Remark textarea and three actions: **Approve**, **Request Correction**, **Reject** — the latter two require a remark (enforced client-side; backend already enforces it too).
+  - Wired to the already-shipped `approveDailyTask` / `rejectDailyTask` / `requestCorrectionDailyTask` routes. No new backend work needed — `appscript_daily_tasks.gs` already had everything.
+  - Branch scoping for `branch_manager` needed **zero** extra frontend logic — `getDailyTasks` already scopes server-side when called without `?emp_id=` (rules.md #9 — centralized `canAccessBranch()`).
+- **Access-control wrinkle caught and fixed:** HR is deliberately locked to `hr_dashboard.html` + `hr_recruitment.html` only (`app.js`'s `AppSession.protect()` / `HR_ALLOWED_PAGES`) and uses its own standalone top-navbar layout, not the shared `sidebar.html`. A plain new sidebar page would have been unreachable for HR, and if reachable would've leaked the full admin sidebar into HR's UI. Fixed by:
+  1. Adding `daily_tasks_admin.html` to `HR_ALLOWED_PAGES` in `app.js`.
+  2. Adding an inline script at the top of `daily_tasks_admin.html` that strips the `.sidebar-spacer` element for `role === 'hr'` **before** `app.js`'s `DOMContentLoaded` handler calls `injectSidebar()` — so HR never sees the admin-only nav (Employees, Salary, Branches, etc.).
+  3. Showing a lightweight "← Back to HR Dashboard" top bar instead, for HR only (`html.hr-standalone-mode` CSS).
+  4. Adding a "📝 Daily Tasks" tab to `hr_dashboard.html`'s top navbar + a quick-action card, matching the existing "🧑‍💼 Recruitment" tab pattern.
+- Added the page link to `sidebar.html` (Productivity section, next to Tasks) for super_admin/branch_manager.
+- Updated `phases.md` — §7.6 flipped to `[x]`. **Daily Tasks module (§7.5–§7.7) is now fully shipped end-to-end**, nothing left pending in it.
+- Updated `README.md` — §2 schema note, §7 Frontend Pages table (new row for `daily_tasks_admin.html`), and the footer status line, all had a stale "admin approval UI not yet built" caveat that's now corrected.
+
+**File(s) touched:**
+- **New:** `daily_tasks_admin.html`.
+- **Edited:** `app.js` (`HR_ALLOWED_PAGES`), `sidebar.html` (nav link), `hr_dashboard.html` (navbar tab + quick-action card), `phases.md` (§7.6 checkbox), `README.md` (§2, §7, footer).
+- No backend (`.gs`) changes — `appscript_daily_tasks.gs` already had every route this UI needed.
+
+**Currently being worked on / left mid-flight:**
+- Still unconfirmed (carried over from earlier entries): has `setupDailyTasksSheet()` actually been run on the live Spreadsheet? Verify before relying on this module in production.
+- Not yet visually tested in an actual browser against the live Apps Script deployment — logic follows existing patterns closely but hasn't been click-tested end-to-end.
+
+**Next suggested step:** per `PRD.md`'s priority list, next up is §7.10 (Candidate Management module) — but per `architecture.md`'s open question, resolve the schema question first (extend existing `candidates`/`RECRUITMENT_STAGES` vs. a genuinely separate admissions pipeline) before writing any code, since guessing wrong means a schema rework later. §7.11 (candidate soft-delete fields) is small and could be bundled with whichever direction §7.10 takes. §7.8 (targets) and §7.9 (reports) remain medium-priority, not yet started.
+
+---
+
 ### [2026-08-02] — Phase 11 §7.5 frontend + §7.7 calendar view shipped (backfilled entry)
 > ⚠️ **Backfilled:** this session happened after "Daily Tasks module: backend shipped" below, but was never logged at the time. Docs (`phases.md`, `PRD.md`) already reflect this work as shipped — this entry brings `memory.md`/`architecture.md` in sync with that reality. Reconstructed from `phases.md` §7.5/§7.7 checkbox notes; if any detail here is wrong, correct it against the live `employee_dashboard.html` rather than trusting this entry blindly.
 

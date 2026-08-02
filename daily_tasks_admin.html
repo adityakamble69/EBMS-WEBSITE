@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Task Approvals — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --warning: #FBBF24;
+      --danger: #F87171;
+      --info: #8FAEFF;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar-spacer {
+      width: 240px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar-spacer {
+        display: none;
+      }
+    }
+
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 600px) {
+      .main-workspace {
+        padding: 16px;
+      }
+    }
+
+    .mobile-nav-bar {
+      display: none;
+      height: 50px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--radius-sm);
+      align-items: center;
+      padding: 0 16px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-nav-bar {
+        display: flex;
+      }
+    }
+
+    .header-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title-area h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .title-area p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      backdrop-filter: blur(var(--glass-blur));
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--glass-border-hi, rgba(255,255,255,0.16));
+    }
+
+    .stat-card .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .stat-card .stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .stat-card .stat-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-bar select,
+    .filter-bar input[type="date"] {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      cursor: pointer;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .filter-bar select option {
+      background: #1a1a1e;
+    }
+
+    .filter-bar .btn-refresh {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+
+      .filter-bar select,
+      .filter-bar input[type="date"] {
+        font-size: 16px;
+      }
+    }
+
+    .table-container {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      width: 100%;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+      min-width: 850px;
+    }
+
+    .data-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      padding: 14px 16px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .data-table tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    /* Status badges */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-pending {
+      background: rgba(251, 191, 36, 0.12);
+      color: #FBBF24;
+    }
+
+    .badge-approved {
+      background: rgba(52, 211, 153, 0.12);
+      color: #34D399;
+    }
+
+    .badge-rejected {
+      background: rgba(248, 113, 113, 0.12);
+      color: #F87171;
+    }
+
+    .badge-correction {
+      background: rgba(143, 174, 255, 0.14);
+      color: #8FAEFF;
+    }
+
+    .btn-review {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-review:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: rgba(18, 18, 20, 0.9);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 520px;
+      width: 100%;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: rgba(18, 18, 20, 0.95);
+      z-index: 2;
+    }
+
+    .modal-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .review-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+
+    #reviewTaskTitle {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    #reviewTaskMeta {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+
+    .review-desc-box {
+      font-size: 13.5px;
+      color: var(--text-primary);
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    .review-desc-box.empty {
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    .section-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .form-group textarea {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      resize: none;
+      height: 76px;
+      width: 100%;
+      transition: border-color 0.18s, background 0.18s;
+    }
+
+    .form-group textarea:focus {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .prior-remark-box {
+      font-size: 12.5px;
+      color: #8FAEFF;
+      background: rgba(143, 174, 255, 0.08);
+      border: 1px solid rgba(143, 174, 255, 0.2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+    }
+
+    .review-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .review-actions button {
+      flex: 1;
+      min-width: 120px;
+      padding: 11px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      border: 1px solid transparent;
+      transition: transform 0.15s, background 0.15s;
+    }
+
+    .review-actions button:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-approve-lg {
+      background: rgba(52, 211, 153, 0.12);
+      border-color: rgba(52, 211, 153, 0.3);
+      color: #34D399;
+    }
+
+    .btn-approve-lg:hover {
+      background: rgba(52, 211, 153, 0.22);
+    }
+
+    .btn-correction-lg {
+      background: rgba(143, 174, 255, 0.12);
+      border-color: rgba(143, 174, 255, 0.3);
+      color: #8FAEFF;
+    }
+
+    .btn-correction-lg:hover {
+      background: rgba(143, 174, 255, 0.22);
+    }
+
+    .btn-reject-lg {
+      background: rgba(248, 113, 113, 0.12);
+      border-color: rgba(248, 113, 113, 0.3);
+      color: #F87171;
+    }
+
+    .btn-reject-lg:hover {
+      background: rgba(248, 113, 113, 0.22);
+    }
+
+    .review-actions button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .final-status-note {
+      font-size: 13px;
+      color: var(--text-muted);
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    /* ── HR standalone mode (no shared admin sidebar) ── */
+    .hr-standalone-topbar {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      background: var(--glass);
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .hr-back-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s;
+    }
+
+    .hr-back-link:hover {
+      color: var(--text-primary);
+    }
+
+    html.hr-standalone-mode body {
+      flex-direction: column;
+    }
+
+    html.hr-standalone-mode .hr-standalone-topbar {
+      display: block !important;
+    }
+
+    html.hr-standalone-mode .mobile-nav-bar {
+      display: none !important;
+    }
+
+    html.hr-standalone-mode .main-workspace {
+      min-height: calc(100vh - 49px);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar-spacer"></div>
+  <script>
+    // HR role uses its own self-contained top navbar (hr_dashboard.html /
+    // hr_recruitment.html pattern) — not the shared admin sidebar. Strip
+    // the sidebar spacer BEFORE app.js's DOMContentLoaded handler runs
+    // injectSidebar(), so HR never sees admin-only nav items.
+    (function () {
+      try {
+        var u = JSON.parse(localStorage.getItem('ebms_user') || '{}');
+        if (u.role === 'hr') {
+          var spacer = document.querySelector('.sidebar-spacer');
+          if (spacer) spacer.remove();
+          document.documentElement.classList.add('hr-standalone-mode');
+        }
+      } catch (e) { /* AppSession.protect() will handle auth either way */ }
+    })();
+  </script>
+
+  <div class="hr-standalone-topbar" style="display:none;">
+    <a href="hr_dashboard.html" class="hr-back-link">← Back to HR Dashboard</a>
+  </div>
+
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">
+      ☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span>
+    </div>
+
+    <div class="header-block">
+      <div class="title-area">
+        <h1>📝 Daily Task Approvals</h1>
+        <p>Employee-submitted daily task logs ko review, approve, reject ya correction ke liye bhejein</p>
+      </div>
+    </div>
+
+    <!-- Stats Row (click to filter) -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card" onclick="setStatusFilter('')">
+        <div class="stat-label">Total</div>
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-sub">All submissions</div>
+      </div>
+      <div class="stat-card" onclick="setStatusFilter('Pending Approval')">
+        <div class="stat-label">Pending Approval</div>
+        <div class="stat-value" id="statPending" style="color:var(--warning);">—</div>
+        <div class="stat-sub">Awaiting your review</div>
+      </div>
+      <div class="stat-card" onclick="setStatusFilter('Approved')">
+        <div class="stat-label">Approved</div>
+        <div class="stat-value" id="statApproved" style="color:var(--success);">—</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card" onclick="setStatusFilter('Rejected')">
+        <div class="stat-label">Rejected</div>
+        <div class="stat-value" id="statRejected" style="color:var(--danger);">—</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card" onclick="setStatusFilter('Correction Required')">
+        <div class="stat-label">Correction Required</div>
+        <div class="stat-value" id="statCorrection" style="color:var(--info);">—</div>
+        <div class="stat-sub">Sent back to employee</div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <select id="filterApprovalStatus" onchange="applyFilters()">
+        <option value="">All Approval Status</option>
+        <option value="Pending Approval">Pending Approval</option>
+        <option value="Approved">Approved</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Correction Required">Correction Required</option>
+      </select>
+      <select id="filterEmployee" onchange="applyFilters()">
+        <option value="">All Employees</option>
+      </select>
+      <input type="date" id="filterFromDate" onchange="applyFilters()" title="From date" />
+      <input type="date" id="filterToDate" onchange="applyFilters()" title="To date" />
+      <button class="btn-refresh" onclick="loadDailyTasks()">🔄 Refresh</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Task ID</th>
+            <th>Employee</th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Task Status</th>
+            <th>Approval</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="dailyTasksRowsContainer">
+          <tr>
+            <td colspan="8">
+              <div class="empty-state">
+                <div class="empty-icon">📝</div>
+                <p>Daily tasks are loading...</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Review Modal -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔍 Review Daily Task</h3>
+        <button
+          style="background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer; line-height:1; padding:10px; margin:-10px; border-radius:8px;"
+          onclick="closeReviewModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="review-meta-row">
+          <div id="reviewTaskTitle">—</div>
+        </div>
+        <div id="reviewTaskMeta">—</div>
+
+        <div class="section-label">Description</div>
+        <div class="review-desc-box" id="reviewTaskDesc">—</div>
+
+        <div id="reviewEmployeeRemarkWrap" style="display:none;">
+          <div class="section-label">Employee Remark</div>
+          <div class="review-desc-box" id="reviewEmployeeRemark">—</div>
+        </div>
+
+        <div id="reviewPriorRemarkWrap" style="display:none;">
+          <div class="prior-remark-box" id="reviewPriorRemark"></div>
+        </div>
+
+        <!-- Editable action zone: shown only while still Pending Approval -->
+        <div id="reviewActionZone">
+          <div class="form-group">
+            <label class="section-label" style="margin-bottom:0;">Admin Remark <span
+                style="color:var(--text-dim); text-transform:none; font-weight:400;">(required for Reject / Request
+                Correction)</span></label>
+            <textarea id="reviewRemarkInput" placeholder="Feedback, rejection reason, ya correction note likhein..."></textarea>
+          </div>
+
+          <div class="review-actions">
+            <button class="btn-approve-lg" id="btnApprove" onclick="doApprove()">✓ Approve</button>
+            <button class="btn-correction-lg" id="btnCorrection" onclick="doRequestCorrection()">✏️ Request
+              Correction</button>
+            <button class="btn-reject-lg" id="btnReject" onclick="doReject()">✕ Reject</button>
+          </div>
+        </div>
+
+        <!-- Read-only zone: shown when task is already Approved/Rejected -->
+        <div id="reviewFinalZone" style="display:none;">
+          <div class="final-status-note" id="reviewFinalNote">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const USER = AppSession.getUser();
+
+    let allDailyTasks = [];
+    let empNameMap = {};   // emp_id -> name lookup
+    let currentReviewTask = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadEmployeeNames().then(() => loadDailyTasks());
+    });
+
+    async function loadEmployeeNames() {
+      try {
+        const res = await fetch(`${API_URL}?action=getEmployees&token=${TOKEN}&limit=500`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          const arr = (payload.data && payload.data.data) || payload.data || [];
+          const empSelect = document.getElementById('filterEmployee');
+          arr.forEach(emp => {
+            if (emp.emp_id) {
+              empNameMap[emp.emp_id] = emp.name || emp.emp_id;
+              const opt = document.createElement('option');
+              opt.value = emp.emp_id;
+              opt.textContent = emp.name || emp.emp_id;
+              empSelect.appendChild(opt);
+            }
+          });
+        }
+      } catch (e) { /* naam nahi mila toh emp_id fallback chalega */ }
+    }
+
+    async function loadDailyTasks() {
+      const tbody = document.getElementById('dailyTasksRowsContainer');
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon" style="animation:spin 1s linear infinite;display:inline-block;">⏳</div><p>Loading daily tasks...</p></div></td></tr>`;
+      try {
+        // Admin/HR/branch_manager: backend auto-scopes by branch for
+        // branch_manager, and returns everything for hr/super_admin,
+        // when no ?emp_id= filter is passed.
+        const res = await fetch(`${API_URL}?action=getDailyTasks&token=${TOKEN}&limit=300&page=1&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+
+        if (payload.status === 'success') {
+          allDailyTasks = (payload.data && payload.data.data) || [];
+          updateStats(allDailyTasks);
+
+          // Default view: Pending Approval first, if any exist
+          const filterStatus = document.getElementById('filterApprovalStatus');
+          if (filterStatus.value === '') {
+            const hasPending = allDailyTasks.some(t => t.approval_status === 'Pending Approval');
+            if (hasPending) filterStatus.value = 'Pending Approval';
+          }
+
+          applyFilters();
+        } else {
+          showToast(payload.message || 'Daily tasks fetch mein error.');
+          tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">⚠️</div><p>${payload.message || 'Error loading daily tasks.'}</p></div></td></tr>`;
+        }
+      } catch (e) {
+        showToast('Network error — daily tasks load nahi hue.');
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📡</div><p>Network error. Retry karo.</p></div></td></tr>`;
+      }
+    }
+
+    function updateStats(data) {
+      document.getElementById('statTotal').textContent = data.length;
+      document.getElementById('statPending').textContent = data.filter(t => t.approval_status === 'Pending Approval').length;
+      document.getElementById('statApproved').textContent = data.filter(t => t.approval_status === 'Approved').length;
+      document.getElementById('statRejected').textContent = data.filter(t => t.approval_status === 'Rejected').length;
+      document.getElementById('statCorrection').textContent = data.filter(t => t.approval_status === 'Correction Required').length;
+    }
+
+    function setStatusFilter(status) {
+      document.getElementById('filterApprovalStatus').value = status;
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const status = document.getElementById('filterApprovalStatus').value;
+      const empId = document.getElementById('filterEmployee').value;
+      const fromDate = document.getElementById('filterFromDate').value; // yyyy-mm-dd
+      const toDate = document.getElementById('filterToDate').value;
+
+      let filtered = allDailyTasks;
+      if (status) filtered = filtered.filter(t => t.approval_status === status);
+      if (empId) filtered = filtered.filter(t => String(t.employee_id) === String(empId));
+      if (fromDate || toDate) {
+        filtered = filtered.filter(t => {
+          const d = ddmmyyyyToIso(t.task_date);
+          if (!d) return false;
+          if (fromDate && d < fromDate) return false;
+          if (toDate && d > toDate) return false;
+          return true;
+        });
+      }
+      renderRows(filtered);
+    }
+
+    // task_date comes back from the API as "dd-MM-yyyy" (formatDateOnly).
+    // Convert to "yyyy-mm-dd" for comparison against <input type="date">.
+    function ddmmyyyyToIso(str) {
+      if (!str) return '';
+      const parts = String(str).split('-');
+      if (parts.length !== 3) return '';
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+
+    function approvalBadgeClass(status) {
+      if (status === 'Approved') return 'badge-approved';
+      if (status === 'Rejected') return 'badge-rejected';
+      if (status === 'Correction Required') return 'badge-correction';
+      return 'badge-pending';
+    }
+
+    function renderRows(data) {
+      const tbody = document.getElementById('dailyTasksRowsContainer');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `
+        <tr><td colspan="8">
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>Koi daily task nahi mili.</p>
+          </div>
+        </td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(t => {
+        const empName = empNameMap[t.employee_id] || t.employee_id || '—';
+        const timeStr = [t.start_time, t.completion_time].filter(Boolean).join(' – ') || '—';
+
+        return `
+        <tr>
+          <td><code style="font-size:11px; color:var(--text-dim);">${t.task_id}</code></td>
+          <td>
+            <div style="font-weight:600; color:var(--text-primary); font-size:13.5px;">${empName}</div>
+            <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${t.employee_id}</div>
+          </td>
+          <td style="font-size:13.5px; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${(t.task_title || '').replace(/"/g, '&quot;')}">${t.task_title || '—'}</td>
+          <td style="font-size:13px;">${t.task_date || '—'}</td>
+          <td style="font-size:12.5px; color:var(--text-muted);">${timeStr}</td>
+          <td style="font-size:12.5px; color:var(--text-muted);">${t.task_status || '—'}</td>
+          <td><span class="badge ${approvalBadgeClass(t.approval_status)}">${t.approval_status || '—'}</span></td>
+          <td><button class="btn-review" onclick="openReviewModal('${t.task_id}')">🔍 Review</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function openReviewModal(taskId) {
+      const task = allDailyTasks.find(t => t.task_id === taskId);
+      if (!task) return;
+      currentReviewTask = task;
+
+      const empName = empNameMap[task.employee_id] || task.employee_id || '—';
+      document.getElementById('reviewTaskTitle').textContent = task.task_title || 'Untitled Task';
+      document.getElementById('reviewTaskMeta').innerHTML =
+        `👤 ${empName} (${task.employee_id}) &nbsp;·&nbsp; 📅 ${task.task_date || '—'} &nbsp;·&nbsp; ⏱️ ${[task.start_time, task.completion_time].filter(Boolean).join(' – ') || '—'} &nbsp;·&nbsp; Status: ${task.task_status || '—'}`;
+
+      const descBox = document.getElementById('reviewTaskDesc');
+      if (task.task_description) {
+        descBox.textContent = task.task_description;
+        descBox.classList.remove('empty');
+      } else {
+        descBox.textContent = 'No description provided.';
+        descBox.classList.add('empty');
+      }
+
+      const empRemarkWrap = document.getElementById('reviewEmployeeRemarkWrap');
+      if (task.employee_remark) {
+        empRemarkWrap.style.display = 'block';
+        document.getElementById('reviewEmployeeRemark').textContent = task.employee_remark;
+      } else {
+        empRemarkWrap.style.display = 'none';
+      }
+
+      // If this task was previously sent back for correction and resubmitted,
+      // any earlier admin_remark is still useful context — show it if present
+      // and the task is (again) Pending Approval.
+      const priorWrap = document.getElementById('reviewPriorRemarkWrap');
+      if (task.admin_remark && task.approval_status === 'Pending Approval') {
+        priorWrap.style.display = 'block';
+        document.getElementById('reviewPriorRemark').textContent = '✏️ Previous admin remark: ' + task.admin_remark;
+      } else {
+        priorWrap.style.display = 'none';
+      }
+
+      const actionZone = document.getElementById('reviewActionZone');
+      const finalZone = document.getElementById('reviewFinalZone');
+      const remarkInput = document.getElementById('reviewRemarkInput');
+      remarkInput.value = '';
+
+      if (task.approval_status === 'Approved' || task.approval_status === 'Rejected') {
+        // Final states — read-only, no further action possible
+        actionZone.style.display = 'none';
+        finalZone.style.display = 'block';
+        const who = task.approved_by || '—';
+        const when = task.approved_at || '—';
+        const remarkLine = task.admin_remark ? `<br>Remark: ${task.admin_remark}` : '';
+        document.getElementById('reviewFinalNote').innerHTML =
+          `This task is already <strong>${task.approval_status}</strong> by ${who} on ${when}.${remarkLine}`;
+      } else {
+        // Pending Approval or Correction Required — actionable
+        actionZone.style.display = 'block';
+        finalZone.style.display = 'none';
+      }
+
+      document.getElementById('reviewModal').classList.add('open');
+    }
+
+    function closeReviewModal() {
+      document.getElementById('reviewModal').classList.remove('open');
+      currentReviewTask = null;
+    }
+
+    function setReviewButtonsBusy(busy) {
+      ['btnApprove', 'btnCorrection', 'btnReject'].forEach(id => {
+        document.getElementById(id).disabled = busy;
+      });
+    }
+
+    async function postDailyTaskAction(action, extraFields) {
+      if (!currentReviewTask) return;
+      setReviewButtonsBusy(true);
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(Object.assign({
+            token: TOKEN,
+            action: action,
+            task_id: currentReviewTask.task_id
+          }, extraFields || {}))
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast(out.message || 'Done!');
+          closeReviewModal();
+          loadDailyTasks();
+        } else {
+          showToast(out.message || 'Action mein error.');
+        }
+      } catch (e) {
+        showToast('Network error.');
+      } finally {
+        setReviewButtonsBusy(false);
+      }
+    }
+
+    function doApprove() {
+      if (!window.confirm('Is daily task ko approve karna chahte ho?')) return;
+      const remark = document.getElementById('reviewRemarkInput').value.trim();
+      postDailyTaskAction('approveDailyTask', { admin_remark: remark });
+    }
+
+    function doReject() {
+      const remark = document.getElementById('reviewRemarkInput').value.trim();
+      if (!remark) {
+        showToast('Rejection ke liye Admin Remark likhna zaroori hai.');
+        return;
+      }
+      if (!window.confirm('Is daily task ko reject karna chahte ho?')) return;
+      postDailyTaskAction('rejectDailyTask', { admin_remark: remark });
+    }
+
+    function doRequestCorrection() {
+      const remark = document.getElementById('reviewRemarkInput').value.trim();
+      if (!remark) {
+        showToast('Correction request ke liye Admin Remark likhna zaroori hai.');
+        return;
+      }
+      postDailyTaskAction('requestCorrectionDailyTask', { admin_remark: remark });
+    }
+  </script>
+
+  <style>
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</body>
+
+</html>

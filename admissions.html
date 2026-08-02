@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admissions — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --warning: #FBBF24;
+      --danger: #F87171;
+      --info: #8FAEFF;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar-spacer {
+      width: 240px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar-spacer {
+        display: none;
+      }
+    }
+
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 600px) {
+      .main-workspace {
+        padding: 16px;
+      }
+    }
+
+    .mobile-nav-bar {
+      display: none;
+      height: 50px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--radius-sm);
+      align-items: center;
+      padding: 0 16px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-nav-bar {
+        display: flex;
+      }
+    }
+
+    .header-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title-area h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .title-area p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .btn-add-lead {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s;
+    }
+
+    .btn-add-lead:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      backdrop-filter: blur(var(--glass-blur));
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .stat-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .stat-card .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .stat-card .stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .stat-card .stat-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-bar select,
+    .filter-bar input[type="text"] {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .filter-bar input[type="text"] {
+      flex: 1;
+      min-width: 200px;
+      cursor: text;
+    }
+
+    .filter-bar select {
+      cursor: pointer;
+    }
+
+    .filter-bar select option {
+      background: #1a1a1e;
+    }
+
+    .filter-bar .btn-refresh {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .filter-bar label.archived-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+
+      .filter-bar select,
+      .filter-bar input[type="text"] {
+        font-size: 16px;
+      }
+    }
+
+    .table-container {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      width: 100%;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+      min-width: 800px;
+    }
+
+    .data-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      padding: 14px 16px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .data-table tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    /* Status badges */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-new { background: rgba(143, 174, 255, 0.14); color: #8FAEFF; }
+    .badge-contacted { background: rgba(251, 191, 36, 0.12); color: #FBBF24; }
+    .badge-followup { background: rgba(251, 191, 36, 0.12); color: #FBBF24; }
+    .badge-interested { background: rgba(52, 211, 153, 0.12); color: #34D399; }
+    .badge-notinterested { background: rgba(248, 113, 113, 0.12); color: #F87171; }
+    .badge-completed { background: rgba(52, 211, 153, 0.18); color: #34D399; }
+    .badge-hold { background: rgba(251, 191, 36, 0.12); color: #FBBF24; }
+    .badge-archived { background: rgba(255, 255, 255, 0.06); color: var(--text-dim); }
+
+    .btn-review {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    .btn-review:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .btn-review.danger {
+      color: #F87171;
+    }
+
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: rgba(18, 18, 20, 0.9);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 560px;
+      width: 100%;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: rgba(18, 18, 20, 0.95);
+      z-index: 2;
+    }
+
+    .modal-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 560px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.18s, background 0.18s;
+    }
+
+    .form-group textarea {
+      resize: none;
+      height: 76px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .form-group select option {
+      background: #1a1a1e;
+    }
+
+    .btn-submit-lg {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      border: 1px solid rgba(143, 174, 255, 0.3);
+      background: rgba(143, 174, 255, 0.12);
+      color: #8FAEFF;
+      transition: background 0.15s;
+      margin-top: 6px;
+    }
+
+    .btn-submit-lg:hover {
+      background: rgba(143, 174, 255, 0.22);
+    }
+
+    .btn-submit-lg:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ── HR standalone mode (no shared admin sidebar) ── */
+    .hr-standalone-topbar {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      background: var(--glass);
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .hr-back-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s;
+    }
+
+    .hr-back-link:hover {
+      color: var(--text-primary);
+    }
+
+    html.hr-standalone-mode body {
+      flex-direction: column;
+    }
+
+    html.hr-standalone-mode .hr-standalone-topbar {
+      display: block !important;
+    }
+
+    html.hr-standalone-mode .mobile-nav-bar {
+      display: none !important;
+    }
+
+    html.hr-standalone-mode .main-workspace {
+      min-height: calc(100vh - 49px);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar-spacer"></div>
+  <script>
+    // HR role uses its own self-contained top navbar (hr_dashboard.html /
+    // hr_recruitment.html / daily_tasks_admin.html pattern) — not the
+    // shared admin sidebar. Strip the sidebar spacer BEFORE app.js's
+    // DOMContentLoaded handler runs injectSidebar(), so HR never sees
+    // admin-only nav items. (Exact same pattern as daily_tasks_admin.html.)
+    (function () {
+      try {
+        var u = JSON.parse(localStorage.getItem('ebms_user') || '{}');
+        if (u.role === 'hr') {
+          var spacer = document.querySelector('.sidebar-spacer');
+          if (spacer) spacer.remove();
+          document.documentElement.classList.add('hr-standalone-mode');
+        }
+      } catch (e) { /* AppSession.protect() will handle auth either way */ }
+    })();
+  </script>
+
+  <div class="hr-standalone-topbar" style="display:none;">
+    <a href="hr_dashboard.html" class="hr-back-link">← Back to HR Dashboard</a>
+  </div>
+
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">
+      ☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span>
+    </div>
+
+    <div class="header-block">
+      <div class="title-area">
+        <h1>🎓 Admissions</h1>
+        <p>Student admission leads — inquiry se admission tak track karein. (Job candidates ke liye Recruitment Tracker use karein.)</p>
+      </div>
+      <button class="btn-add-lead" onclick="openAddLeadModal()">➕ Add Lead</button>
+    </div>
+
+    <!-- Stats Row (click to filter) -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card" onclick="setStatusFilter('')">
+        <div class="stat-label">Active Total</div>
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-sub">Excludes archived</div>
+      </div>
+      <div class="stat-card" onclick="setStatusFilter('New')">
+        <div class="stat-label">New</div>
+        <div class="stat-value" id="statNew" style="color:var(--info);">—</div>
+        <div class="stat-sub">Not yet contacted</div>
+      </div>
+      <div class="stat-card" onclick="setStatusFilter('Contacted')">
+        <div class="stat-label">Contacted</div>
+        <div class="stat-value" id="statContacted" style="color:var(--warning);">—</div>
+        <div class="stat-sub">First touch done</div>
+      </div>
+      <div class="stat-card" onclick="setStatusFilter('Follow-up')">
+        <div class="stat-label">Follow-up</div>
+        <div class="stat-value" id="statFollowup" style="color:var(--warning);">—</div>
+        <div class="stat-sub">Needs next touch</div>
+      </div>
+      <div class="stat-card" onclick="setStatusFilter('Interested')">
+        <div class="stat-label">Interested</div>
+        <div class="stat-value" id="statInterested" style="color:var(--success);">—</div>
+        <div class="stat-sub">Warm leads</div>
+      </div>
+      <div class="stat-card" onclick="setStatusFilter('On Hold')">
+        <div class="stat-label">On Hold</div>
+        <div class="stat-value" id="statHold" style="color:var(--warning);">—</div>
+        <div class="stat-sub">Paused</div>
+      </div>
+      <div class="stat-card" onclick="setStatusFilter('Admission Completed')">
+        <div class="stat-label">Admitted</div>
+        <div class="stat-value" id="statCompleted" style="color:var(--success);">—</div>
+        <div class="stat-sub">Admission Completed</div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="🔍 Naam, mobile, course se search…" oninput="applyFilters()" />
+      <select id="filterStatus" onchange="applyFilters()">
+        <option value="">All Status</option>
+        <option value="New">New</option>
+        <option value="Contacted">Contacted</option>
+        <option value="Follow-up">Follow-up</option>
+        <option value="Interested">Interested</option>
+        <option value="Not Interested">Not Interested</option>
+        <option value="Admission Completed">Admission Completed</option>
+        <option value="On Hold">On Hold</option>
+      </select>
+      <select id="filterBranch" onchange="applyFilters()">
+        <option value="">All Branches</option>
+      </select>
+      <label class="archived-toggle">
+        <input type="checkbox" id="showArchivedToggle" onchange="loadLeads()" />
+        Show archived
+      </label>
+      <button class="btn-refresh" onclick="loadLeads()">🔄 Refresh</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Naam</th>
+            <th>Contact</th>
+            <th>Course</th>
+            <th>Branch</th>
+            <th>Status</th>
+            <th>Follow-up</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="leadsRowsContainer">
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <div class="empty-icon">🎓</div>
+                <p>Admission leads are loading...</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add / Edit Lead Modal -->
+  <div class="modal-overlay" id="leadModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="leadModalTitle">➕ Add Admission Lead</h3>
+        <button
+          style="background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer; line-height:1; padding:10px; margin:-10px; border-radius:8px;"
+          onclick="closeLeadModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="leadForm" onsubmit="submitLeadForm(event)">
+          <input type="hidden" id="leadIdField" value="" />
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Naam *</label>
+              <input type="text" id="leadName" required />
+            </div>
+            <div class="form-group">
+              <label>Mobile *</label>
+              <input type="tel" id="leadMobile" required />
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="leadEmail" />
+            </div>
+            <div class="form-group">
+              <label>Course Interested</label>
+              <input type="text" id="leadCourse" placeholder="e.g. Full Stack Web Dev" />
+            </div>
+            <div class="form-group">
+              <label>Source</label>
+              <select id="leadSource">
+                <option value="">Select…</option>
+                <option value="Walk-in">Walk-in</option>
+                <option value="Call">Call</option>
+                <option value="Referral">Referral</option>
+                <option value="Online">Online</option>
+                <option value="Social Media">Social Media</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Branch</label>
+              <select id="leadBranch">
+                <option value="">Select branch…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Follow-up Date</label>
+              <input type="date" id="leadFollowupDate" />
+            </div>
+            <div class="form-group">
+              <label>Assigned To</label>
+              <select id="leadAssignedTo">
+                <option value="">Unassigned</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Remark</label>
+            <textarea id="leadRemark" placeholder="Latest note / follow-up context…"></textarea>
+          </div>
+          <button type="submit" class="btn-submit-lg" id="leadSubmitBtn">✓ Save Lead</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Update Modal -->
+  <div class="modal-overlay" id="statusModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔄 Update Status</h3>
+        <button
+          style="background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer; line-height:1; padding:10px; margin:-10px; border-radius:8px;"
+          onclick="closeStatusModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="statusModalLeadName" style="font-size:13.5px; color:var(--text-muted); margin-bottom:16px;">—</div>
+        <div class="form-group">
+          <label>New Status</label>
+          <select id="statusSelect">
+            <option value="New">New</option>
+            <option value="Contacted">Contacted</option>
+            <option value="Follow-up">Follow-up</option>
+            <option value="Interested">Interested</option>
+            <option value="Not Interested">Not Interested</option>
+            <option value="Admission Completed">Admission Completed</option>
+            <option value="On Hold">On Hold</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Remark (optional)</label>
+          <textarea id="statusRemark" placeholder="Kya baat hui, kya next step hai…"></textarea>
+        </div>
+        <button class="btn-submit-lg" id="statusSubmitBtn" onclick="submitStatusUpdate()">✓ Update Status</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const USER = AppSession.getUser();
+
+    let allLeads = [];
+    let leadBranches = [];
+    let leadAssignees = [];
+    let statusModalLeadId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadLookups().then(() => loadLeads());
+    });
+
+    // Branches + admin users (for "Assigned To"), same shape as
+    // hr_recruitment.html's Hire modal lookups. Both failures are
+    // swallowed independently so one bad lookup doesn't blank the other.
+    async function loadLookups() {
+      try {
+        const res = await fetch(`${API_URL}?action=getBranches&token=${TOKEN}`, { cache: 'no-store' });
+        const out = await res.json();
+        leadBranches = (out.status === 'success' ? out.data : []) || [];
+        const branchFilterSel = document.getElementById('filterBranch');
+        const branchFormSel = document.getElementById('leadBranch');
+        leadBranches.forEach(b => {
+          const label = b.name || b.branch_name || b.branch_id;
+          branchFilterSel.appendChild(new Option(label, b.branch_id));
+          branchFormSel.appendChild(new Option(label, b.branch_id));
+        });
+      } catch (e) { /* dropdown just stays minimal */ }
+
+      try {
+        const res = await fetch(`${API_URL}?action=getAdminUsers&token=${TOKEN}`, { cache: 'no-store' });
+        const out = await res.json();
+        leadAssignees = (out.status === 'success' ? out.data : []) || [];
+        const assignSel = document.getElementById('leadAssignedTo');
+        leadAssignees.forEach(a => {
+          assignSel.appendChild(new Option(a.name || a.user_id, a.user_id));
+        });
+      } catch (e) { /* HR without getAdminUsers permission — dropdown just stays "Unassigned" only */ }
+    }
+
+    function branchName(branchId) {
+      if (!branchId) return '—';
+      const b = leadBranches.find(x => x.branch_id === branchId);
+      return b ? (b.name || b.branch_name || branchId) : branchId;
+    }
+
+    async function loadLeads() {
+      const tbody = document.getElementById('leadsRowsContainer');
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon" style="animation:spin 1s linear infinite;display:inline-block;">⏳</div><p>Loading admission leads...</p></div></td></tr>`;
+      try {
+        const includeArchived = document.getElementById('showArchivedToggle').checked ? '&include_archived=1' : '';
+        const res = await fetch(`${API_URL}?action=getAdmissionLeads&token=${TOKEN}&limit=300&page=1${includeArchived}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+
+        if (payload.status === 'success') {
+          allLeads = (payload.data && payload.data.data) || [];
+          updateStats(allLeads);
+          applyFilters();
+        } else {
+          showToast(payload.message || 'Admission leads fetch mein error.');
+          tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">⚠️</div><p>${payload.message || 'Error loading leads.'}</p></div></td></tr>`;
+        }
+      } catch (e) {
+        showToast('Network error — admission leads load nahi hue.');
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📡</div><p>Network error. Retry karo.</p></div></td></tr>`;
+      }
+    }
+
+    function updateStats(data) {
+      const active = data.filter(l => l.status !== 'Archived');
+      document.getElementById('statTotal').textContent = active.length;
+      document.getElementById('statNew').textContent = data.filter(l => l.status === 'New').length;
+      document.getElementById('statContacted').textContent = data.filter(l => l.status === 'Contacted').length;
+      document.getElementById('statFollowup').textContent = data.filter(l => l.status === 'Follow-up').length;
+      document.getElementById('statInterested').textContent = data.filter(l => l.status === 'Interested').length;
+      document.getElementById('statHold').textContent = data.filter(l => l.status === 'On Hold').length;
+      document.getElementById('statCompleted').textContent = data.filter(l => l.status === 'Admission Completed').length;
+    }
+
+    function setStatusFilter(status) {
+      document.getElementById('filterStatus').value = status;
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      const status = document.getElementById('filterStatus').value;
+      const branchId = document.getElementById('filterBranch').value;
+
+      let filtered = allLeads;
+      if (status) filtered = filtered.filter(l => l.status === status);
+      if (branchId) filtered = filtered.filter(l => String(l.branch_id) === String(branchId));
+      if (q) {
+        filtered = filtered.filter(l =>
+          (l.name || '').toLowerCase().includes(q) ||
+          (l.mobile || '').toLowerCase().includes(q) ||
+          (l.course_interested || '').toLowerCase().includes(q)
+        );
+      }
+      renderRows(filtered);
+    }
+
+    function statusBadgeClass(status) {
+      const map = {
+        'New': 'badge-new',
+        'Contacted': 'badge-contacted',
+        'Follow-up': 'badge-followup',
+        'Interested': 'badge-interested',
+        'Not Interested': 'badge-notinterested',
+        'Admission Completed': 'badge-completed',
+        'On Hold': 'badge-hold',
+        'Archived': 'badge-archived'
+      };
+      return map[status] || 'badge-new';
+    }
+
+    function escapeHtml(str) {
+      if (str === undefined || str === null) return '';
+      return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function renderRows(data) {
+      const tbody = document.getElementById('leadsRowsContainer');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `
+        <tr><td colspan="7">
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>Koi admission lead nahi mila.</p>
+          </div>
+        </td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(l => {
+        const archived = l.status === 'Archived';
+        return `
+        <tr>
+          <td style="font-weight:600; font-size:13.5px;">${escapeHtml(l.name)}</td>
+          <td style="font-size:12.5px; color:var(--text-muted);">
+            ${escapeHtml(l.mobile)}${l.email ? '<br>' + escapeHtml(l.email) : ''}
+          </td>
+          <td style="font-size:13px;">${escapeHtml(l.course_interested) || '—'}</td>
+          <td style="font-size:12.5px; color:var(--text-muted);">${escapeHtml(branchName(l.branch_id))}</td>
+          <td><span class="badge ${statusBadgeClass(l.status)}">${escapeHtml(l.status)}</span></td>
+          <td style="font-size:12.5px; color:var(--text-muted);">${l.follow_up_date || '—'}</td>
+          <td>
+            <button class="btn-review" onclick="openEditLeadModal('${l.lead_id}')">✏️ Edit</button>
+            ${!archived ? `<button class="btn-review" onclick="openStatusModal('${l.lead_id}')">🔄 Status</button>` : ''}
+            ${!archived ? `<button class="btn-review danger" onclick="archiveLead('${l.lead_id}')">🗄 Archive</button>` : ''}
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ── Add / Edit Lead Modal ──────────────────────────────────
+    function openAddLeadModal() {
+      document.getElementById('leadModalTitle').textContent = '➕ Add Admission Lead';
+      document.getElementById('leadForm').reset();
+      document.getElementById('leadIdField').value = '';
+      document.getElementById('leadModal').classList.add('open');
+    }
+
+    function openEditLeadModal(leadId) {
+      const l = allLeads.find(x => x.lead_id === leadId);
+      if (!l) return;
+      document.getElementById('leadModalTitle').textContent = '✏️ Edit Admission Lead';
+      document.getElementById('leadIdField').value = l.lead_id;
+      document.getElementById('leadName').value = l.name || '';
+      document.getElementById('leadMobile').value = l.mobile || '';
+      document.getElementById('leadEmail').value = l.email || '';
+      document.getElementById('leadCourse').value = l.course_interested || '';
+      document.getElementById('leadSource').value = l.source || '';
+      document.getElementById('leadBranch').value = l.branch_id || '';
+      document.getElementById('leadFollowupDate').value = '';
+      document.getElementById('leadAssignedTo').value = l.assigned_to || '';
+      document.getElementById('leadRemark').value = l.remark || '';
+      document.getElementById('leadModal').classList.add('open');
+    }
+
+    function closeLeadModal() {
+      document.getElementById('leadModal').classList.remove('open');
+    }
+
+    async function submitLeadForm(evt) {
+      evt.preventDefault();
+      const leadId = document.getElementById('leadIdField').value;
+      const btn = document.getElementById('leadSubmitBtn');
+      btn.disabled = true;
+
+      const payload = {
+        token: TOKEN,
+        action: leadId ? 'updateAdmissionLead' : 'addAdmissionLead',
+        name: document.getElementById('leadName').value,
+        mobile: document.getElementById('leadMobile').value,
+        email: document.getElementById('leadEmail').value,
+        course_interested: document.getElementById('leadCourse').value,
+        source: document.getElementById('leadSource').value,
+        branch_id: document.getElementById('leadBranch').value,
+        follow_up_date: document.getElementById('leadFollowupDate').value,
+        assigned_to: document.getElementById('leadAssignedTo').value,
+        remark: document.getElementById('leadRemark').value
+      };
+      if (leadId) payload.lead_id = leadId;
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast(out.message || (leadId ? 'Lead update ho gaya' : 'Lead add ho gaya'));
+          closeLeadModal();
+          loadLeads();
+        } else {
+          showToast(out.message || 'Error occurred.');
+        }
+      } catch (e) {
+        showToast('Network error.');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ── Status Update Modal ─────────────────────────────────────
+    function openStatusModal(leadId) {
+      const l = allLeads.find(x => x.lead_id === leadId);
+      if (!l) return;
+      statusModalLeadId = leadId;
+      document.getElementById('statusModalLeadName').textContent = l.name + ' — current: ' + l.status;
+      document.getElementById('statusSelect').value = (l.status === 'Archived') ? 'New' : l.status;
+      document.getElementById('statusRemark').value = '';
+      document.getElementById('statusModal').classList.add('open');
+    }
+
+    function closeStatusModal() {
+      document.getElementById('statusModal').classList.remove('open');
+      statusModalLeadId = null;
+    }
+
+    async function submitStatusUpdate() {
+      if (!statusModalLeadId) return;
+      const btn = document.getElementById('statusSubmitBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            token: TOKEN, action: 'updateAdmissionLeadStatus',
+            lead_id: statusModalLeadId,
+            status: document.getElementById('statusSelect').value,
+            remark: document.getElementById('statusRemark').value
+          })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast(out.message || 'Status update ho gaya');
+          closeStatusModal();
+          loadLeads();
+        } else {
+          showToast(out.message || 'Error occurred.');
+        }
+      } catch (e) {
+        showToast('Network error.');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ── Archive (soft-delete only — no hard delete anywhere) ────
+    async function archiveLead(leadId) {
+      const l = allLeads.find(x => x.lead_id === leadId);
+      if (!l) return;
+      if (!window.confirm(`"${l.name}" ko archive karna hai? Ye status ko "Archived" set kar dega — hard delete kabhi nahi hota.`)) return;
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'archiveAdmissionLead', lead_id: leadId })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast(out.message || 'Lead archive ho gaya');
+          loadLeads();
+        } else {
+          showToast(out.message || 'Error occurred.');
+        }
+      } catch (e) {
+        showToast('Network error.');
+      }
+    }
+  </script>
+</body>
+
+</html>
