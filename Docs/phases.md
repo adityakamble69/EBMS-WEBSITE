@@ -76,7 +76,7 @@ This project is already substantially built. Phases below are reconstructed from
 > Full detail in `PRD.md` §7. Nothing in this phase is built yet — do not check any box until the corresponding backend route + frontend UI both exist and are verified.
 
 **High priority**
-- [ ] Resolve `department_id`/`designation_id`/`branch_id` → readable names server-side on every employee-profile-facing response (`PRD.md` §7.1)
+- [x] Resolve `department_id`/`designation_id`/`branch_id` → readable names server-side on every employee-profile-facing response (`PRD.md` §7.1) — **shipped 2026-08-02**: `appscript_employees.gs` (`resolveEmployeeDisplayNames`/`Bulk`) + `employee_dashboard.html` (profile card + ID card). ⚠️ `employees.html` (admin panel) still has a related pre-existing bug — see `PRD.md` §7.1 note — not yet fixed.
 - [ ] Employee leave summary block (Total/Used/Remaining/Pending/Approved/Rejected) on `employee_dashboard.html` (§7.2)
 - [ ] `settings` sheet + `getSetting(key)` helper (§7.3) — needed by both the leave lock (§7.4) and targets (§7.8)
 - [ ] New-employee 30-day leave lock, enforced in `handleApplyLeave()` (§7.4)

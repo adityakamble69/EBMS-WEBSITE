@@ -253,6 +253,7 @@
 
     <div class="settings-tabs" id="settingsTabs">
       <button class="tab-btn active" data-tab="branches" onclick="switchTab('branches')">🏢 Branches</button>
+      <button class="tab-btn" data-tab="general" onclick="switchTab('general')">🎯 Business Settings</button>
       <button class="tab-btn" data-tab="password" onclick="switchTab('password')">🔒 Change Password</button>
     </div>
 
@@ -275,6 +276,28 @@
           </thead>
           <tbody id="branchesRowsContainer">
             <tr><td colspan="8" class="empty-note">Branches are loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============== BUSINESS SETTINGS (Phase 11 §7.3) ============== -->
+    <div class="tab-panel" id="panel-general">
+      <div class="panel-header">
+        <div>
+          <h2>Business Settings</h2>
+          <p>Company-wide tunable values — leave policy, targets, etc. Koi bhi change turant apply hota hai, redeploy ki zaroorat nahi.</p>
+        </div>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Key</th><th>Description</th><th>Value</th><th>Last Updated</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="settingsRowsContainer">
+            <tr><td colspan="5" class="empty-note">Settings are loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -328,6 +351,7 @@
     const IS_SUPER_ADMIN = CURRENT_USER.role === 'super_admin';
 
     let branchesCache = [];
+    let settingsCache = [];
 
     document.addEventListener('DOMContentLoaded', () => {
       if (!IS_SUPER_ADMIN) {
@@ -343,6 +367,7 @@
         document.getElementById('panel-password').prepend(note);
       } else {
         loadBranches();
+        loadSettings();
       }
     });
 
@@ -458,6 +483,64 @@
         const out = await res.json();
         if (out.status === 'success') { showToast('Branch status update ho gaya!'); loadBranches(); }
         else showToast(out.message);
+      } catch (err) { showToast('Network connectivity error.'); }
+    }
+
+    // ============== BUSINESS SETTINGS (Phase 11 §7.3) ==============
+    // Reads/writes the 'settings' sheet via getSettings / updateSetting
+    // (appscript_settings.gs) — super_admin only, both server- and
+    // frontend-side (this whole page is already gated to super_admin
+    // for every tab except Change Password, see DOMContentLoaded above).
+    async function loadSettings() {
+      try {
+        const res = await fetch(`${API_URL}?action=getSettings&token=${TOKEN}`);
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          settingsCache = payload.data;
+          renderSettingsTable();
+        } else {
+          showToast(payload.message);
+        }
+      } catch (e) { showToast('Settings fetch karne me dikkat aayi.'); }
+    }
+
+    function renderSettingsTable() {
+      const container = document.getElementById('settingsRowsContainer');
+      if (!settingsCache.length) {
+        container.innerHTML = '<tr><td colspan="5" class="empty-note">Koi setting nahi mili — Apps Script editor me setupSettingsSheet() ek baar run karo.</td></tr>';
+        return;
+      }
+      container.innerHTML = settingsCache.map(s => `
+        <tr>
+          <td><code>${s.setting_key}</code></td>
+          <td>${s.description || '—'}</td>
+          <td>
+            <input type="text" id="setting-${s.setting_key}" value="${s.setting_value}"
+              style="max-width:140px; background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:8px; padding:8px 10px; color:#fff; font-size:14px; font-family:'Inter',sans-serif;" />
+          </td>
+          <td>${s.updated_at || '—'}</td>
+          <td><button class="btn-icon-sm success" onclick="saveSetting('${s.setting_key}')">💾 Save</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function saveSetting(key) {
+      const input = document.getElementById('setting-' + key);
+      const newValue = input.value.trim();
+      if (newValue === '') { showToast('Value khaali nahi ho sakti.'); return; }
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ token: TOKEN, action: 'updateSetting', setting_key: key, setting_value: newValue })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast(`${key} update ho gayi!`);
+          loadSettings();
+        } else {
+          showToast(out.message);
+        }
       } catch (err) { showToast('Network connectivity error.'); }
     }
 

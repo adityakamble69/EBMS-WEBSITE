@@ -811,6 +811,21 @@
     }
 
     /* ── Section 6: Leave Request ── */
+    .leave-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 900px) { .leave-summary-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 480px) { .leave-summary-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .stat-card.mini { padding: 12px 14px; }
+    .stat-card.mini .stat-title { font-size: 10px; }
+    .stat-card.mini .stat-main { font-size: 17px; }
+    .stat-card.mini .stat-icon-row { margin-bottom: 4px; }
+    .stat-card.mini .stat-icon { font-size: 15px; }
+
     .leave-section {
       margin-bottom: 22px;
     }
@@ -1715,6 +1730,34 @@
         <button class="modal-close-btn" onclick="closeModal('leaveModal')">✕ Close</button>
       </div>
       <div class="modal-body">
+        <!-- 🆕 Phase 11 §7.2 — Leave summary (Total/Used/Remaining/Pending/Approved/Rejected) -->
+        <div class="leave-summary-grid" id="leaveSummaryGrid">
+          <div class="glass-card stat-card mini">
+            <div class="stat-icon-row"><span class="stat-title">Total</span><span class="stat-icon">📆</span></div>
+            <div class="stat-main" id="lsTotal">—</div>
+          </div>
+          <div class="glass-card stat-card mini">
+            <div class="stat-icon-row"><span class="stat-title">Used</span><span class="stat-icon">✅</span></div>
+            <div class="stat-main" id="lsUsed">—</div>
+          </div>
+          <div class="glass-card stat-card mini">
+            <div class="stat-icon-row"><span class="stat-title">Remaining</span><span class="stat-icon">🌿</span></div>
+            <div class="stat-main" id="lsRemaining">—</div>
+          </div>
+          <div class="glass-card stat-card mini">
+            <div class="stat-icon-row"><span class="stat-title">Pending</span><span class="stat-icon">⏳</span></div>
+            <div class="stat-main" id="lsPending">—</div>
+          </div>
+          <div class="glass-card stat-card mini">
+            <div class="stat-icon-row"><span class="stat-title">Approved</span><span class="stat-icon">👍</span></div>
+            <div class="stat-main" id="lsApproved">—</div>
+          </div>
+          <div class="glass-card stat-card mini">
+            <div class="stat-icon-row"><span class="stat-title">Rejected</span><span class="stat-icon">🚫</span></div>
+            <div class="stat-main" id="lsRejected">—</div>
+          </div>
+        </div>
+
         <div class="leave-grid">
           <div class="glass-card leave-form-card">
             <form id="quickLeaveForm" onsubmit="submitQuickLeave(event)">
@@ -2234,6 +2277,7 @@
     function openLeaveModal() {
       document.getElementById('leaveModal').classList.add('open');
       loadMyLeaves();
+      loadLeaveSummary();
     }
 
     function openExpenseModal() {
@@ -2258,7 +2302,10 @@
       document.getElementById('idCardName').textContent = emp.name || 'Employee';
       document.getElementById('idCardRole').textContent = (USER.role || 'staff').replace(/_/g, ' ').toUpperCase();
       document.getElementById('idCardEmpId').textContent = emp.emp_id || '—';
-      document.getElementById('idCardDept').textContent = emp.department_id || '—';
+      // 🏷️ NAME RESOLVE FIX (Phase 11 req #1): backend ab department_name
+      // resolve karke bhejta hai — raw department_id (e.g. "DP001") kabhi
+      // UI par nahi dikhna chahiye.
+      document.getElementById('idCardDept').textContent = emp.department_name || '—';
       const idCardJoinD = parseDMY(emp.joining_date);
       document.getElementById('idCardJoin').textContent = idCardJoinD
         ? idCardJoinD.toLocaleDateString('en-IN', { day: 'numeric', month: 'numeric', year: 'numeric' })
@@ -2585,17 +2632,28 @@
         if (payload.status === 'success') {
           EMPLOYEE_DATA = payload.data;
           bindProfile(EMPLOYEE_DATA);
+        } else {
+          console.error('getEmployee failed:', payload.message);
+          showToast(payload.message || 'Could not load profile.');
         }
-      } catch (e) { showToast('Could not load profile.'); }
+      } catch (e) {
+        console.error('loadProfile network error:', e);
+        showToast('Could not load profile.');
+      }
     }
 
     function bindProfile(emp) {
       const initials = emp.name ? emp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'EE';
       document.getElementById('profileAvatarInitials').textContent = initials;
       document.getElementById('profileName').textContent = emp.name || 'Employee';
-      document.getElementById('profileDesignation').textContent = '💼 ' + (emp.designation_id || 'Staff Regular');
-      document.getElementById('profileDepartment').textContent = '🏷️ ' + (emp.department_id || '—');
-      document.getElementById('profileBranch').textContent = '🏢 ' + (emp.branch_id || '—');
+      // 🏷️ NAME RESOLVE FIX (Phase 11 req #1): backend (appscript_employees.gs
+      // resolveEmployeeDisplayNames()) ab har getEmployee/getProfile response
+      // ke saath department_name / designation_name / branch_name bhi bhejta
+      // hai — raw *_id codes (e.g. "DP001") kabhi frontend par nahi dikhne
+      // chahiye, isliye yahan _name fields use ho rahe hain, _id nahi.
+      document.getElementById('profileDesignation').textContent = '💼 ' + (emp.designation_name || 'Staff');
+      document.getElementById('profileDepartment').textContent = '🏷️ ' + (emp.department_name || '—');
+      document.getElementById('profileBranch').textContent = '🏢 ' + (emp.branch_name || '—');
 
       document.getElementById('infoEmpId').textContent = emp.emp_id || '—';
       document.getElementById('infoEmail').textContent = emp.email || '—';
@@ -3134,6 +3192,26 @@
     }
 
     /* ── Section 6: Leave Request ── */
+    // 🆕 Phase 11 §7.2 — Leave summary block. Numbers (esp. Total, which
+    // comes from the settings sheet's ANNUAL_LEAVES key) are resolved
+    // entirely server-side by getLeaveSummary — never hardcoded here
+    // (rules.md #13/#14).
+    async function loadLeaveSummary() {
+      try {
+        const res = await fetch(`${API_URL}?action=getLeaveSummary&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status !== 'success') { showToast(payload.message); return; }
+
+        const s = payload.data;
+        document.getElementById('lsTotal').textContent     = s.total_annual_leaves;
+        document.getElementById('lsUsed').textContent      = s.used;
+        document.getElementById('lsRemaining').textContent = s.remaining;
+        document.getElementById('lsPending').textContent   = s.pending;
+        document.getElementById('lsApproved').textContent  = s.approved;
+        document.getElementById('lsRejected').textContent  = s.rejected;
+      } catch (e) { showToast('Leave summary load karne me dikkat aayi.'); }
+    }
+
     function calcLeaveDays(fromStr, toStr) {
       if (!fromStr || !toStr) return 1;
       const from = new Date(fromStr), to = new Date(toStr);
@@ -3168,6 +3246,7 @@
           document.getElementById('quickLeaveForm').reset();
           getRawLeavesCached.invalidate('all');
           loadMyLeaves();
+          loadLeaveSummary();
           loadCalendar();
         } else {
           showToast(out.message || 'Error during submission.');

@@ -110,6 +110,11 @@ See `README.md` §2 for the full authoritative column-by-column table (already a
 
 Quick summary of tabs: `admin_users`, `employees`, `branches`, `departments`, `designations`, `attendance`, `shifts`, `shift_assignments`, `leave_requests`, `salaries`, `salary_slips`, `performance`, `tasks`, `assets`, `documents`, `notifications`, `holidays`, `expenses`, `job_openings`, `candidates`, `bank_details`, `employee_documents`, `instructions`.
 
+> **Note (2026-08-02):** `departments` (`dept_id | dept_name | created_at`) and `designations` (`desig_id | desig_name | created_at`) did not actually exist in the live Sheet until this date, despite being referenced in code — this caused a "Sheet not found" crash in `resolveEmployeeDisplayNames()` (Phase 11 §7.1). Both are now created and populated. `department_id`/`designation_id` on `employees` are real lookup **codes** (not plain display text — this was briefly misdiagnosed mid-session, then corrected against actual CSV data), matching the admin form's dropdown options 1:1:
+> - **Departments:** `DEPT001`=IT, `DEPT002`=Non-IT, `DEPT003`=Technical, `DEPT004`=Back Office / Admin. (A 5th dropdown option, "Other", has no `DEPT005` row yet — no employee has used it; add the row when one does.)
+> - **Designations:** `DES001`=Teacher, `DES002`=Admin, `DES003`=Accountant, `DES004`=Office Staff, `DES005`=Other. (A stale `DES006` code existed with no confirmed original meaning — the 3 employees on it were migrated to `DES005`/Other and the row was deleted.)
+> See `memory.md`'s "Employee Portal stuck-loading bug fixed" session entry for the full debugging trail.
+
 ### Planned tabs — Phase 11 (not yet built, see `PRD.md` §7 / `phases.md` Phase 11)
 
 | Sheet | Key columns | Notes |
