@@ -8,6 +8,28 @@ Purpose: a running log so any contributor (human or AI) picking up this project 
 
 ## Session log
 
+### [2026-08-02] — Phase 11 §7.10/§7.11 Admission Leads: frontend wiring fully verified + completed
+**What was done:**
+- Followed up on the previous session's flagged gap: `app.js`, `daily_tasks_admin.html`, and `sidebar.html` weren't available when `admissions_frontend_patch.md` was written, so its `app.js`/`sidebar.html` snippets were inferred, not copied. All three files (plus the real `admissions.html`) were reviewed this session.
+- **`hr_dashboard.html`** — checked against `admissions_frontend_patch.md` steps 1–2: the navbar link (`🎓 Admissions`) and quick-actions card (`Manage Admission Leads`) were **already present**, exactly matching the patch. No change needed.
+- **`sidebar.html`** — step 4 was genuinely missing. Added a `🎓 Admissions` nav item in the "Management" section, directly under the existing Recruitment link, matching the file's real markup/classes (`nav-item` / `nav-icon`).
+- **`app.js`** — step 3 was checked and found **already present**: `HR_ALLOWED_PAGES` already included `'admissions.html'` alongside `'daily_tasks_admin.html'`. No change needed — the patch note's "not directly verified" caveat is now resolved as correct.
+- **`admissions.html`** — real file reviewed for the first time this session (previously only inferred from `daily_tasks_admin.html`'s `memory.md` description). Diffed its HR-standalone/admin-sidebar dual-mode block (`.hr-standalone-topbar` CSS, the inline role-check script that strips `.sidebar-spacer` before `app.js`'s `injectSidebar()` runs) directly against the real `daily_tasks_admin.html`. **Exact match, character-for-character** — no fix needed. Saved the file to the outputs folder as a confirmed-good deliverable.
+- **Net result: `admissions_frontend_patch.md` is now fully applied.** All four frontend wiring steps (`hr_dashboard.html` navbar+quick-action, `app.js` whitelist, `sidebar.html` nav link) are done and verified against real files, not inferred.
+
+**File(s) touched:**
+- **Edited:** `sidebar.html` (added Admissions nav item).
+- **Verified, no change needed:** `hr_dashboard.html`, `app.js`, `admissions.html`.
+- **Docs:** `phases.md`, `PRD.md`, `architecture.md`, `memory.md` (this entry) — updated to reflect frontend-wiring-complete status.
+
+**Currently being worked on / left mid-flight:**
+- ⚠️ **Backend wiring is still the only gap.** `admissions_wiring_patch.md`'s steps are untouched this session — `appscript_admissions.gs` has not been pasted into the live Apps Script project, `appscript_main.gs`'s `SHEETS` map + `doGet`/`doPost` switch cases haven't been added, `appscript_generateid_fix.gs`'s `ID_PREFIX_SHEET_MAP` hasn't been given the `'LD': 'admission_leads'` entry, and `setupAdmissionLeadsSheet()` hasn't been run — so the `admission_leads` tab doesn't exist on the live Sheet yet.
+- Until the backend wiring lands, clicking the now-fully-wired frontend links (`sidebar.html`, `hr_dashboard.html`) will route to `admissions.html` correctly, but every API call from that page (`getAdmissionLeads`, `addAdmissionLead`, etc.) will fail since the backend routes don't exist live yet.
+
+**Next suggested step:** get `appscript_admissions.gs`, `appscript_main.gs`, and `appscript_generateid_fix.gs` to produce the exact patched versions per `admissions_wiring_patch.md`, then have the user paste them into the live Apps Script project and run `setupAdmissionLeadsSheet()` once. After that, click-test end-to-end (frontend nav → admissions.html → real API calls → real Sheet rows) before flipping §7.10/§7.11 to `[x]` in `phases.md`.
+
+---
+
 ### [2026-08-02] — Phase 11 §7.10/§7.11 Admission Leads module: schema question resolved, backend + frontend written (⚠️ not yet wired into live project)
 **What was done:**
 - Resolved the open schema question flagged in `architecture.md`/`PRD.md`/`phases.md`: confirmed with stakeholder that Codeline.AI is an **education/coaching business**, and the requested "Candidate Management module" (§7.10) is about **student admission leads** (people interested in enrolling in a course), a **genuinely separate pipeline** from the existing `candidates` sheet (which is for job applicants/staff hiring, `appscript_recruitment.gs`). Evidence that led here: `candidates.csv` showed only job-applicant data (a "Teacher" applicant); the pre-existing `MONTHLY_ADMISSION_TARGET` setting (§7.3); and §7.1's requirement to resolve a "Course Name" field — all pointed at student admissions being a distinct concept from job recruitment.

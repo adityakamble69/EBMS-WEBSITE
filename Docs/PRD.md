@@ -121,7 +121,11 @@ Currently missing entirely from the HR Dashboard (distinct from the existing `ap
 
 > ✅ **RESOLVED (2026-08-02):** confirmed with stakeholder — this is a **genuinely separate pipeline**, not the existing `candidates`/`RECRUITMENT_STAGES` sheet extended. Codeline.AI is an education/coaching business; the existing `candidates` sheet is for **job applicants** (staff hiring — Teacher, Accountant, etc.), while this §7.10 module is for **student admission leads** (people interested in enrolling in a course). This also explains the pre-existing `MONTHLY_ADMISSION_TARGET` setting (§7.3) and §7.1's "Course Name" resolution requirement — both were already pointing at this same student-admissions concept.
 >
-> New sheet: `admission_leads` (see `architecture.md` §4 for full schema). New backend file: `appscript_admissions.gs` (`getAdmissionLeads`/`addAdmissionLead`/`updateAdmissionLead`/`updateAdmissionLeadStatus`/`archiveAdmissionLead`, `setupAdmissionLeadsSheet()`). New frontend: `admissions.html`. **Not yet pasted into the live Apps Script project or linked into `hr_dashboard.html`/`sidebar.html`/`app.js`** — see `admissions_wiring_patch.md` and `admissions_frontend_patch.md` for the exact manual steps, following the same pattern as the Daily Tasks module's wiring patch.
+> New sheet: `admission_leads` (see `architecture.md` §4 for full schema). New backend file: `appscript_admissions.gs` (`getAdmissionLeads`/`addAdmissionLead`/`updateAdmissionLead`/`updateAdmissionLeadStatus`/`archiveAdmissionLead`, `setupAdmissionLeadsSheet()`). New frontend: `admissions.html`.
+>
+> **Frontend wiring confirmed complete (2026-08-02):** `hr_dashboard.html` (navbar link + quick-action card), `app.js` (`HR_ALLOWED_PAGES`), and `sidebar.html` (nav link) all verified against the real live files — `admissions_frontend_patch.md` is fully applied, nothing left to do there. `admissions.html`'s HR-standalone/admin-sidebar dual-mode behavior was also diff-checked against the real `daily_tasks_admin.html` and matches exactly.
+>
+> **⚠️ Backend wiring still not done** — `appscript_admissions.gs` has not been pasted into the live Apps Script project, `appscript_main.gs`/`appscript_generateid_fix.gs` haven't been patched, and `setupAdmissionLeadsSheet()` hasn't been run. See `admissions_wiring_patch.md` for the exact manual steps. Until this lands, every API call from `admissions.html` will fail even though the page is fully reachable.
 
 HR can add/view/update/search/filter admission leads.
 
@@ -141,5 +145,5 @@ HR has no delete button/action for admission leads (or job candidates). Status-b
 | Update settings | No | No | Yes |
 
 ### Development priority (as given)
-**High:** 7.1 (readable names) ✅, 7.2 (leave summary) ✅, 7.3 (settings sheet) ✅, 7.4 (30-day lock) ✅, 7.5+7.6+7.7 (daily tasks, fully shipped end-to-end ✅ 2026-08-02), 7.10+7.11 (admission leads module — schema decision resolved + backend/frontend written ✅ 2026-08-02, ⚠️ not yet wired into live project — see `admissions_wiring_patch.md`).
+**High:** 7.1 (readable names) ✅, 7.2 (leave summary) ✅, 7.3 (settings sheet) ✅, 7.4 (30-day lock) ✅, 7.5+7.6+7.7 (daily tasks, fully shipped end-to-end ✅ 2026-08-02), 7.10+7.11 (admission leads module — schema decision resolved + backend/frontend written ✅ 2026-08-02, frontend wiring verified + complete ✅ 2026-08-02, ⚠️ backend wiring into live Apps Script project + Sheet still pending — see `admissions_wiring_patch.md`).
 **Medium:** 7.8 (targets — note: will likely link to `admission_leads` with `status='Admission Completed'`, see `architecture.md`), 7.9 (month-wise reports), report export.
