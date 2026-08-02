@@ -606,7 +606,9 @@
       border-radius: var(--radius);
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
       width: 100%;
-      max-width: 340px;
+      max-width: 380px;
+      max-height: 88vh;
+      overflow-y: auto;
       padding: 20px;
     }
 
@@ -721,21 +723,20 @@
     }
 
     .btn-dt-add {
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--glass-strong);
       border: 1px solid var(--glass-border);
       color: var(--text-primary);
       border-radius: 8px;
-      padding: 5px 11px;
-      font-size: 11.5px;
+      padding: 6px 12px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       font-family: 'Inter', sans-serif;
-      transition: background 0.18s, transform 0.15s;
+      transition: background 0.15s;
     }
 
     .btn-dt-add:hover {
-      background: var(--glass-strong);
-      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.14);
     }
 
     .dt-empty {
@@ -746,10 +747,10 @@
     }
 
     .dt-item {
-      background: rgba(255, 255, 255, 0.035);
+      background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
-      padding: 10px 12px;
+      padding: 12px 14px;
       margin-bottom: 8px;
     }
 
@@ -812,23 +813,50 @@
 
     .dt-add-form {
       display: none;
-      margin-top: 10px;
+      margin-top: 12px;
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
-      padding: 12px;
+      padding: 14px;
     }
 
     .dt-add-form.open {
       display: block;
+      animation: dtFormIn 0.15s ease-out;
+    }
+
+    @keyframes dtFormIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .dt-add-form .form-group {
-      margin-bottom: 10px;
+      margin-bottom: 11px;
+    }
+
+    .dt-add-form .form-group:last-of-type {
+      margin-bottom: 14px;
+    }
+
+    .dt-add-form .date-row {
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
 
     .dt-add-form .date-row .form-group {
       margin-bottom: 0;
+    }
+
+    .dt-add-form input[type="time"] {
+      font-size: 12.5px;
+      padding: 9px 8px;
+    }
+
+    @media (max-width: 380px) {
+      .dt-add-form .date-row {
+        grid-template-columns: 1fr;
+        gap: 11px;
+      }
     }
 
     /* ── Section 5: Tasks ── */
@@ -1579,6 +1607,7 @@
 
     <div class="navbar-actions desktop-actions">
       <button class="nav-btn" onclick="openLeaveModal()">📅 Leave Requests</button>
+      <button class="nav-btn" onclick="openDailyTasksModal()">📝 Daily Tasks</button>
       <button class="nav-btn" onclick="openExpenseModal()">💰 Expenses</button>
       <div class="nav-menu-wrap" id="navMenuWrap">
         <button class="nav-btn" onclick="toggleNavMenu(event)">⋯ Menu</button>
@@ -1596,6 +1625,7 @@
 
   <div class="mobile-actions-sheet" id="mobileActionsSheet">
     <button class="nav-btn" onclick="openLeaveModal()">📅 Leave Requests</button>
+    <button class="nav-btn" onclick="openDailyTasksModal()">📝 Daily Tasks</button>
     <button class="nav-btn" onclick="openExpenseModal()">💰 Expenses</button>
     <button class="nav-btn" onclick="openBankDocsModal('bank')">📁 Bank & Docs</button>
     <button class="nav-btn" onclick="openPasswordModal()">🔒 Change Password</button>
@@ -1708,6 +1738,63 @@
       </div>
     </div>
 
+    <!-- Daily Tasks Modal (Phase 11 §7.5) — self-logged work, separate from Kanban tasks above -->
+    <div class="modal-overlay" id="dailyTasksModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>📝 Daily Tasks</h3>
+          <button class="modal-close-btn" onclick="closeDailyTasksModal()">✕ Close</button>
+        </div>
+        <div class="modal-body">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div style="font-size:12px; color:var(--text-muted);">Your self-logged daily work, submitted for admin approval.</div>
+            <button type="button" class="btn-dt-add" id="dtmAddToggleBtn" onclick="toggleDtModalAddForm()">+ Add Task</button>
+          </div>
+
+          <div class="dt-add-form" id="dtmAddForm">
+            <div class="form-group">
+              <label>Date *</label>
+              <input type="date" id="dtmDate" />
+            </div>
+            <div class="form-group">
+              <label>Task Title *</label>
+              <input type="text" id="dtmTaskTitle" placeholder="What did you work on?" />
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="dtmTaskDescription" rows="2" placeholder="Details (optional)"></textarea>
+            </div>
+            <div class="date-row">
+              <div class="form-group">
+                <label>Start Time</label>
+                <input type="time" id="dtmStartTime" />
+              </div>
+              <div class="form-group">
+                <label>Completion Time</label>
+                <input type="time" id="dtmCompletionTime" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="dtmTaskStatus">
+                <option value="Completed">Completed</option>
+                <option value="Pending">Pending / In progress</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Remark (optional)</label>
+              <input type="text" id="dtmEmployeeRemark" placeholder="Anything the reviewer should know" />
+            </div>
+            <button type="button" class="btn-submit-leave" id="dtmSubmitBtn" onclick="submitDtModalTask()">Submit Task</button>
+          </div>
+
+          <div id="dailyTasksList" style="margin-top:14px;">
+            <div class="dt-empty">Loading…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Submit Work Modal -->
     <div class="modal-overlay" id="submitWorkModal" style="z-index:300;">
       <div class="modal-card">
@@ -1779,47 +1866,13 @@
           <div class="cal-day-modal-time" id="calDayModalShift">—</div>
         </div>
 
-        <!-- Daily Tasks (Phase 11 §7.5/§7.7) -->
+        <!-- Daily Tasks (Phase 11 §7.7) — read-only view; adding/editing now lives in the "📝 Daily Tasks" modal (navbar, next to Leave Requests) -->
         <div class="dt-section">
           <div class="dt-section-header">
             <label>📝 Daily Tasks</label>
-            <button type="button" class="btn-dt-add" id="dtAddToggleBtn" onclick="toggleDailyTaskForm()">+ Add Task</button>
           </div>
           <div id="calDayModalTasksList">
             <div class="dt-empty">Loading…</div>
-          </div>
-
-          <div class="dt-add-form" id="dtAddForm">
-            <div class="form-group">
-              <label>Task Title *</label>
-              <input type="text" id="dtTaskTitle" placeholder="What did you work on?" />
-            </div>
-            <div class="form-group">
-              <label>Description</label>
-              <textarea id="dtTaskDescription" rows="2" placeholder="Details (optional)"></textarea>
-            </div>
-            <div class="date-row">
-              <div class="form-group">
-                <label>Start Time</label>
-                <input type="time" id="dtStartTime" />
-              </div>
-              <div class="form-group">
-                <label>Completion Time</label>
-                <input type="time" id="dtCompletionTime" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Status</label>
-              <select id="dtTaskStatus">
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending / In progress</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Remark (optional)</label>
-              <input type="text" id="dtEmployeeRemark" placeholder="Anything the reviewer should know" />
-            </div>
-            <button type="button" class="btn-submit-leave" id="dtSubmitBtn" onclick="submitDailyTask()">Submit Task</button>
           </div>
         </div>
       </div>
@@ -3160,10 +3213,6 @@
     }
 
     function calOpenDayModal(dateKey) {
-      _dtCurrentDateKey = dateKey;
-      _dtEditingTaskId = null;
-      const addForm = document.getElementById('dtAddForm');
-      if (addForm) addForm.classList.remove('open');
       loadDailyTasksForDate(dateKey);
 
       const record = (window._calAttMap || {})[dateKey];
@@ -3225,18 +3274,11 @@
 
     function calCloseDayModal() {
       document.getElementById('calDayModalOverlay').classList.remove('open');
-      const addForm = document.getElementById('dtAddForm');
-      if (addForm) addForm.classList.remove('open');
-      _dtCurrentDateKey = null;
-      _dtEditingTaskId = null;
     }
 
-    /* ── Daily Tasks (Phase 11 §7.5 + §7.7) — view/add/resubmit, ── */
-    /* ── scoped to whichever calendar date is currently open       ── */
-    let _dtCurrentDateKey = null;
-    let _dtEditingTaskId = null;
-    let _dtTasksCache = {}; // task_id -> task object, for prefilling the edit/resubmit form
-
+    /* ── Daily Tasks (Phase 11 §7.7) — read-only view for whichever ── */
+    /* ── calendar date is currently open; add/edit lives in the      ── */
+    /* ── "📝 Daily Tasks" modal (navbar, next to Leave Requests)      ── */
     const DT_APPROVAL_BADGE = {
       'Pending Approval': 'badge-pending-approval',
       'Approved': 'badge-approved',
@@ -3255,83 +3297,135 @@
           return;
         }
         const tasks = (payload.data && payload.data.data) || [];
-        _dtTasksCache = {};
-        tasks.forEach(t => { _dtTasksCache[t.task_id] = t; });
 
         if (!tasks.length) {
           listEl.innerHTML = '<div class="dt-empty">No tasks were added for this date.</div>';
           return;
         }
 
-        listEl.innerHTML = tasks.map(t => {
-          const badgeClass = DT_APPROVAL_BADGE[t.approval_status] || 'badge-pending-approval';
-          const timeBit = (t.start_time || t.completion_time)
-            ? `${t.start_time || '—'} – ${t.completion_time || '—'}`
-            : '';
-          const canResubmit = t.approval_status === 'Correction Required';
-          return `
-            <div class="dt-item">
-              <div class="dt-item-top">
-                <div class="dt-item-title">${escapeHtml(t.task_title || 'Untitled task')}</div>
-                <span class="badge ${badgeClass}">${t.approval_status || 'Pending Approval'}</span>
-              </div>
-              ${timeBit ? `<div class="dt-item-desc">${timeBit}</div>` : ''}
-              ${t.task_description ? `<div class="dt-item-desc">${escapeHtml(t.task_description)}</div>` : ''}
-              ${t.admin_remark ? `<div class="dt-item-remark">Admin remark: ${escapeHtml(t.admin_remark)}</div>` : ''}
-              ${canResubmit ? `<button type="button" class="btn-dt-resubmit" onclick="prefillDailyTaskEdit('${t.task_id}')">✏️ Edit & Resubmit</button>` : ''}
-            </div>
-          `;
-        }).join('');
+        listEl.innerHTML = tasks.map(t => renderDailyTaskItem(t, { showDate: false, readOnly: true })).join('');
       } catch (e) {
         listEl.innerHTML = '<div class="dt-empty">Network error loading tasks.</div>';
       }
+    }
+
+    // Shared card markup for a single daily task — used by both the
+    // calendar day-popup list (single date, read-only) and the
+    // "📝 Daily Tasks" modal list (spans many dates, editable).
+    function renderDailyTaskItem(t, opts) {
+      opts = opts || {};
+      const badgeClass = DT_APPROVAL_BADGE[t.approval_status] || 'badge-pending-approval';
+      const timeBit = (t.start_time || t.completion_time)
+        ? `${t.start_time || '—'} – ${t.completion_time || '—'}`
+        : '';
+      const canResubmit = !opts.readOnly && t.approval_status === 'Correction Required';
+      const resubmitFn = opts.resubmitFn || 'prefillDtModalEdit';
+      return `
+        <div class="dt-item">
+          <div class="dt-item-top">
+            <div class="dt-item-title">${escapeHtml(t.task_title || 'Untitled task')}${opts.showDate ? ` <span style="color:var(--text-dim); font-weight:500;">· ${escapeHtml(t.task_date || '')}</span>` : ''}</div>
+            <span class="badge ${badgeClass}">${t.approval_status || 'Pending Approval'}</span>
+          </div>
+          ${timeBit ? `<div class="dt-item-desc">${timeBit}</div>` : ''}
+          ${t.task_description ? `<div class="dt-item-desc">${escapeHtml(t.task_description)}</div>` : ''}
+          ${t.admin_remark ? `<div class="dt-item-remark">Admin remark: ${escapeHtml(t.admin_remark)}</div>` : ''}
+          ${canResubmit ? `<button type="button" class="btn-dt-resubmit" onclick="${resubmitFn}('${t.task_id}')">✏️ Edit & Resubmit</button>` : ''}
+        </div>
+      `;
     }
 
     function escapeHtml(str) {
       return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
-    function toggleDailyTaskForm(forceOpen) {
-      const form = document.getElementById('dtAddForm');
+    /* ── Daily Tasks modal (button next to "📅 Leave Requests" in the navbar) ── */
+    /* ── Lists across ALL dates, and lets you pick the date to log ── */
+    let _dtmEditingTaskId = null;
+    let _dtmTasksCache = {};
+
+    function openDailyTasksModal() {
+      document.getElementById('dailyTasksModal').classList.add('open');
+      document.getElementById('dtmAddForm').classList.remove('open');
+      loadMyDailyTasksList();
+    }
+
+    function closeDailyTasksModal() {
+      document.getElementById('dailyTasksModal').classList.remove('open');
+      document.getElementById('dtmAddForm').classList.remove('open');
+      _dtmEditingTaskId = null;
+    }
+
+    async function loadMyDailyTasksList() {
+      const listEl = document.getElementById('dailyTasksList');
+      listEl.innerHTML = '<div class="dt-empty">Loading…</div>';
+      try {
+        const res = await fetch(`${API_URL}?action=getDailyTasks&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status !== 'success') {
+          listEl.innerHTML = '<div class="dt-empty">Could not load your daily tasks.</div>';
+          return;
+        }
+        const tasks = (payload.data && payload.data.data) || [];
+        _dtmTasksCache = {};
+        tasks.forEach(t => { _dtmTasksCache[t.task_id] = t; });
+
+        if (!tasks.length) {
+          listEl.innerHTML = '<div class="dt-empty">You haven\'t logged any daily tasks yet.</div>';
+          return;
+        }
+
+        listEl.innerHTML = tasks.map(t => renderDailyTaskItem(t, { showDate: true, resubmitFn: 'prefillDtModalEdit' })).join('');
+      } catch (e) {
+        listEl.innerHTML = '<div class="dt-empty">Network error loading your daily tasks.</div>';
+      }
+    }
+
+    function toggleDtModalAddForm(forceOpen) {
+      const form = document.getElementById('dtmAddForm');
       const shouldOpen = forceOpen !== undefined ? forceOpen : !form.classList.contains('open');
       if (!shouldOpen) {
         form.classList.remove('open');
         return;
       }
-      // Opening fresh (not via prefillDailyTaskEdit) — clear edit state.
       if (forceOpen === undefined) {
-        _dtEditingTaskId = null;
-        document.getElementById('dtTaskTitle').value = '';
-        document.getElementById('dtTaskDescription').value = '';
-        document.getElementById('dtStartTime').value = '';
-        document.getElementById('dtCompletionTime').value = '';
-        document.getElementById('dtTaskStatus').value = 'Completed';
-        document.getElementById('dtEmployeeRemark').value = '';
-        document.getElementById('dtSubmitBtn').textContent = 'Submit Task';
+        _dtmEditingTaskId = null;
+        document.getElementById('dtmDate').value = formatDateYMD(new Date());
+        document.getElementById('dtmDate').max = formatDateYMD(new Date());
+        document.getElementById('dtmTaskTitle').value = '';
+        document.getElementById('dtmTaskDescription').value = '';
+        document.getElementById('dtmStartTime').value = '';
+        document.getElementById('dtmCompletionTime').value = '';
+        document.getElementById('dtmTaskStatus').value = 'Completed';
+        document.getElementById('dtmEmployeeRemark').value = '';
+        document.getElementById('dtmSubmitBtn').textContent = 'Submit Task';
       }
       form.classList.add('open');
     }
 
-    function prefillDailyTaskEdit(taskId) {
-      const t = _dtTasksCache[taskId];
+    function prefillDtModalEdit(taskId) {
+      const t = _dtmTasksCache[taskId];
       if (!t) return;
-      _dtEditingTaskId = taskId;
-      document.getElementById('dtTaskTitle').value = t.task_title || '';
-      document.getElementById('dtTaskDescription').value = t.task_description || '';
-      document.getElementById('dtStartTime').value = t.start_time || '';
-      document.getElementById('dtCompletionTime').value = t.completion_time || '';
-      document.getElementById('dtTaskStatus').value = t.task_status || 'Completed';
-      document.getElementById('dtEmployeeRemark').value = t.employee_remark || '';
-      document.getElementById('dtSubmitBtn').textContent = 'Resubmit Task';
-      toggleDailyTaskForm(true);
+      _dtmEditingTaskId = taskId;
+      // task_date comes back from the server as dd-MM-yyyy — the <input type="date"> needs yyyy-MM-dd.
+      const dm = String(t.task_date || '').match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+      document.getElementById('dtmDate').value = dm ? `${dm[3]}-${dm[2].padStart(2, '0')}-${dm[1].padStart(2, '0')}` : '';
+      document.getElementById('dtmTaskTitle').value = t.task_title || '';
+      document.getElementById('dtmTaskDescription').value = t.task_description || '';
+      document.getElementById('dtmStartTime').value = t.start_time || '';
+      document.getElementById('dtmCompletionTime').value = t.completion_time || '';
+      document.getElementById('dtmTaskStatus').value = t.task_status || 'Completed';
+      document.getElementById('dtmEmployeeRemark').value = t.employee_remark || '';
+      document.getElementById('dtmSubmitBtn').textContent = 'Resubmit Task';
+      toggleDtModalAddForm(true);
     }
 
-    async function submitDailyTask() {
-      const title = document.getElementById('dtTaskTitle').value.trim();
+    async function submitDtModalTask() {
+      const title = document.getElementById('dtmTaskTitle').value.trim();
+      const dateVal = document.getElementById('dtmDate').value;
       if (!title) { showToast('Task title is required.'); return; }
-      if (!_dtCurrentDateKey) { showToast('No date selected.'); return; }
+      if (!dateVal) { showToast('Please pick a date.'); return; }
 
-      const btn = document.getElementById('dtSubmitBtn');
+      const btn = document.getElementById('dtmSubmitBtn');
       btn.disabled = true;
       const originalLabel = btn.textContent;
       btn.textContent = 'Saving…';
@@ -3339,17 +3433,17 @@
       const payload = {
         token: TOKEN,
         task_title: title,
-        task_description: document.getElementById('dtTaskDescription').value.trim(),
-        task_date: _dtCurrentDateKey,
-        start_time: document.getElementById('dtStartTime').value,
-        completion_time: document.getElementById('dtCompletionTime').value,
-        task_status: document.getElementById('dtTaskStatus').value,
-        employee_remark: document.getElementById('dtEmployeeRemark').value.trim()
+        task_description: document.getElementById('dtmTaskDescription').value.trim(),
+        task_date: dateVal,
+        start_time: document.getElementById('dtmStartTime').value,
+        completion_time: document.getElementById('dtmCompletionTime').value,
+        task_status: document.getElementById('dtmTaskStatus').value,
+        employee_remark: document.getElementById('dtmEmployeeRemark').value.trim()
       };
 
-      if (_dtEditingTaskId) {
+      if (_dtmEditingTaskId) {
         payload.action = 'updateDailyTask';
-        payload.task_id = _dtEditingTaskId;
+        payload.task_id = _dtmEditingTaskId;
       } else {
         payload.action = 'addDailyTask';
       }
@@ -3359,8 +3453,8 @@
         const out = await res.json();
         if (out.status === 'success') {
           showToast(out.message || 'Daily task saved.');
-          toggleDailyTaskForm(false);
-          loadDailyTasksForDate(_dtCurrentDateKey);
+          toggleDtModalAddForm(false);
+          loadMyDailyTasksList();
         } else {
           showToast(out.message || 'Could not save the task.');
         }
