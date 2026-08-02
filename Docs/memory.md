@@ -8,6 +8,30 @@ Purpose: a running log so any contributor (human or AI) picking up this project 
 
 ## Session log
 
+### [2026-08-02] — Phase 11 §7.5 + §7.6 Daily Tasks module: backend shipped
+**What was done:**
+- Reviewed `README.md` (schema/API/roles reference) and `employee_dashboard.html` (existing calendar module — `loadCalendar()`, `calOpenDayModal()`, `changeCalendarMonth()`) to understand exactly where §7.7's calendar date-click view will need to plug in later.
+- Built the full backend for the Daily Tasks module (Phase 11 §7.5 + §7.6), following the existing conventions from `appscript_tasks.gs` (Kanban) and `appscript_leaves.gs` (approve/reject + notify pattern):
+  - New file **`appscript_daily_tasks.gs`**: `getDailyTasks` (GET, role-filtered — employee sees own, branch_manager scoped to branch, hr/super_admin see all; supports `?date=`, `?from_date=&to_date=`, `?emp_id=`, `?approval_status=` filters — the `?date=` filter is what will power §7.7's calendar view), `addDailyTask` / `updateDailyTask` (POST, employee-facing — update only allowed while `approval_status` is `Pending Approval` or `Correction Required`; resubmitting from `Correction Required` flips it back to `Pending Approval` and re-notifies approvers), `approveDailyTask` / `rejectDailyTask` / `requestCorrectionDailyTask` (POST, admin/hr/branch_manager only, `admin_remark` required for the latter two), and a one-time idempotent `setupDailyTasksSheet()`.
+  - Notifications wired the same way as `handleApplyLeave()`/`handleApproveLeave()` — `notifyUser()` calls to HR/super_admin/branch's branch_manager on submit and resubmit, and to the employee on approve/reject/correction-request.
+  - **Deliberately kept separate from the Kanban `tasks` sheet** (rules.md #11) — no schema/handler merge.
+  - Employee whitelist updated (patch notes, not yet applied to live `appscript_main.gs`): `getDailyTasks` added to `EMPLOYEE_ALLOWED_GET_ACTIONS`; `addDailyTask`/`updateDailyTask` added to `EMPLOYEE_ALLOWED_POST_ACTIONS`. Approve/reject/correction routes intentionally **not** employee-whitelisted.
+- Wrote `daily_tasks_wiring_patch.md` — exact copy-paste snippets for the four things that still need to be manually applied to the live project: `appscript_main.gs`'s `SHEETS` map + both whitelists + `doGet`/`doPost` switch cases, and `appscript_generateid_fix.gs`'s `ID_PREFIX_SHEET_MAP` (`'DT': 'daily_tasks'`).
+- Updated docs to reflect backend-shipped/frontend-pending status: `README.md` (§2 schema table, §3 backend files table, §5 API table, deployment checklist), `architecture.md` (Phase 11 planned-tabs table + folder structure listing), `phases.md` (§7.5/§7.6 checkboxes annotated, left unchecked per the file's own rule — don't check until frontend exists too), `PRD.md` (§7.5/§7.6 headers + priority summary line).
+
+**File(s) touched:**
+- `docs/README.md`, `docs/architecture.md`, `docs/phases.md`, `docs/PRD.md`, `docs/memory.md` (this entry).
+- **New (not yet pasted into the live Apps Script project):** `appscript_daily_tasks.gs`, `daily_tasks_wiring_patch.md`.
+- **No live code or live Sheet was touched this session** — `appscript_main.gs` and `appscript_generateid_fix.gs` edits are documented in the patch notes file but not yet applied; `setupDailyTasksSheet()` has not yet been run.
+
+**Currently being worked on / left mid-flight:**
+- User needs to: (1) paste `appscript_daily_tasks.gs` into the Apps Script project, (2) apply the four edits in `daily_tasks_wiring_patch.md` to `appscript_main.gs` + `appscript_generateid_fix.gs`, (3) run `setupDailyTasksSheet()` once.
+- Frontend for §7.5 (employee submit form), §7.6 (admin approval UI), and §7.7 (calendar date-click view in `employee_dashboard.html`) — none of this is built yet.
+
+**Next suggested step:** build §7.7 — wire a daily-tasks panel into `employee_dashboard.html`'s existing `calOpenDayModal()` (or a new modal) so clicking a calendar date shows that date's daily tasks via `getDailyTasks?date=...`, plus the employee-facing add/edit form (§7.5's other half) and the admin approval UI (§7.6's other half, likely a new page/section for hr/admin roles).
+
+---
+
 ### [2026-08-02] — Employee Portal stuck-loading bug fixed: missing `departments`/`designations` sheets
 **What was done:**
 - Debugged `employee_dashboard.html` stuck on "Loading..." (profile fields all showing `—`). Root cause chain:

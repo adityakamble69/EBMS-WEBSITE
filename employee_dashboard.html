@@ -698,6 +698,139 @@
       font-size: 15px;
     }
 
+    /* ── Daily Tasks panel inside the day-detail popup (Phase 11 §7.5/§7.7) ── */
+    .dt-section {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .dt-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .dt-section-header label {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .btn-dt-add {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      border-radius: 8px;
+      padding: 5px 11px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.18s, transform 0.15s;
+    }
+
+    .btn-dt-add:hover {
+      background: var(--glass-strong);
+      transform: translateY(-1px);
+    }
+
+    .dt-empty {
+      font-size: 12.5px;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 14px 4px;
+    }
+
+    .dt-item {
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+
+    .dt-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .dt-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .dt-item-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.35;
+    }
+
+    .dt-item-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    .dt-item-remark {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--glass-border);
+    }
+
+    .badge-pending-approval {
+      background: rgba(251, 191, 36, 0.12);
+      color: #FCD34D;
+    }
+
+    .badge-correction {
+      background: rgba(192, 132, 252, 0.14);
+      color: var(--purple);
+    }
+
+    .btn-dt-resubmit {
+      margin-top: 8px;
+      background: rgba(192, 132, 252, 0.14);
+      border: 1px solid rgba(192, 132, 252, 0.3);
+      color: var(--purple);
+      border-radius: 8px;
+      padding: 5px 11px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .dt-add-form {
+      display: none;
+      margin-top: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+    }
+
+    .dt-add-form.open {
+      display: block;
+    }
+
+    .dt-add-form .form-group {
+      margin-bottom: 10px;
+    }
+
+    .dt-add-form .date-row .form-group {
+      margin-bottom: 0;
+    }
+
     /* ── Section 5: Tasks ── */
     .tasks-section {
       margin-bottom: 22px;
@@ -1644,6 +1777,50 @@
         <div class="cal-day-modal-row shift-time">
           <label id="calDayModalShiftLabel">Shift</label>
           <div class="cal-day-modal-time" id="calDayModalShift">—</div>
+        </div>
+
+        <!-- Daily Tasks (Phase 11 §7.5/§7.7) -->
+        <div class="dt-section">
+          <div class="dt-section-header">
+            <label>📝 Daily Tasks</label>
+            <button type="button" class="btn-dt-add" id="dtAddToggleBtn" onclick="toggleDailyTaskForm()">+ Add Task</button>
+          </div>
+          <div id="calDayModalTasksList">
+            <div class="dt-empty">Loading…</div>
+          </div>
+
+          <div class="dt-add-form" id="dtAddForm">
+            <div class="form-group">
+              <label>Task Title *</label>
+              <input type="text" id="dtTaskTitle" placeholder="What did you work on?" />
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="dtTaskDescription" rows="2" placeholder="Details (optional)"></textarea>
+            </div>
+            <div class="date-row">
+              <div class="form-group">
+                <label>Start Time</label>
+                <input type="time" id="dtStartTime" />
+              </div>
+              <div class="form-group">
+                <label>Completion Time</label>
+                <input type="time" id="dtCompletionTime" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="dtTaskStatus">
+                <option value="Completed">Completed</option>
+                <option value="Pending">Pending / In progress</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Remark (optional)</label>
+              <input type="text" id="dtEmployeeRemark" placeholder="Anything the reviewer should know" />
+            </div>
+            <button type="button" class="btn-submit-leave" id="dtSubmitBtn" onclick="submitDailyTask()">Submit Task</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2958,9 +3135,10 @@
           tipText += `\nShift Override: ${dayShift.shift_name || ''} (${dayShift.start_time || '—'}–${dayShift.end_time || '—'})`;
         }
 
-        // Clickable (opens the day-detail popup) whenever there's something
-        // to actually show: a punch record, a leave day, or a shift override.
-        const isClickable = !isFuture && (log || dayShift || statusKey === 'leave');
+        // Clickable (opens the day-detail popup) for any non-future day —
+        // even with no attendance record, since the popup now also shows/
+        // accepts Daily Tasks for that date (Phase 11 §7.5/§7.7).
+        const isClickable = !isFuture;
         if (isClickable) {
           cls += ' cal-clickable';
           html += `<div class="${cls}" title="${tipText}" data-status="${statusKey}" onclick="calOpenDayModal('${dateKey}')">${day}</div>`;
@@ -2982,6 +3160,12 @@
     }
 
     function calOpenDayModal(dateKey) {
+      _dtCurrentDateKey = dateKey;
+      _dtEditingTaskId = null;
+      const addForm = document.getElementById('dtAddForm');
+      if (addForm) addForm.classList.remove('open');
+      loadDailyTasksForDate(dateKey);
+
       const record = (window._calAttMap || {})[dateKey];
       const dayShift = (window._calShiftMap || {})[dateKey];
       const defaultTmpl = window._calDefaultTmpl;
@@ -3041,6 +3225,151 @@
 
     function calCloseDayModal() {
       document.getElementById('calDayModalOverlay').classList.remove('open');
+      const addForm = document.getElementById('dtAddForm');
+      if (addForm) addForm.classList.remove('open');
+      _dtCurrentDateKey = null;
+      _dtEditingTaskId = null;
+    }
+
+    /* ── Daily Tasks (Phase 11 §7.5 + §7.7) — view/add/resubmit, ── */
+    /* ── scoped to whichever calendar date is currently open       ── */
+    let _dtCurrentDateKey = null;
+    let _dtEditingTaskId = null;
+    let _dtTasksCache = {}; // task_id -> task object, for prefilling the edit/resubmit form
+
+    const DT_APPROVAL_BADGE = {
+      'Pending Approval': 'badge-pending-approval',
+      'Approved': 'badge-approved',
+      'Rejected': 'badge-rejected',
+      'Correction Required': 'badge-correction'
+    };
+
+    async function loadDailyTasksForDate(dateKey) {
+      const listEl = document.getElementById('calDayModalTasksList');
+      listEl.innerHTML = '<div class="dt-empty">Loading…</div>';
+      try {
+        const res = await fetch(`${API_URL}?action=getDailyTasks&token=${TOKEN}&date=${dateKey}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status !== 'success') {
+          listEl.innerHTML = '<div class="dt-empty">Could not load tasks for this date.</div>';
+          return;
+        }
+        const tasks = (payload.data && payload.data.data) || [];
+        _dtTasksCache = {};
+        tasks.forEach(t => { _dtTasksCache[t.task_id] = t; });
+
+        if (!tasks.length) {
+          listEl.innerHTML = '<div class="dt-empty">No tasks were added for this date.</div>';
+          return;
+        }
+
+        listEl.innerHTML = tasks.map(t => {
+          const badgeClass = DT_APPROVAL_BADGE[t.approval_status] || 'badge-pending-approval';
+          const timeBit = (t.start_time || t.completion_time)
+            ? `${t.start_time || '—'} – ${t.completion_time || '—'}`
+            : '';
+          const canResubmit = t.approval_status === 'Correction Required';
+          return `
+            <div class="dt-item">
+              <div class="dt-item-top">
+                <div class="dt-item-title">${escapeHtml(t.task_title || 'Untitled task')}</div>
+                <span class="badge ${badgeClass}">${t.approval_status || 'Pending Approval'}</span>
+              </div>
+              ${timeBit ? `<div class="dt-item-desc">${timeBit}</div>` : ''}
+              ${t.task_description ? `<div class="dt-item-desc">${escapeHtml(t.task_description)}</div>` : ''}
+              ${t.admin_remark ? `<div class="dt-item-remark">Admin remark: ${escapeHtml(t.admin_remark)}</div>` : ''}
+              ${canResubmit ? `<button type="button" class="btn-dt-resubmit" onclick="prefillDailyTaskEdit('${t.task_id}')">✏️ Edit & Resubmit</button>` : ''}
+            </div>
+          `;
+        }).join('');
+      } catch (e) {
+        listEl.innerHTML = '<div class="dt-empty">Network error loading tasks.</div>';
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function toggleDailyTaskForm(forceOpen) {
+      const form = document.getElementById('dtAddForm');
+      const shouldOpen = forceOpen !== undefined ? forceOpen : !form.classList.contains('open');
+      if (!shouldOpen) {
+        form.classList.remove('open');
+        return;
+      }
+      // Opening fresh (not via prefillDailyTaskEdit) — clear edit state.
+      if (forceOpen === undefined) {
+        _dtEditingTaskId = null;
+        document.getElementById('dtTaskTitle').value = '';
+        document.getElementById('dtTaskDescription').value = '';
+        document.getElementById('dtStartTime').value = '';
+        document.getElementById('dtCompletionTime').value = '';
+        document.getElementById('dtTaskStatus').value = 'Completed';
+        document.getElementById('dtEmployeeRemark').value = '';
+        document.getElementById('dtSubmitBtn').textContent = 'Submit Task';
+      }
+      form.classList.add('open');
+    }
+
+    function prefillDailyTaskEdit(taskId) {
+      const t = _dtTasksCache[taskId];
+      if (!t) return;
+      _dtEditingTaskId = taskId;
+      document.getElementById('dtTaskTitle').value = t.task_title || '';
+      document.getElementById('dtTaskDescription').value = t.task_description || '';
+      document.getElementById('dtStartTime').value = t.start_time || '';
+      document.getElementById('dtCompletionTime').value = t.completion_time || '';
+      document.getElementById('dtTaskStatus').value = t.task_status || 'Completed';
+      document.getElementById('dtEmployeeRemark').value = t.employee_remark || '';
+      document.getElementById('dtSubmitBtn').textContent = 'Resubmit Task';
+      toggleDailyTaskForm(true);
+    }
+
+    async function submitDailyTask() {
+      const title = document.getElementById('dtTaskTitle').value.trim();
+      if (!title) { showToast('Task title is required.'); return; }
+      if (!_dtCurrentDateKey) { showToast('No date selected.'); return; }
+
+      const btn = document.getElementById('dtSubmitBtn');
+      btn.disabled = true;
+      const originalLabel = btn.textContent;
+      btn.textContent = 'Saving…';
+
+      const payload = {
+        token: TOKEN,
+        task_title: title,
+        task_description: document.getElementById('dtTaskDescription').value.trim(),
+        task_date: _dtCurrentDateKey,
+        start_time: document.getElementById('dtStartTime').value,
+        completion_time: document.getElementById('dtCompletionTime').value,
+        task_status: document.getElementById('dtTaskStatus').value,
+        employee_remark: document.getElementById('dtEmployeeRemark').value.trim()
+      };
+
+      if (_dtEditingTaskId) {
+        payload.action = 'updateDailyTask';
+        payload.task_id = _dtEditingTaskId;
+      } else {
+        payload.action = 'addDailyTask';
+      }
+
+      try {
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast(out.message || 'Daily task saved.');
+          toggleDailyTaskForm(false);
+          loadDailyTasksForDate(_dtCurrentDateKey);
+        } else {
+          showToast(out.message || 'Could not save the task.');
+        }
+      } catch (e) {
+        showToast('Network error while saving the task.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+      }
     }
 
     // dateKey is "YYYY-MM-DD" (from formatDateYMD) — plain local Date parse.

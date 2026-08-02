@@ -95,14 +95,16 @@ A new `settings` sheet (`setting_id | setting_key | setting_value | description 
 An employee cannot apply for leave until `today - joining_date >= NEW_EMPLOYEE_LEAVE_LOCK_DAYS` (value from Settings, default 30). **Must be enforced server-side** inside `handleApplyLeave()` — a disabled frontend button is not sufficient. Error message: *"You cannot apply for leave during the first 30 days of employment."*
 > ⚠️ **As shipped:** only enforced when the caller's own session role is `employee` (true self-service). Admin/HR/branch_manager filing a leave request on an employee's behalf (`body.emp_id`) currently bypasses this lock — not yet confirmed with stakeholders whether that's correct or whether the lock should apply universally regardless of who files it.
 
-### 7.5 Daily Task Management (employee-authored, admin-approved)
+### 7.5 Daily Task Management (employee-authored, admin-approved) — ⚠️ BACKEND SHIPPED 2026-08-02
 New `daily_tasks` module — employee adds a task (title, description, date, start/completion time, status), submits for approval; admin/HR approves/rejects/requests correction. See §7.6 for the approval flow and `architecture.md` for the schema. Distinct from the existing Kanban `tasks` module (`appscript_tasks.gs`) — that one is admin-assigned top-down; this one is employee-authored bottom-up self-reporting. Confirm with stakeholders whether these should stay separate sheets/modules or eventually merge — **do not silently merge them without a decision**, since the permission models differ (Kanban tasks are assigned by admin; Daily Tasks are self-logged by the employee and then reviewed).
+> **Backend shipped:** `appscript_daily_tasks.gs` — `getDailyTasks` (GET, role-filtered, `?date=` for §7.7's calendar view), `addDailyTask`/`updateDailyTask` (POST, employee-facing). **Frontend not yet built** — no submit form or calendar wiring exists yet in `employee_dashboard.html`.
 
-### 7.6 Daily task approval flow
+### 7.6 Daily task approval flow — ⚠️ BACKEND SHIPPED 2026-08-02
 ```
 Employee Adds Task → status: Pending Approval → Admin Reviews → Approved / Rejected / Correction Required
 ```
 Employee must see the resulting approval status + admin remark on their own dashboard.
+> **Backend shipped:** `approveDailyTask`/`rejectDailyTask`/`requestCorrectionDailyTask` (POST, admin/hr/branch_manager only, `admin_remark` required for reject/correction). A `Correction Required` task can be edited and resubmitted by its owner via `updateDailyTask`, which flips it back to `Pending Approval` and re-notifies approvers. **Frontend not yet built** — no admin approval UI exists yet.
 
 ### 7.7 Calendar-based daily task view
 Employee dashboard's existing calendar: clicking a date must show that date's daily tasks (status + approval status + admin remark). Empty state: *"No tasks were added for this date."*
@@ -132,5 +134,5 @@ HR has no delete button/action for candidates. Status-based lifecycle instead (`
 | Update settings | No | No | Yes |
 
 ### Development priority (as given)
-**High:** 7.1 (readable names) ✅, 7.2 (leave summary) ✅, 7.3 (settings sheet) ✅, 7.4 (30-day lock) ✅, 7.5+7.6 (daily task + approval), 7.7 (calendar view), 7.10 (candidate add), 7.11 (delete restriction).
+**High:** 7.1 (readable names) ✅, 7.2 (leave summary) ✅, 7.3 (settings sheet) ✅, 7.4 (30-day lock) ✅, 7.5+7.6 (daily task + approval — backend ✅ 2026-08-02, frontend pending), 7.7 (calendar view), 7.10 (candidate add), 7.11 (delete restriction).
 **Medium:** 7.8 (targets), 7.9 (month-wise reports), report export.

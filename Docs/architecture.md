@@ -86,6 +86,9 @@ EBMS/
     ├── appscript_documents.gs        ← HR letter generation + archive
     ├── appscript_branches.gs         ← branches/departments/designations CRUD (Settings page)
     ├── appscript_tasks.gs             ← Kanban task lifecycle + one-time sheet setup
+    ├── appscript_daily_tasks.gs        ← Phase 11 §7.5/§7.6: employee-authored daily task
+    │                                     log + admin approval flow (backend shipped
+    │                                     2026-08-02, frontend still pending)
     ├── appscript_notifications.gs     ← notification CRUD, notifyUser() helper, anniversary trigger
     ├── appscript_holidays.gs          ← holiday calendar CRUD
     ├── appscript_expenses.gs           ← expense claim apply/approve/reject
@@ -121,7 +124,7 @@ Quick summary of tabs: `admin_users`, `employees`, `branches`, `departments`, `d
 
 | Sheet | Key columns | Notes |
 |---|---|---|
-| `daily_tasks` | task_id, employee_id, task_title, task_description, task_date, start_time, completion_time, task_status, approval_status, employee_remark, admin_remark, approved_by, approved_at | Employee-authored, self-reported daily log — **not** the same as the existing `tasks` sheet (admin-assigned Kanban). Keep them separate unless a merge is explicitly decided. |
+| `daily_tasks` | task_id, employee_id, task_title, task_description, task_date, start_time, completion_time, task_status, approval_status, employee_remark, admin_remark, approved_by, approved_at | Employee-authored, self-reported daily log — **not** the same as the existing `tasks` sheet (admin-assigned Kanban). Keep them separate unless a merge is explicitly decided. ✅ **Backend shipped 2026-08-02**: `appscript_daily_tasks.gs` (`getDailyTasks`/`addDailyTask`/`updateDailyTask`/`approveDailyTask`/`rejectDailyTask`/`requestCorrectionDailyTask`, `setupDailyTasksSheet()`). `approval_status` lifecycle: `Pending Approval → Approved / Rejected / Correction Required` (a `Correction Required` task can be edited + resubmitted by its owner). ⚠️ **Frontend not yet built** — employee submit form, §7.7 calendar date-click view, and admin approval UI are all still pending; don't check off phases.md Phase 11 §7.5/§7.6 until those exist too. |
 | `employee_targets` | target_id, employee_id, target_type, target_month, target_year, assigned_target, achieved_target, status | `assigned_target` value should itself be sourced from `settings` (e.g. `MONTHLY_ADMISSION_TARGET`) unless overridden per-employee. |
 
 ### Planned schema additions to existing tabs — Phase 11
