@@ -57,6 +57,7 @@ EBMS/
 ├── hr_dashboard.html          ← HR recruitment overview
 ├── hr_recruitment.html        ← full recruitment pipeline management
 ├── recruitment.html           ← job openings + candidates (admin)
+├── admissions.html             ← Phase 11 §7.10: student admission leads (HR-standalone + admin-sidebar dual pattern, distinct from job-recruitment candidates)
 │
 ├── employees.html             ← employee CRUD (admin)
 ├── attendance.html            ← attendance records (admin)
@@ -97,6 +98,7 @@ EBMS/
     ├── appscript_expenses.gs           ← expense claim apply/approve/reject
     ├── appscript_shifts.gs             ← shift templates + roster assignment
     ├── appscript_recruitment.gs         ← job openings, candidates, public registration, hire conversion
+    ├── appscript_admissions.gs           ← Phase 11 §7.10: student admission leads (distinct from job-recruitment candidates above — never merge, see §4)
     ├── appscript_bankdocs.gs            ← bank details + employee document uploads (Drive-backed)
     ├── appscript_branch_location.gs     ← geofence lookup + universal-link findBranchByLocation
     ├── appscript_assets.gs               ← asset registry + assign/return
@@ -114,26 +116,37 @@ EBMS/
 
 See `README.md` §2 for the full authoritative column-by-column table (already accurate and detailed — don't duplicate it here, keep `README.md` as the single source of truth for schema and update it directly when columns change).
 
-Quick summary of tabs: `admin_users`, `employees`, `branches`, `departments`, `designations`, `attendance`, `shifts`, `shift_assignments`, `leave_requests`, `salaries`, `salary_slips`, `performance`, `tasks`, `assets`, `documents`, `notifications`, `holidays`, `expenses`, `job_openings`, `candidates`, `bank_details`, `employee_documents`, `instructions`, `settings`.
+Quick summary of tabs: `admin_users`, `employees`, `branches`, `departments`, `designations`, `attendance`, `shifts`, `shift_assignments`, `leave_requests`, `salaries`, `salary_slips`, `performance`, `tasks`, `assets`, `documents`, `notifications`, `holidays`, `expenses`, `job_openings`, `candidates`, `bank_details`, `employee_documents`, `instructions`, `settings`, `daily_tasks`, `admission_leads`.
 
 > **Note (2026-08-02):** `departments` (`dept_id | dept_name | created_at`) and `designations` (`desig_id | desig_name | created_at`) did not actually exist in the live Sheet until this date, despite being referenced in code — this caused a "Sheet not found" crash in `resolveEmployeeDisplayNames()` (Phase 11 §7.1). Both are now created and populated. `department_id`/`designation_id` on `employees` are real lookup **codes** (not plain display text — this was briefly misdiagnosed mid-session, then corrected against actual CSV data), matching the admin form's dropdown options 1:1:
 > - **Departments:** `DEPT001`=IT, `DEPT002`=Non-IT, `DEPT003`=Technical, `DEPT004`=Back Office / Admin. (A 5th dropdown option, "Other", has no `DEPT005` row yet — no employee has used it; add the row when one does.)
 > - **Designations:** `DES001`=Teacher, `DES002`=Admin, `DES003`=Accountant, `DES004`=Office Staff, `DES005`=Other. (A stale `DES006` code existed with no confirmed original meaning — the 3 employees on it were migrated to `DES005`/Other and the row was deleted.)
 > See `memory.md`'s "Employee Portal stuck-loading bug fixed" session entry for the full debugging trail.
 
-### Planned tabs — Phase 11 (not yet built, see `PRD.md` §7 / `phases.md` Phase 11)
+### Tabs shipped in Phase 11
 
-> ✅ **`settings` shipped 2026-08-02** — see §4's quick tab summary above and `README.md` §2 for its schema. Removed from the "planned" table below since it's now live (`appscript_settings.gs`, `getSetting()`/`getSettingNumber()` helpers, `getSettings`/`updateSetting` routes, seeded via `setupSettingsSheet()`).
+> ✅ **`settings` shipped 2026-08-02** — see §4's quick tab summary above and `README.md` §2 for its schema (`appscript_settings.gs`, `getSetting()`/`getSettingNumber()` helpers, `getSettings`/`updateSetting` routes, seeded via `setupSettingsSheet()`).
+
+> ✅ **`daily_tasks` fully shipped end-to-end 2026-08-02** (backend + employee frontend + admin approval UI, §7.5–§7.7 all complete). Employee-authored, self-reported daily log — **not** the same as the existing `tasks` sheet (admin-assigned Kanban); kept deliberately separate per `rules.md` #11. Backend: `appscript_daily_tasks.gs` (`getDailyTasks`/`addDailyTask`/`updateDailyTask`/`approveDailyTask`/`rejectDailyTask`/`requestCorrectionDailyTask`, `setupDailyTasksSheet()`). Columns: `task_id, employee_id, task_title, task_description, task_date, start_time, completion_time, task_status, approval_status, employee_remark, admin_remark, approved_by, approved_at`. `approval_status` lifecycle: `Pending Approval → Approved / Rejected / Correction Required` (a `Correction Required` task can be edited + resubmitted by its owner).
+
+> ✅ **`admission_leads` — resolved open question, backend + frontend written 2026-08-02** (see below and `memory.md` for the full session entry). **Still needs to be manually pasted/wired into the live Apps Script project + Google Sheet** — see `admissions_wiring_patch.md`.
+
+#### §7.10/§7.11 open question — RESOLVED
+
+Confirmed with stakeholder: the "Candidate Management module" requested in §7.10 is a **genuinely separate pipeline from the existing `candidates` sheet**, not an extension of it. Codeline.AI runs both:
+- **Job recruitment** (`candidates` sheet, `appscript_recruitment.gs`) — people applying to work *at* Codeline.AI (Teacher, Accountant, etc.), pipeline ends in `hired` → becomes an `employees` row.
+- **Admission leads** (`admission_leads` sheet, `appscript_admissions.gs`, **new**) — people interested in *enrolling* in a Codeline.AI course as a student, pipeline ends in `Admission Completed`. Never becomes an employee. This is also what `MONTHLY_ADMISSION_TARGET` (settings, §7.3) and §7.1's "Course Name" resolution requirement were pointing at.
+
+These two sheets/modules must **never be merged** — same rationale as the Daily Tasks vs. Kanban `tasks` split (`rules.md` #11 precedent).
 
 | Sheet | Key columns | Notes |
 |---|---|---|
-| `daily_tasks` | task_id, employee_id, task_title, task_description, task_date, start_time, completion_time, task_status, approval_status, employee_remark, admin_remark, approved_by, approved_at | Employee-authored, self-reported daily log — **not** the same as the existing `tasks` sheet (admin-assigned Kanban). Keep them separate unless a merge is explicitly decided. ✅ **Backend shipped 2026-08-02**: `appscript_daily_tasks.gs` (`getDailyTasks`/`addDailyTask`/`updateDailyTask`/`approveDailyTask`/`rejectDailyTask`/`requestCorrectionDailyTask`, `setupDailyTasksSheet()`). `approval_status` lifecycle: `Pending Approval → Approved / Rejected / Correction Required` (a `Correction Required` task can be edited + resubmitted by its owner). ✅ Employee submit form (navbar modal) and §7.7 calendar date-click view shipped 2026-08-02 in `employee_dashboard.html`. ⚠️ **Admin approval UI still not built** — don't check off phases.md Phase 11 §7.6 until it exists. |
-| `employee_targets` | target_id, employee_id, target_type, target_month, target_year, assigned_target, achieved_target, status | `assigned_target` value should itself be sourced from `settings` (e.g. `MONTHLY_ADMISSION_TARGET`) unless overridden per-employee. |
+| `admission_leads` | lead_id, name, mobile, email, course_interested, source, branch_id, status, remark, follow_up_date, assigned_to, is_archived, archived_at, archived_by, created_by, created_at, updated_at | **New, distinct from `candidates`.** `status` lifecycle: `New → Contacted → Follow-up → Interested / Not Interested → Admission Completed / On Hold → Archived` (exact values from `PRD.md` §7.11's requirement doc). No hard-delete route exists — `archiveAdmissionLead` is the only removal path, sets `status='Archived'` + the three soft-delete columns together (rules.md #16). Employee role has **zero** access to this module (PRD.md §7.12) — HR/branch_manager/super_admin only, branch-scoped via `canAccessBranch()` for branch_manager. Backend: `appscript_admissions.gs` (`getAdmissionLeads`/`addAdmissionLead`/`updateAdmissionLead`/`updateAdmissionLeadStatus`/`archiveAdmissionLead`, `setupAdmissionLeadsSheet()`). Frontend: new `admissions.html` (HR-standalone + admin-sidebar dual pattern, same as `daily_tasks_admin.html`). |
+| `employee_targets` | target_id, employee_id, target_type, target_month, target_year, assigned_target, achieved_target, status | Not yet built (§7.8, medium priority). `assigned_target` value should itself be sourced from `settings` (e.g. `MONTHLY_ADMISSION_TARGET`) unless overridden per-employee. Given the `admission_leads` split above, this target module will likely track admissions-per-employee counted against `admission_leads` with `status='Admission Completed'` — confirm this linkage when §7.8 is picked up. |
 
 ### Planned schema additions to existing tabs — Phase 11
 
-- `candidates`: add `is_archived`, `archived_at`, `archived_by` (soft-delete fields) — additive, via `addColumnIfMissing()` pattern. **Do not** add a delete route for candidates; archive is the only removal path (see `rules.md`).
-- Clarify before building: does §7.10's "Candidate Management module" reuse the existing `candidates` sheet (extending `RECRUITMENT_STAGES`) or is it a genuinely separate admissions/leads pipeline? The requirement doc's suggested status values (`New/Contacted/Follow-up/...`) don't match the existing `RECRUITMENT_STAGES` array in `appscript_recruitment.gs` — resolve this before writing any backend code so we don't end up with two divergent candidate schemas.
+- `candidates` (job-recruitment sheet): still has its own §7.11-style soft-delete question **open** — was originally scoped together with the now-resolved `admission_leads` question, but they're separate decisions. `is_archived`/`archived_at`/`archived_by` have **not** been added to `candidates` yet; the `hired`/`rejected` terminal stages currently serve as the de-facto "done" states for that pipeline. Revisit only if a real need for archiving job candidates comes up — not scoped for the current session.
 
 ---
 

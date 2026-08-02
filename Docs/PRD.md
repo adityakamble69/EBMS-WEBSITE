@@ -116,11 +116,18 @@ Targets (e.g. monthly admission count) are assigned per employee, value sourced 
 ### 7.9 HR Dashboard — month-wise reports
 Filters: Month, Year, Department, Employee, Report Type. Report types: attendance, leave, daily task, target performance, candidate, admission, joining. Optional: PDF/CSV export, print, date-range filter.
 
-### 7.10 Candidate Management module (HR Dashboard)
-Currently missing entirely from the HR Dashboard (distinct from the existing `appscript_recruitment.gs` / `candidates` sheet used by `register.html` + `recruitment.html` — **clarify with stakeholders whether this is the same `candidates` sheet/pipeline extended, or a separate admissions/leads pipeline** before building, since the suggested schema and status values in the request differ from the existing recruitment pipeline's `RECRUITMENT_STAGES`). HR can add/view/update/search/filter candidates.
+### 7.10 Candidate Management module (HR Dashboard) — ⚠️ BACKEND + FRONTEND WRITTEN 2026-08-02, NOT YET WIRED INTO LIVE PROJECT
+Currently missing entirely from the HR Dashboard (distinct from the existing `appscript_recruitment.gs` / `candidates` sheet used by `register.html` + `recruitment.html`).
 
-### 7.11 No hard delete — ever (candidates, and by extension: recommended everywhere)
-HR has no delete button/action for candidates. Status-based lifecycle instead (`New → Contacted → Follow-up → Interested / Not Interested → Admission Completed / On Hold → Archived`), soft-delete fields: `is_archived`, `archived_at`, `archived_by`. Role rule: HR = Create/Read/Update only, never Delete. Recommended (not just for candidates) to extend this no-hard-delete posture to Admin too, to protect historical data/reports.
+> ✅ **RESOLVED (2026-08-02):** confirmed with stakeholder — this is a **genuinely separate pipeline**, not the existing `candidates`/`RECRUITMENT_STAGES` sheet extended. Codeline.AI is an education/coaching business; the existing `candidates` sheet is for **job applicants** (staff hiring — Teacher, Accountant, etc.), while this §7.10 module is for **student admission leads** (people interested in enrolling in a course). This also explains the pre-existing `MONTHLY_ADMISSION_TARGET` setting (§7.3) and §7.1's "Course Name" resolution requirement — both were already pointing at this same student-admissions concept.
+>
+> New sheet: `admission_leads` (see `architecture.md` §4 for full schema). New backend file: `appscript_admissions.gs` (`getAdmissionLeads`/`addAdmissionLead`/`updateAdmissionLead`/`updateAdmissionLeadStatus`/`archiveAdmissionLead`, `setupAdmissionLeadsSheet()`). New frontend: `admissions.html`. **Not yet pasted into the live Apps Script project or linked into `hr_dashboard.html`/`sidebar.html`/`app.js`** — see `admissions_wiring_patch.md` and `admissions_frontend_patch.md` for the exact manual steps, following the same pattern as the Daily Tasks module's wiring patch.
+
+HR can add/view/update/search/filter admission leads.
+
+### 7.11 No hard delete — ever (admission leads, job candidates, and by extension: recommended everywhere)
+HR has no delete button/action for admission leads (or job candidates). Status-based lifecycle instead (`New → Contacted → Follow-up → Interested / Not Interested → Admission Completed / On Hold → Archived`), soft-delete fields: `is_archived`, `archived_at`, `archived_by`. Role rule: HR = Create/Read/Update only, never Delete. Recommended (not just for admission leads) to extend this no-hard-delete posture to Admin too, to protect historical data/reports.
+> ✅ **Implemented 2026-08-02** on the new `admission_leads` sheet — `archiveAdmissionLead` is the only removal path, no delete route exists (see `appscript_admissions.gs`). The pre-existing job-recruitment `candidates` sheet does **not** yet have these soft-delete fields — out of scope for this session, revisit separately if needed.
 
 ### 7.12 Role permission deltas introduced by this set
 | Feature | Employee | HR | Admin |
@@ -134,5 +141,5 @@ HR has no delete button/action for candidates. Status-based lifecycle instead (`
 | Update settings | No | No | Yes |
 
 ### Development priority (as given)
-**High:** 7.1 (readable names) ✅, 7.2 (leave summary) ✅, 7.3 (settings sheet) ✅, 7.4 (30-day lock) ✅, 7.5+7.6 (daily task + approval — backend ✅ 2026-08-02, frontend pending), 7.7 (calendar view), 7.10 (candidate add), 7.11 (delete restriction).
-**Medium:** 7.8 (targets), 7.9 (month-wise reports), report export.
+**High:** 7.1 (readable names) ✅, 7.2 (leave summary) ✅, 7.3 (settings sheet) ✅, 7.4 (30-day lock) ✅, 7.5+7.6+7.7 (daily tasks, fully shipped end-to-end ✅ 2026-08-02), 7.10+7.11 (admission leads module — schema decision resolved + backend/frontend written ✅ 2026-08-02, ⚠️ not yet wired into live project — see `admissions_wiring_patch.md`).
+**Medium:** 7.8 (targets — note: will likely link to `admission_leads` with `status='Admission Completed'`, see `architecture.md`), 7.9 (month-wise reports), report export.
