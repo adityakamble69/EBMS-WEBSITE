@@ -8,6 +8,34 @@ Purpose: a running log so any contributor (human or AI) picking up this project 
 
 ## Session log
 
+### [2026-08-03] — Phase 11 §7.10/§7.11 Admission Leads: backend wiring confirmed live, module fully shipped
+**What was done:**
+- User provided the live `appscript_main.gs`, `appscript_generateid_fix.gs`, and `appscript_admissions.gs` files (previously the last session could only infer these were patched — this session had direct access to verify).
+- Confirmed by direct review that all backend wiring flagged as pending in the previous session's `memory.md` entry is actually already live:
+  - `appscript_main.gs`: `SHEETS.ADMISSION_LEADS: 'admission_leads'` present; `doGet` has the `getAdmissionLeads` case; `doPost` has `addAdmissionLead`/`updateAdmissionLead`/`updateAdmissionLeadStatus`/`archiveAdmissionLead` cases — all wired correctly.
+  - `appscript_generateid_fix.gs`: `'LD': 'admission_leads'` present in `ID_PREFIX_SHEET_MAP`.
+- User then provided `admissions.html`, `hr_dashboard.html`, `app.js`, `sidebar.html`, and a CSV export of the live `admission_leads` Google Sheet tab. Verified:
+  - CSV export confirms `setupAdmissionLeadsSheet()` has been run — the live sheet has the correct 17-column header row (`lead_id, name, mobile, email, course_interested, source, branch_id, status, remark, follow_up_date, assigned_to, is_archived, archived_at, archived_by, created_by, created_at, updated_at`). No data rows yet (no lead added through the UI so far).
+  - `hr_dashboard.html`: navbar link (`🎓 Admissions`) and quick-action card (`Manage Admission Leads`) both present, pointing at `admissions.html`.
+  - `app.js`: `HR_ALLOWED_PAGES` includes `'admissions.html'`.
+  - `sidebar.html`: nav item present under the "Management" section, right under Recruitment.
+  - `admissions.html`: HR-standalone/admin-sidebar dual-mode block present and correctly wired (`hr-standalone-mode` class toggle based on `u.role === 'hr'`, `AppSession.protect()` called at the bottom).
+- **Net result: the entire Admission Leads module (§7.10/§7.11) is now confirmed fully live** — backend, frontend, and the underlying Sheet are all in place. Updated `phases.md` (flipped both checkboxes to `[x]`) and `PRD.md` (§7.10/§7.11 status notes + priority summary line) to reflect this.
+
+**File(s) touched:**
+- **Docs only:** `phases.md`, `PRD.md`, `memory.md` (this entry). No application code changed this session — this was a verification-only session.
+
+**Currently being worked on / left mid-flight:**
+- Nothing code-wise. One soft item remains: **no real lead has been added through the `admissions.html` UI yet** to confirm the full request→Apps Script→Sheet round-trip actually works end-to-end (the CSV only proves the sheet+header exist, not that a live `addAdmissionLead` call succeeds). Recommended before treating this as 100% closed.
+
+**Next suggested step:** 
+1. Do one real click-test: log in as HR (or admin), go to `admissions.html`, add one test lead, confirm it appears correctly in the live Sheet with a valid `LD001`-style ID, then archive it and confirm the soft-delete fields populate correctly. After that, §7.10/§7.11 can be considered airtight, not just code-verified.
+2. Move on to **medium priority** Phase 11 items (`phases.md`), in order:
+   - **§7.8 — Employee target tracking** (`employee_targets` sheet, Assigned/Achieved/Remaining/Progress %) — per `PRD.md`, this will likely link to `admission_leads` with `status='Admission Completed'` as the "Achieved" count, so do this next since the admission leads module it depends on is now confirmed live.
+   - **§7.9 — HR Dashboard month-wise reports** (filters: month/year/department/employee/report type; optional PDF/CSV export + print).
+
+---
+
 ### [2026-08-02] — Phase 11 §7.10/§7.11 Admission Leads: frontend wiring fully verified + completed
 **What was done:**
 - Followed up on the previous session's flagged gap: `app.js`, `daily_tasks_admin.html`, and `sidebar.html` weren't available when `admissions_frontend_patch.md` was written, so its `app.js`/`sidebar.html` snippets were inferred, not copied. All three files (plus the real `admissions.html`) were reviewed this session.
