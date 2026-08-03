@@ -8,6 +8,30 @@ Purpose: a running log so any contributor (human or AI) picking up this project 
 
 ## Session log
 
+### [2026-08-03] — README.md sync gap fixed (Admission Leads module was missing from docs)
+**What was done:**
+- Audited `memory.md`, `phases.md`, and `README.md` together and found `README.md` had **not** been updated after the previous session's Admission Leads (§7.10/§7.11) work landed — a `rules.md` #9 / `PRD.md` §5 violation (module was `[x]` in `phases.md` but absent from README's schema table, backend file list, frontend page list, and API table).
+- Updated `README.md`:
+  - §2 (Sheet schema): added `admission_leads` row (full 17-column schema, status lifecycle, soft-delete note, ⚠️ click-test-outstanding caveat carried over from `memory.md`).
+  - §3 (Backend files): added `appscript_admissions.gs` row.
+  - §5 (API reference): added an "Admission Leads (Phase 11 §7.10/§7.11)" row with all 5 actions.
+  - §7 (Frontend pages): added `admissions.html` row.
+  - Footer summary line: extended to mention the 2026-08-03 Admission Leads shipment alongside the existing 2026-08-02 Daily Tasks mention.
+- **No application code (`.gs`/`.html`) touched** — docs-sync-only session.
+
+**File(s) touched:**
+- **Edited:** `README.md` (docs only).
+- **Docs:** `memory.md` (this entry).
+
+**Currently being worked on / left mid-flight:**
+- Nothing new. The pre-existing open item is unchanged: **no real lead has been added through the `admissions.html` UI yet** to confirm the full request→Apps Script→Sheet round-trip (see previous entry below).
+
+**Next suggested step:**
+1. Do the real click-test (carried over, still outstanding): log in as HR/admin, add one test lead via `admissions.html`, confirm it lands in the live Sheet with a valid `LD001`-style ID, then archive it and confirm soft-delete fields populate. After that, §7.10/§7.11 is airtight end-to-end, not just code-verified.
+2. Move on to Medium Priority Phase 11 items in order: **§7.8 Employee target tracking** (`employee_targets` sheet — will likely link to `admission_leads` with `status='Admission Completed'` as "Achieved"), then **§7.9 HR month-wise reports**.
+
+---
+
 ### [2026-08-03] — Phase 11 §7.10/§7.11 Admission Leads: backend wiring confirmed live, module fully shipped
 **What was done:**
 - User provided the live `appscript_main.gs`, `appscript_generateid_fix.gs`, and `appscript_admissions.gs` files (previously the last session could only infer these were patched — this session had direct access to verify).
