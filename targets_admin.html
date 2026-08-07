@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Targets — Codeline.AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-base: #0A0A0B;
+      --glass: rgba(255, 255, 255, 0.045);
+      --glass-strong: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 20px;
+      --text-primary: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #6B7280;
+      --accent-glow: #D4D9E6;
+      --success: #34D399;
+      --warning: #FBBF24;
+      --danger: #F87171;
+      --info: #8FAEFF;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255, 255, 255, 0.05), transparent 45%),
+        radial-gradient(circle at 90% 0%, rgba(255, 255, 255, 0.03), transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar-spacer { width: 240px; flex-shrink: 0; }
+    @media (max-width: 768px) { .sidebar-spacer { display: none; } }
+
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+    @media (max-width: 600px) { .main-workspace { padding: 16px; } }
+
+    .mobile-nav-bar {
+      display: none;
+      height: 50px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--radius-sm);
+      align-items: center;
+      padding: 0 16px;
+      font-size: 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 768px) { .mobile-nav-bar { display: flex; } }
+
+    .header-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title-area h1 { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; }
+    .title-area p { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; }
+
+    .btn-primary {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 11px 18px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: rgba(255, 255, 255, 0.14); }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+    .stat-card .stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px; }
+    .stat-card .stat-value { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; margin-top: 4px; }
+    .stat-card .stat-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Filter bar */
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .filter-bar select {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      cursor: pointer;
+      backdrop-filter: blur(var(--glass-blur));
+    }
+    .filter-bar select option { background: #1a1a1e; }
+    .filter-bar .btn-refresh {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    @media (max-width: 900px) { .filter-bar select { font-size: 16px; } }
+
+    .table-container {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      width: 100%;
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 900px; }
+    .data-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      padding: 14px 16px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .data-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(255, 255, 255, 0.025); }
+    .data-table tr:nth-child(even) td { background: rgba(255, 255, 255, 0.015); }
+
+    .progress-track {
+      width: 90px;
+      height: 7px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+    .progress-fill { height: 100%; border-radius: 5px; background: var(--success); transition: width 0.25s; }
+    .progress-fill.warn { background: var(--warning); }
+    .progress-fill.behind { background: var(--danger); }
+    .progress-label { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-active { background: rgba(52, 211, 153, 0.12); color: #34D399; }
+    .badge-inactive { background: rgba(107, 114, 128, 0.18); color: #A1A1AA; }
+
+    .btn-review {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-review:hover { background: rgba(255, 255, 255, 0.14); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: rgba(18, 18, 20, 0.9);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      max-width: 480px;
+      width: 100%;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: rgba(18, 18, 20, 0.95);
+      z-index: 2;
+    }
+    .modal-header h3 { font-family: 'Space Grotesk', sans-serif; font-size: 16px; }
+    .modal-body { padding: 24px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-group label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .form-group select,
+    .form-group input {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.18s, background 0.18s;
+    }
+    .form-group select:focus,
+    .form-group input:focus { border-color: rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.07); }
+    .form-group select option { background: #1a1a1e; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+    .form-hint { font-size: 11.5px; color: var(--text-dim); margin-top: -10px; margin-bottom: 16px; }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 4px; }
+    .modal-actions button {
+      flex: 1;
+      padding: 11px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      border: 1px solid transparent;
+    }
+    .btn-save {
+      background: rgba(52, 211, 153, 0.12);
+      border-color: rgba(52, 211, 153, 0.3);
+      color: #34D399;
+    }
+    .btn-save:hover { background: rgba(52, 211, 153, 0.22); }
+    .btn-deactivate {
+      background: rgba(248, 113, 113, 0.12);
+      border-color: rgba(248, 113, 113, 0.3);
+      color: #F87171;
+    }
+    .btn-deactivate:hover { background: rgba(248, 113, 113, 0.22); }
+    .modal-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .empty-state { padding: 48px 24px; text-align: center; color: var(--text-dim); }
+    .empty-state .empty-icon { font-size: 36px; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; }
+
+    /* HR standalone mode */
+    .hr-standalone-topbar {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--glass-border);
+      background: var(--glass);
+      backdrop-filter: blur(var(--glass-blur));
+    }
+    .hr-back-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hr-back-link:hover { color: var(--text-primary); }
+    html.hr-standalone-mode body { flex-direction: column; }
+    html.hr-standalone-mode .hr-standalone-topbar { display: block !important; }
+    html.hr-standalone-mode .mobile-nav-bar { display: none !important; }
+    html.hr-standalone-mode .main-workspace { min-height: calc(100vh - 49px); }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar-spacer"></div>
+  <script>
+    // HR role uses its own self-contained top navbar — not the shared
+    // admin sidebar. Strip the sidebar spacer BEFORE app.js's
+    // DOMContentLoaded handler runs injectSidebar(), same pattern as
+    // daily_tasks_admin.html / admissions.html.
+    (function () {
+      try {
+        var u = JSON.parse(localStorage.getItem('ebms_user') || '{}');
+        if (u.role === 'hr') {
+          var spacer = document.querySelector('.sidebar-spacer');
+          if (spacer) spacer.remove();
+          document.documentElement.classList.add('hr-standalone-mode');
+        }
+      } catch (e) { /* AppSession.protect() will handle auth either way */ }
+    })();
+  </script>
+
+  <div class="hr-standalone-topbar" style="display:none;">
+    <a href="hr_dashboard.html" class="hr-back-link">← Back to HR Dashboard</a>
+  </div>
+
+  <div class="main-workspace">
+    <div class="mobile-nav-bar" onclick="openSidebar()">
+      ☰ <span style="font-size:14px; margin-left:12px; font-weight:600;">Menu</span>
+    </div>
+
+    <div class="header-block">
+      <div class="title-area">
+        <h1>🎯 Employee Targets</h1>
+        <p>Monthly targets assign karo aur Assigned / Achieved / Remaining / Progress % track karo</p>
+      </div>
+      <button class="btn-primary" onclick="openAssignModal()">➕ Assign New Target</button>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="stat-label">Active Targets</div>
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-sub" id="statMonthLabel">This period</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Progress</div>
+        <div class="stat-value" id="statAvgProgress" style="color:var(--info);">—</div>
+        <div class="stat-sub">Across filtered targets</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">On Track (≥70%)</div>
+        <div class="stat-value" id="statOnTrack" style="color:var(--success);">—</div>
+        <div class="stat-sub">Progress ≥ 70%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Behind (&lt;40%)</div>
+        <div class="stat-value" id="statBehind" style="color:var(--danger);">—</div>
+        <div class="stat-sub">Needs attention</div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <select id="filterEmployee" onchange="applyFilters()">
+        <option value="">All Employees</option>
+      </select>
+      <select id="filterMonth" onchange="applyFilters()"></select>
+      <select id="filterYear" onchange="applyFilters()"></select>
+      <select id="filterStatus" onchange="applyFilters()">
+        <option value="active">Active only</option>
+        <option value="">All (incl. inactive)</option>
+      </select>
+      <button class="btn-refresh" onclick="loadTargets()">🔄 Refresh</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Type</th>
+            <th>Month / Year</th>
+            <th>Assigned</th>
+            <th>Achieved</th>
+            <th>Remaining</th>
+            <th>Progress</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="targetsRowsContainer">
+          <tr>
+            <td colspan="9">
+              <div class="empty-state">
+                <div class="empty-icon">🎯</div>
+                <p>Targets are loading...</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Assign / Edit Modal -->
+  <div class="modal-overlay" id="targetModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="targetModalTitle">➕ Assign New Target</h3>
+        <button
+          style="background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer; line-height:1; padding:10px; margin:-10px; border-radius:8px;"
+          onclick="closeTargetModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group" id="tmEmployeeGroup">
+          <label>Employee</label>
+          <select id="tmEmployee"></select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Target Type</label>
+            <select id="tmType">
+              <option value="admission">Admission</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" id="tmMonthGroup">
+            <label>Month</label>
+            <select id="tmMonth"></select>
+          </div>
+          <div class="form-group" id="tmYearGroup">
+            <label>Year</label>
+            <select id="tmYear"></select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Assigned Target</label>
+          <input type="number" id="tmAssigned" min="0" placeholder="Leave blank to use MONTHLY_ADMISSION_TARGET default" />
+        </div>
+        <div class="form-hint" id="tmAssignedHint">Blank chhodo toh Settings ke MONTHLY_ADMISSION_TARGET default se assign hoga.</div>
+
+        <div class="form-group" id="tmStatusGroup" style="display:none;">
+          <label>Status</label>
+          <select id="tmStatus">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-save" id="btnSaveTarget" onclick="saveTarget()">💾 Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const USER = AppSession.getUser();
+
+    let allTargets = [];
+    let empNameMap = {};   // emp_id -> name
+    let editingTargetId = null;
+
+    const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      populateMonthYearSelects();
+      loadEmployeeNames().then(() => loadTargets());
+    });
+
+    function populateMonthYearSelects() {
+      const now = new Date();
+      const curMonth = now.getMonth() + 1;
+      const curYear = now.getFullYear();
+
+      // Filter bar
+      const fm = document.getElementById('filterMonth');
+      fm.innerHTML = '<option value="">All Months</option>' +
+        MONTH_NAMES.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('');
+      fm.value = curMonth;
+
+      const fy = document.getElementById('filterYear');
+      let yearOpts = '<option value="">All Years</option>';
+      for (let y = curYear - 1; y <= curYear + 1; y++) yearOpts += `<option value="${y}">${y}</option>`;
+      fy.innerHTML = yearOpts;
+      fy.value = curYear;
+
+      // Modal (assign form) — default to current month/year
+      const tmMonth = document.getElementById('tmMonth');
+      tmMonth.innerHTML = MONTH_NAMES.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('');
+      tmMonth.value = curMonth;
+
+      const tmYear = document.getElementById('tmYear');
+      let tmYearOpts = '';
+      for (let y = curYear - 1; y <= curYear + 1; y++) tmYearOpts += `<option value="${y}">${y}</option>`;
+      tmYear.innerHTML = tmYearOpts;
+      tmYear.value = curYear;
+
+      document.getElementById('statMonthLabel').textContent = `${MONTH_NAMES[curMonth - 1]} ${curYear}`;
+    }
+
+    async function loadEmployeeNames() {
+      try {
+        const res = await fetch(`${API_URL}?action=getEmployees&token=${TOKEN}&limit=500`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status === 'success') {
+          const arr = (payload.data && payload.data.data) || payload.data || [];
+          const filterSelect = document.getElementById('filterEmployee');
+          const modalSelect = document.getElementById('tmEmployee');
+          arr.forEach(emp => {
+            if (!emp.emp_id) return;
+            empNameMap[emp.emp_id] = emp.name || emp.emp_id;
+
+            const opt1 = document.createElement('option');
+            opt1.value = emp.emp_id; opt1.textContent = emp.name || emp.emp_id;
+            filterSelect.appendChild(opt1);
+
+            const opt2 = document.createElement('option');
+            opt2.value = emp.emp_id; opt2.textContent = emp.name || emp.emp_id;
+            modalSelect.appendChild(opt2);
+          });
+        }
+      } catch (e) { /* naam nahi mile toh emp_id fallback chalega */ }
+    }
+
+    async function loadTargets() {
+      const tbody = document.getElementById('targetsRowsContainer');
+      tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon" style="animation:spin 1s linear infinite;display:inline-block;">⏳</div><p>Loading targets...</p></div></td></tr>`;
+      try {
+        // hr/super_admin see all, branch_manager auto-scoped server-side —
+        // same pattern as getDailyTasks/getAdmissionLeads.
+        const res = await fetch(`${API_URL}?action=getEmployeeTargets&token=${TOKEN}&status=&limit=300&page=1&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+
+        if (payload.status === 'success') {
+          allTargets = (payload.data && payload.data.data) || [];
+          applyFilters();
+        } else {
+          showToast(payload.message || 'Targets fetch mein error.');
+          tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">⚠️</div><p>${payload.message || 'Error loading targets.'}</p></div></td></tr>`;
+        }
+      } catch (e) {
+        showToast('Network error — targets load nahi hue.');
+        tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📡</div><p>Network error. Retry karo.</p></div></td></tr>`;
+      }
+    }
+
+    function applyFilters() {
+      const empId = document.getElementById('filterEmployee').value;
+      const month = document.getElementById('filterMonth').value;
+      const year = document.getElementById('filterYear').value;
+      const status = document.getElementById('filterStatus').value;
+
+      let filtered = allTargets;
+      if (empId) filtered = filtered.filter(t => String(t.employee_id) === String(empId));
+      if (month) filtered = filtered.filter(t => parseInt(t.target_month, 10) === parseInt(month, 10));
+      if (year) filtered = filtered.filter(t => parseInt(t.target_year, 10) === parseInt(year, 10));
+      if (status) filtered = filtered.filter(t => t.status === status);
+      // status === '' (All incl. inactive) → no filter needed, backend already returned both
+
+      updateStats(filtered);
+      renderRows(filtered);
+    }
+
+    function updateStats(data) {
+      document.getElementById('statTotal').textContent = data.length;
+      if (data.length === 0) {
+        document.getElementById('statAvgProgress').textContent = '—';
+        document.getElementById('statOnTrack').textContent = '0';
+        document.getElementById('statBehind').textContent = '0';
+        return;
+      }
+      const avg = data.reduce((sum, t) => sum + (parseFloat(t.progress_percent) || 0), 0) / data.length;
+      document.getElementById('statAvgProgress').textContent = Math.round(avg * 10) / 10 + '%';
+      document.getElementById('statOnTrack').textContent = data.filter(t => (parseFloat(t.progress_percent) || 0) >= 70).length;
+      document.getElementById('statBehind').textContent = data.filter(t => (parseFloat(t.progress_percent) || 0) < 40).length;
+    }
+
+    function progressClass(pct) {
+      if (pct >= 70) return '';
+      if (pct >= 40) return 'warn';
+      return 'behind';
+    }
+
+    function renderRows(data) {
+      const tbody = document.getElementById('targetsRowsContainer');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `
+        <tr><td colspan="9">
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>Koi target nahi mila. "➕ Assign New Target" se ek naya assign karo.</p>
+          </div>
+        </td></tr>`;
+        return;
+      }
+
+      // Latest first
+      const sorted = [...data].sort((a, b) => (b.target_year - a.target_year) || (b.target_month - a.target_month));
+
+      tbody.innerHTML = sorted.map(t => {
+        const empName = empNameMap[t.employee_id] || t.employee_id || '—';
+        const pct = parseFloat(t.progress_percent) || 0;
+        const pctClamped = Math.min(pct, 100);
+        const cls = progressClass(pct);
+        const monthLabel = MONTH_NAMES[parseInt(t.target_month, 10) - 1] || t.target_month;
+
+        return `
+        <tr>
+          <td>
+            <div style="font-weight:600; color:var(--text-primary); font-size:13.5px;">${empName}</div>
+            <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${t.employee_id}</div>
+          </td>
+          <td style="font-size:13px; text-transform:capitalize;">${t.target_type || '—'}</td>
+          <td style="font-size:13px;">${monthLabel} ${t.target_year}</td>
+          <td style="font-size:13.5px; font-weight:600;">${t.assigned_target}</td>
+          <td style="font-size:13.5px;">${t.achieved_target}</td>
+          <td style="font-size:13.5px;">${t.remaining_target}</td>
+          <td>
+            <div class="progress-track"><div class="progress-fill ${cls}" style="width:${pctClamped}%;"></div></div>
+            <div class="progress-label">${pct}%</div>
+          </td>
+          <td><span class="badge ${t.status === 'active' ? 'badge-active' : 'badge-inactive'}">${t.status || '—'}</span></td>
+          <td><button class="btn-review" onclick="openEditModal('${t.target_id}')">✏️ Edit</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function openAssignModal() {
+      editingTargetId = null;
+      document.getElementById('targetModalTitle').textContent = '➕ Assign New Target';
+      document.getElementById('tmEmployeeGroup').style.display = 'flex';
+      document.getElementById('tmEmployee').disabled = false;
+      document.getElementById('tmMonthGroup').style.display = 'flex';
+      document.getElementById('tmYearGroup').style.display = 'flex';
+      document.getElementById('tmAssigned').value = '';
+      document.getElementById('tmAssignedHint').style.display = 'block';
+      document.getElementById('tmStatusGroup').style.display = 'none';
+      document.getElementById('btnSaveTarget').textContent = '💾 Assign';
+      document.getElementById('targetModal').classList.add('open');
+    }
+
+    function openEditModal(targetId) {
+      const t = allTargets.find(x => x.target_id === targetId);
+      if (!t) return;
+      editingTargetId = targetId;
+
+      document.getElementById('targetModalTitle').textContent = '✏️ Edit Target';
+      // Employee/type/month/year are immutable once assigned (avoids
+      // silently reassigning a target to a different employee/period —
+      // create a new one instead if that's genuinely needed).
+      document.getElementById('tmEmployeeGroup').style.display = 'flex';
+      document.getElementById('tmEmployee').value = t.employee_id;
+      document.getElementById('tmEmployee').disabled = true;
+      document.getElementById('tmType').value = t.target_type;
+      document.getElementById('tmMonth').value = t.target_month;
+      document.getElementById('tmYear').value = t.target_year;
+      document.getElementById('tmMonthGroup').style.display = 'none';
+      document.getElementById('tmYearGroup').style.display = 'none';
+
+      document.getElementById('tmAssigned').value = t.assigned_target;
+      document.getElementById('tmAssignedHint').style.display = 'none';
+
+      document.getElementById('tmStatusGroup').style.display = 'flex';
+      document.getElementById('tmStatus').value = t.status || 'active';
+
+      document.getElementById('btnSaveTarget').textContent = '💾 Save Changes';
+      document.getElementById('targetModal').classList.add('open');
+    }
+
+    function closeTargetModal() {
+      document.getElementById('targetModal').classList.remove('open');
+      document.getElementById('tmEmployee').disabled = false;
+      editingTargetId = null;
+    }
+
+    async function saveTarget() {
+      const btn = document.getElementById('btnSaveTarget');
+      btn.disabled = true;
+
+      try {
+        let payload;
+        let action;
+
+        if (editingTargetId) {
+          action = 'updateTarget';
+          payload = {
+            token: TOKEN,
+            action,
+            target_id: editingTargetId,
+            status: document.getElementById('tmStatus').value
+          };
+          const assignedVal = document.getElementById('tmAssigned').value;
+          if (assignedVal !== '') payload.assigned_target = assignedVal;
+        } else {
+          const empId = document.getElementById('tmEmployee').value;
+          if (!empId) { showToast('Employee select karo.'); btn.disabled = false; return; }
+
+          action = 'assignTarget';
+          payload = {
+            token: TOKEN,
+            action,
+            employee_id: empId,
+            target_type: document.getElementById('tmType').value,
+            target_month: document.getElementById('tmMonth').value,
+            target_year: document.getElementById('tmYear').value
+          };
+          const assignedVal = document.getElementById('tmAssigned').value;
+          if (assignedVal !== '') payload.assigned_target = assignedVal;
+        }
+
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast(out.message || 'Saved!');
+          closeTargetModal();
+          loadTargets();
+        } else {
+          showToast(out.message || 'Save mein error.');
+        }
+      } catch (e) {
+        showToast('Network error.');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+
+</html>

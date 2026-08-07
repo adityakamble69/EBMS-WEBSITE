@@ -172,7 +172,7 @@ const AppSession = {
     // but on the frontend it should never be able to *navigate* into
     // Employees/Salary/Branches/etc. — and it uses hr_recruitment.html
     // (self-contained, no shared sidebar), not the admin recruitment.html.
-    const HR_ALLOWED_PAGES = ['hr_dashboard.html', 'hr_recruitment.html', 'daily_tasks_admin.html', 'admissions.html'];
+    const HR_ALLOWED_PAGES = ['hr_dashboard.html', 'hr_recruitment.html', 'daily_tasks_admin.html', 'admissions.html', 'targets_admin.html', 'reports.html'];
     if (role === 'hr') {
       if (!HR_ALLOWED_PAGES.includes(page)) {
         window.location.href = 'hr_dashboard.html';

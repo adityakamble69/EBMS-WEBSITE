@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports — Codeline.AI EBMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    /* ============================================================
+       HR-standalone topbar — same self-contained pattern as
+       hr_dashboard.html / admissions.html (per memory.md: HR's area
+       is not wired into sidebar.html/injectSidebar()). Hidden by
+       default; shown + .sidebar-spacer removed by the role-check
+       script below when the logged-in role is 'hr'. Uses style.css's
+       own tokens (this page links style.css directly, unlike
+       hr_dashboard.html's fully self-contained inline tokens).
+       ============================================================ */
+    .hr-standalone-topbar {
+      display: none;
+      position: sticky; top: 0; z-index: 600;
+      align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px;
+      padding: 12px 24px;
+      background: var(--bg-layer2);
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      border-bottom: 1px solid var(--border2);
+    }
+    body.hr-standalone-mode .hr-standalone-topbar { display: flex; }
+    body.hr-standalone-mode .sidebar-spacer,
+    body.hr-standalone-mode #sidebar,
+    body.hr-standalone-mode #sidebarOverlayMask,
+    body.hr-standalone-mode .hamburger { display: none !important; }
+
+    .hr-topbar-logo { display: flex; align-items: center; gap: 10px; }
+    .hr-topbar-logo-icon {
+      width: 32px; height: 32px; background: var(--bg-layer3);
+      border: 1px solid var(--border2); border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; font-size: 15px;
+    }
+    .hr-topbar-logo-text { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px; color: var(--text-primary); }
+    .hr-topbar-logo-text span { color: var(--accent-hi); font-weight: 500; }
+    .hr-topbar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .hr-topbar-btn {
+      padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+      background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-secondary);
+      text-decoration: none; cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .hr-topbar-btn:hover { background: var(--glass-hover); color: var(--text-primary); }
+    .hr-topbar-btn.active { background: var(--glass-hover); color: var(--text-primary); border-color: var(--glass-border-hi); font-weight: 600; }
+    .hr-topbar-btn.logout { color: #FC9999; }
+    .hr-topbar-btn.logout:hover { background: var(--danger-dim); border-color: rgba(248,113,113,0.24); }
+
+    /* ── Report-specific layout ── */
+    .report-summary-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px; margin-bottom: 20px;
+    }
+    .report-summary-card {
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      border-radius: var(--radius); padding: 14px 16px;
+    }
+    .report-summary-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; }
+    .report-summary-value { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; color: var(--text-primary); }
+
+    .report-empty-state {
+      padding: 48px 20px; text-align: center; color: var(--text-muted); font-size: 13.5px;
+    }
+    .report-empty-state .icon { font-size: 30px; margin-bottom: 10px; display: block; }
+
+    /* ── Print: only the report title + table survive ── */
+    @media print {
+      .hr-standalone-topbar, .sidebar-spacer, #sidebar, .header-block,
+      .filter-deck, .mobile-nav-bar, .btn-action, .btn-secondary { display: none !important; }
+      body, .main-workspace { background: #fff !important; color: #000 !important; }
+      .table-container { border: none !important; }
+      .data-table th, .data-table td { color: #000 !important; border-color: #ccc !important; }
+      .data-table thead tr { background: #eee !important; }
+      #printReportTitle { display: block !important; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #000; }
+    }
+    #printReportTitle { display: none; }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar-overlay-mask" id="sidebarOverlayMask" onclick="closeSidebar()"></div>
+  <div class="sidebar-spacer"></div>
+
+  <!-- HR-standalone topbar (shown only when role === 'hr') -->
+  <div class="hr-standalone-topbar">
+    <div class="hr-topbar-logo">
+      <div class="hr-topbar-logo-icon">⚡</div>
+      <div class="hr-topbar-logo-text">Codeline<span>.AI</span> HR</div>
+    </div>
+    <div class="hr-topbar-actions">
+      <span class="hr-topbar-btn" id="hrTopbarUserBadge" style="cursor:default;">👤 Loading…</span>
+      <a class="hr-topbar-btn" href="hr_dashboard.html">📊 Dashboard</a>
+      <a class="hr-topbar-btn" href="hr_recruitment.html">🧑‍💼 Recruitment</a>
+      <a class="hr-topbar-btn" href="admissions.html">🎓 Admissions</a>
+      <a class="hr-topbar-btn" href="targets_admin.html">🎯 Targets</a>
+      <a class="hr-topbar-btn active" href="reports.html">📈 Reports</a>
+      <button class="hr-topbar-btn logout" onclick="localStorage.clear(); window.location.href='index.html';">🚪 Logout</button>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <div class="sidebar-spacer"></div>
+
+    <main class="main-workspace">
+      <div class="mobile-nav-bar">
+        <span class="hamburger" onclick="openSidebar()">☰</span>
+        <span>Reports</span>
+      </div>
+
+      <div class="header-block">
+        <div class="title-area">
+          <h1>📈 Month-wise Reports</h1>
+          <p>Attendance, leave, daily tasks, targets, candidates, admissions &amp; joinings — one place, filterable.</p>
+        </div>
+      </div>
+
+      <div id="printReportTitle"></div>
+
+      <!-- Filters -->
+      <div class="filter-deck">
+        <div class="form-group">
+          <label>Report Type</label>
+          <select class="dropdown-select" id="fReportType">
+            <option value="attendance">✅ Attendance</option>
+            <option value="leave">📅 Leave</option>
+            <option value="daily_task">📝 Daily Tasks</option>
+            <option value="target">🎯 Target Performance</option>
+            <option value="candidate">🧑‍💼 Candidates (Job Recruitment)</option>
+            <option value="admission">🎓 Admission Leads</option>
+            <option value="joining">🆕 Joining</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Month</label>
+          <select class="dropdown-select" id="fMonth">
+            <option value="">Whole Year</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Year</label>
+          <select class="dropdown-select" id="fYear"></select>
+        </div>
+        <div class="form-group" id="fDeptWrap">
+          <label>Department</label>
+          <select class="dropdown-select" id="fDepartment">
+            <option value="">All Departments</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Employee ID <span style="color:var(--text-dim); font-weight:400;">(optional)</span></label>
+          <input class="input-field" type="text" id="fEmpId" placeholder="e.g. EMP0012" />
+        </div>
+        <div class="form-group" style="align-self:flex-end;">
+          <button class="btn-action" id="btnGenerate" onclick="generateReport()">Generate Report</button>
+        </div>
+      </div>
+
+      <div id="reportOutput" style="display:none;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+          <div id="reportRangeLabel" style="font-size:13px; color:var(--text-muted);"></div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-secondary" onclick="exportCsv()">⬇ Export CSV</button>
+            <button class="btn-secondary" onclick="window.print()">🖨 Print</button>
+          </div>
+        </div>
+
+        <div class="report-summary-grid" id="summaryGrid"></div>
+
+        <div class="table-container">
+          <table class="data-table" id="reportTable">
+            <thead><tr id="reportTableHead"></tr></thead>
+            <tbody id="reportTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="reportPlaceholder" class="report-empty-state">
+        <span class="icon">📈</span>
+        Choose a report type and filters, then click <strong>Generate Report</strong>.
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // ── Role-check: HR gets the standalone topbar, no shared sidebar.
+    // Everyone else (super_admin/branch_manager) gets the normal
+    // app-shell + injected sidebar.html. Runs BEFORE app.js's
+    // injectSidebar() (attached on DOMContentLoaded) so the spacer is
+    // already gone by the time it would try to inject into it.
+    (function roleCheckBeforeSidebarInject() {
+      try {
+        const u = JSON.parse(localStorage.getItem('ebms_user') || '{}');
+        if ((u.role || '') === 'hr') {
+          document.body.classList.add('hr-standalone-mode');
+          document.querySelectorAll('.sidebar-spacer').forEach(el => el.remove());
+        }
+      } catch (e) { /* AppSession.protect() below will redirect if truly unauthenticated */ }
+    })();
+  </script>
+
+  <script>
+    AppSession.protect();
+    const TOKEN = AppSession.getToken();
+    const USER = AppSession.getUser();
+
+    // ── Column configs per report type — keys must match the field
+    // names appscript_reports.gs returns for that report_type. ──
+    const REPORT_COLUMNS = {
+      attendance: [
+        ['emp_id', 'Emp ID'], ['name', 'Name'], ['department_name', 'Department'],
+        ['date', 'Date'], ['in_time', 'In'], ['out_time', 'Out'], ['status', 'Status']
+      ],
+      leave: [
+        ['emp_id', 'Emp ID'], ['name', 'Name'], ['department_name', 'Department'],
+        ['leave_type', 'Type'], ['from_date', 'From'], ['to_date', 'To'],
+        ['days', 'Days'], ['status', 'Status']
+      ],
+      daily_task: [
+        ['emp_id', 'Emp ID'], ['name', 'Name'], ['department_name', 'Department'],
+        ['task_title', 'Task'], ['task_date', 'Date'], ['task_status', 'Task Status'],
+        ['approval_status', 'Approval']
+      ],
+      target: [
+        ['emp_id', 'Emp ID'], ['name', 'Name'], ['department_name', 'Department'],
+        ['target_type', 'Type'], ['month', 'Month'], ['year', 'Year'],
+        ['assigned_target', 'Assigned'], ['achieved_target', 'Achieved'],
+        ['remaining_target', 'Remaining'], ['progress_percent', 'Progress %']
+      ],
+      candidate: [
+        ['candidate_id', 'Candidate ID'], ['name', 'Name'], ['department', 'Department'],
+        ['role', 'Role'], ['stage', 'Stage'], ['applied_on', 'Applied On']
+      ],
+      admission: [
+        ['lead_id', 'Lead ID'], ['name', 'Name'], ['course_interested', 'Course'],
+        ['branch_id', 'Branch'], ['assigned_to', 'Assigned To'], ['status', 'Status'],
+        ['created_at', 'Created On']
+      ],
+      joining: [
+        ['emp_id', 'Emp ID'], ['name', 'Name'], ['department_name', 'Department'],
+        ['designation_name', 'Designation'], ['branch_name', 'Branch'],
+        ['joining_date', 'Joining Date'], ['status', 'Status']
+      ]
+    };
+
+    let currentRows = [];
+    let currentColumns = [];
+    let currentReportType = '';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setUserBadge();
+      populateMonthYear();
+      populateDepartments();
+    });
+
+    function setUserBadge() {
+      const badge = document.getElementById('hrTopbarUserBadge');
+      if (badge && USER) badge.textContent = `👤 ${USER.name} (HR)`;
+    }
+
+    function populateMonthYear() {
+      const monthSel = document.getElementById('fMonth');
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      monthNames.forEach((m, i) => {
+        const opt = document.createElement('option');
+        opt.value = i + 1;
+        opt.textContent = m;
+        monthSel.appendChild(opt);
+      });
+      const nowMonth = new Date().getMonth() + 1;
+      monthSel.value = nowMonth;
+
+      const yearSel = document.getElementById('fYear');
+      const nowYear = new Date().getFullYear();
+      for (let y = nowYear; y >= nowYear - 4; y--) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        yearSel.appendChild(opt);
+      }
+    }
+
+    async function populateDepartments() {
+      try {
+        const res = await fetch(`${API_URL}?action=getDepartments&token=${TOKEN}&_ts=${Date.now()}`, { cache: 'no-store' });
+        const result = await res.json();
+        if (result.status !== 'success') return;
+        const sel = document.getElementById('fDepartment');
+        (result.data || []).forEach(d => {
+          const opt = document.createElement('option');
+          opt.value = d.dept_name;
+          opt.textContent = d.dept_name;
+          sel.appendChild(opt);
+        });
+      } catch (e) { /* dropdown just stays "All Departments" */ }
+    }
+
+    // Admission-lead + candidate reports don't have a department_id
+    // lookup in the same way employees do — hide the filter for
+    // report types where it isn't meaningful, to avoid a silently
+    // no-op dropdown.
+    document.getElementById('fReportType').addEventListener('change', () => {
+      const type = document.getElementById('fReportType').value;
+      document.getElementById('fDeptWrap').style.display = (type === 'admission') ? 'none' : '';
+    });
+
+    async function generateReport() {
+      const btn = document.getElementById('btnGenerate');
+      const originalLabel = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+
+      try {
+        const reportType = document.getElementById('fReportType').value;
+        const month = document.getElementById('fMonth').value;
+        const year = document.getElementById('fYear').value;
+        const department = document.getElementById('fDepartment').value;
+        const empId = document.getElementById('fEmpId').value.trim();
+
+        const params = new URLSearchParams({
+          action: 'getMonthlyReport', token: TOKEN, report_type: reportType, year: year, _ts: Date.now()
+        });
+        if (month) params.set('month', month);
+        if (department) params.set('department', department);
+        if (empId) params.set('emp_id', empId);
+
+        const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+        const result = await res.json();
+
+        if (result.status !== 'success') {
+          showToast(result.message || 'Report generate nahi ho paayi');
+          return;
+        }
+
+        currentReportType = reportType;
+        currentColumns = REPORT_COLUMNS[reportType];
+        currentRows = result.data.rows || [];
+
+        renderRangeLabel(result.data);
+        renderSummary(result.data.summary || {});
+        renderTable();
+
+        document.getElementById('reportPlaceholder').style.display = 'none';
+        document.getElementById('reportOutput').style.display = 'block';
+        document.getElementById('printReportTitle').textContent =
+          document.getElementById('fReportType').selectedOptions[0].textContent + ' Report — ' +
+          document.getElementById('reportRangeLabel').textContent;
+
+      } catch (err) {
+        showToast('Network error — report load nahi ho payi.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+      }
+    }
+
+    function renderRangeLabel(data) {
+      const monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+      const rangeText = data.month ? `${monthNames[data.month]} ${data.year}` : `Whole Year ${data.year}`;
+      const extras = [];
+      if (data.department) extras.push('Dept: ' + data.department);
+      if (data.emp_id) extras.push('Emp: ' + data.emp_id);
+      document.getElementById('reportRangeLabel').textContent =
+        rangeText + (extras.length ? ' · ' + extras.join(' · ') : '') + ` · ${currentRows.length} records`;
+    }
+
+    function renderSummary(summary) {
+      const grid = document.getElementById('summaryGrid');
+      const keys = Object.keys(summary);
+      if (!keys.length) { grid.innerHTML = ''; return; }
+      grid.innerHTML = keys.map(k => `
+        <div class="report-summary-card">
+          <div class="report-summary-label">${humanizeKey(k)}</div>
+          <div class="report-summary-value">${summary[k]}</div>
+        </div>
+      `).join('');
+    }
+
+    function humanizeKey(k) {
+      return k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function renderTable() {
+      const head = document.getElementById('reportTableHead');
+      const body = document.getElementById('reportTableBody');
+
+      head.innerHTML = currentColumns.map(([key, label]) => `<th>${label}</th>`).join('');
+
+      if (!currentRows.length) {
+        body.innerHTML = `<tr><td colspan="${currentColumns.length}" style="text-align:center; padding:32px; color:var(--text-dim);">Is filter ke liye koi record nahi mila.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = currentRows.map(row => `
+        <tr>${currentColumns.map(([key]) => `<td>${formatCell(row[key])}</td>`).join('')}</tr>
+      `).join('');
+    }
+
+    function formatCell(val) {
+      if (val === undefined || val === null || val === '') return '—';
+      return val;
+    }
+
+    // ── CSV export — pure client-side, from the rows already loaded.
+    // No backend call: PRD.md §7.9 lists PDF/CSV export as optional;
+    // this satisfies the CSV half without a Drive-file dependency.
+    function exportCsv() {
+      if (!currentRows.length) { showToast('Export karne ke liye pehle report generate karo'); return; }
+
+      const headerRow = currentColumns.map(([, label]) => `"${label}"`).join(',');
+      const dataRows = currentRows.map(row =>
+        currentColumns.map(([key]) => {
+          const v = row[key] === undefined || row[key] === null ? '' : String(row[key]);
+          return `"${v.replace(/"/g, '""')}"`;
+        }).join(',')
+      );
+      const csv = [headerRow, ...dataRows].join('\r\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentReportType}_report_${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+
+</html>

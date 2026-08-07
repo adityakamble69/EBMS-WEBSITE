@@ -1613,6 +1613,7 @@
         <button class="nav-btn" onclick="toggleNavMenu(event)">⋯ Menu</button>
         <div class="nav-menu-dropdown" id="navMenuDropdown">
           <button class="nav-menu-item" onclick="closeNavMenu(); openIdCardModal();">🪪 Virtual ID Card</button>
+          <button class="nav-menu-item" onclick="closeNavMenu(); openTargetModal();">🎯 My Target</button>
           <button class="nav-menu-item" onclick="closeNavMenu(); openBankDocsModal('bank');">📁 Bank &amp; Docs</button>
           <button class="nav-menu-item" onclick="closeNavMenu(); openPasswordModal();">🔒 Change Password</button>
         </div>
@@ -1627,6 +1628,7 @@
     <button class="nav-btn" onclick="openLeaveModal()">📅 Leave Requests</button>
     <button class="nav-btn" onclick="openDailyTasksModal()">📝 Daily Tasks</button>
     <button class="nav-btn" onclick="openExpenseModal()">💰 Expenses</button>
+    <button class="nav-btn" onclick="openTargetModal()">🎯 My Target</button>
     <button class="nav-btn" onclick="openBankDocsModal('bank')">📁 Bank & Docs</button>
     <button class="nav-btn" onclick="openPasswordModal()">🔒 Change Password</button>
     <button class="nav-btn logout" onclick="doLogout()">🚪 Logout</button>
@@ -2024,6 +2026,53 @@
               <div class="empty-note">Loading...</div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ My Target Modal (Phase 11 §7.8) ═══ -->
+  <div class="modal-overlay" id="targetModal">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <h3>🎯 My Target</h3>
+        <button class="modal-close-btn" onclick="closeModal('targetModal')">✕ Close</button>
+      </div>
+      <div class="modal-body">
+        <div id="targetSelectorWrap" style="margin-bottom:14px; display:none;">
+          <label style="font-size:12px; color:var(--text-secondary); margin-bottom:6px; display:block;">Period</label>
+          <select id="targetPeriodSelect" onchange="renderSelectedTarget()"
+            style="background:var(--bg-layer4); border:1px solid var(--border2); border-radius:var(--radius-sm); color:var(--text-primary); padding:8px 12px; font-size:13px; font-family:'Inter',sans-serif;"></select>
+        </div>
+
+        <div id="targetEmptyState" class="empty-note" style="display:none;">
+          Abhi tak koi target assign nahi hua hai.
+        </div>
+
+        <div id="targetContentWrap" style="display:none;">
+          <div class="leave-summary-grid">
+            <div class="glass-card stat-card mini">
+              <div class="stat-icon-row"><span class="stat-title">Assigned</span><span class="stat-icon">🎯</span></div>
+              <div class="stat-main" id="tgAssigned">—</div>
+            </div>
+            <div class="glass-card stat-card mini">
+              <div class="stat-icon-row"><span class="stat-title">Achieved</span><span class="stat-icon">✅</span></div>
+              <div class="stat-main" id="tgAchieved">—</div>
+            </div>
+            <div class="glass-card stat-card mini">
+              <div class="stat-icon-row"><span class="stat-title">Remaining</span><span class="stat-icon">🌿</span></div>
+              <div class="stat-main" id="tgRemaining">—</div>
+            </div>
+            <div class="glass-card stat-card mini">
+              <div class="stat-icon-row"><span class="stat-title">Progress</span><span class="stat-icon">📈</span></div>
+              <div class="stat-main" id="tgProgress">—</div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px; background:var(--bg-layer3); border-radius:var(--radius-sm); height:10px; overflow:hidden;">
+            <div id="tgProgressBar" style="height:100%; width:0%; background:var(--accent); border-radius:var(--radius-sm); transition:width 0.3s;"></div>
+          </div>
+          <div id="tgTypeLabel" style="margin-top:8px; font-size:12px; color:var(--text-secondary);">—</div>
         </div>
       </div>
     </div>
@@ -2508,6 +2557,11 @@
       document.getElementById('leaveModal').classList.add('open');
       loadMyLeaves();
       loadLeaveSummary();
+    }
+
+    function openTargetModal() {
+      document.getElementById('targetModal').classList.add('open');
+      loadMyTargets();
     }
 
     function openExpenseModal() {
@@ -3633,6 +3687,65 @@
         document.getElementById('lsApproved').textContent  = s.approved;
         document.getElementById('lsRejected').textContent  = s.rejected;
       } catch (e) { showToast('Leave summary load karne me dikkat aayi.'); }
+    }
+
+    /* ── My Target (Phase 11 §7.8) ── */
+    // Achieved/Remaining/Progress% are always resolved server-side by
+    // getEmployeeTargets (live-computed against admission_leads) — never
+    // calculated here (rules.md #13/#14).
+    let MY_TARGETS = [];
+    const TARGET_MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    async function loadMyTargets() {
+      const selectorWrap = document.getElementById('targetSelectorWrap');
+      const emptyState = document.getElementById('targetEmptyState');
+      const contentWrap = document.getElementById('targetContentWrap');
+      selectorWrap.style.display = 'none';
+      emptyState.style.display = 'none';
+      contentWrap.style.display = 'none';
+
+      try {
+        const res = await fetch(`${API_URL}?action=getEmployeeTargets&token=${TOKEN}&limit=50&_ts=${Date.now()}`, { cache: 'no-store' });
+        const payload = await res.json();
+        if (payload.status !== 'success') { showToast(payload.message || 'Target load nahi hua.'); return; }
+
+        MY_TARGETS = (payload.data && payload.data.data) || [];
+        if (MY_TARGETS.length === 0) {
+          emptyState.style.display = 'block';
+          return;
+        }
+
+        // Latest period first
+        MY_TARGETS.sort((a, b) => (b.target_year - a.target_year) || (b.target_month - a.target_month));
+
+        const select = document.getElementById('targetPeriodSelect');
+        select.innerHTML = MY_TARGETS.map((t, i) => {
+          const label = `${TARGET_MONTH_NAMES[parseInt(t.target_month, 10) - 1] || t.target_month} ${t.target_year} — ${t.target_type}`;
+          return `<option value="${i}">${label}</option>`;
+        }).join('');
+
+        if (MY_TARGETS.length > 1) selectorWrap.style.display = 'block';
+        contentWrap.style.display = 'block';
+        renderSelectedTarget();
+      } catch (e) {
+        showToast('Target load karne me network error.');
+      }
+    }
+
+    function renderSelectedTarget() {
+      if (MY_TARGETS.length === 0) return;
+      const idx = parseInt(document.getElementById('targetPeriodSelect').value || '0', 10);
+      const t = MY_TARGETS[idx] || MY_TARGETS[0];
+
+      document.getElementById('tgAssigned').textContent = t.assigned_target;
+      document.getElementById('tgAchieved').textContent = t.achieved_target;
+      document.getElementById('tgRemaining').textContent = t.remaining_target;
+      document.getElementById('tgProgress').textContent = t.progress_percent + '%';
+      document.getElementById('tgProgressBar').style.width = Math.min(parseFloat(t.progress_percent) || 0, 100) + '%';
+
+      const monthLabel = TARGET_MONTH_NAMES[parseInt(t.target_month, 10) - 1] || t.target_month;
+      document.getElementById('tgTypeLabel').textContent =
+        `${t.target_type.charAt(0).toUpperCase() + t.target_type.slice(1)} target for ${monthLabel} ${t.target_year}`;
     }
 
     function calcLeaveDays(fromStr, toStr) {
