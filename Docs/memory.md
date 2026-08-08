@@ -8,6 +8,37 @@ Purpose: a running log so any contributor (human or AI) picking up this project 
 
 ## Session log
 
+### [2026-08-08] — §7.8 scope correction: HR targets, not employee targets — full rebuild
+**What was done:**
+- User caught a real requirement misread in the earlier same-day §7.8 build: monthly admission targets are supposed to be assigned **to HR** ("Admin gives HR a target — get this many admissions this month"), not to individual employees. The original `employee_targets` sheet / `appscript_employee_targets.gs` / `targets_admin.html` build was wrong at the schema level, not just a UI tweak.
+- User uploaded the relevant files for context: `appscript_employee_targets.gs` (old, to replace), `targets_admin.html` (old, to replace), `appscript_main.gs` (router/whitelist/SHEETS reference), `appscript_admissions.gs` (`admission_leads` schema — the `achieved_target` computation source), `appscript_settings.gs` (`MONTHLY_ADMISSION_TARGET` default lookup).
+- **Rebuilt the module around the corrected model:**
+  - New sheet `hr_targets` (`target_id | hr_id | hr_name | target_month | target_year | assigned_target | achieved_target | status | created_by | created_at | updated_at`) — `hr_id` references `admin_users.user_id` where `role === 'hr'`, validated at assign time.
+  - New backend `appscript_hr_targets.gs`: `getHrTargets` (GET — `super_admin` sees all with optional `?hr_id=` filter, `hr` sees only their own, enforced in-handler), `assignHrTarget` (POST, **super_admin only** — HR cannot self-assign), `updateHrTarget` (POST, super_admin only), `setupHrTargetsSheet()`, plus a `deactivateLegacyEmployeeTargets()` migration helper (flips old sheet's rows to `inactive` without deleting the sheet — rules.md #5).
+  - Rebuilt `targets_admin.html`: HR picker (sourced from `getAdminUsers`, client-filtered to `role === 'hr'`) replaces the old employee picker; assign/edit controls (button, actions column, modal) hidden entirely for `hr` role viewers — they get a read-only banner and see only their own target row(s); `super_admin` retains full assign/edit.
+  - New `hr_targets_wiring_patch.md` — exact `appscript_main.gs` edits (SHEETS map swap, `EMPLOYEE_ALLOWED_GET_ACTIONS` line removal, `doGet`/`doPost` switch-case swaps) and the `appscript_generateid_fix.gs` prefix-map swap (`'TG'` → `'HT'`), since neither of those two files was fully available/needed a full rewrite this session — instructions given for applying directly.
+- **Flagged, not fixed:** `achieved_target`'s live computation matches `admission_leads.assigned_to` against the target's `hr_id`. This only works if `admission_leads` rows actually get `assigned_to` set to an HR's `user_id`. `admissions.html` (its "Assigned To" field) wasn't part of this session's file set, so it's unconfirmed whether that field currently points at HR users or still lists employees (a leftover assumption from the old model). **This is a blocking dependency for §7.8's real-world correctness**, not just a nice-to-have — documented prominently in the wiring patch, `PRD.md`, `phases.md`, and `README.md`.
+- Also flagged: `appscript_reports.gs`'s "target performance" report type (§7.9) was built against the old `employee_targets` schema — needs re-checking against `hr_targets`'s new column names before its numbers can be trusted. Not touched this session.
+- Updated `PRD.md` (§7.8 rewritten + priority summary), `phases.md` (Phase 11 bullet rewritten + remaining-work list item updated), `README.md` (§2 schema table, §3 backend files table, §5 API table, §7 frontend pages table, footer date-stamp — all four `employee_targets`/`appscript_employee_targets.gs`/`targets_admin.html` references updated), `architecture.md` (§4's stale `employee_targets` row corrected — it had never been updated since the module was "not yet built").
+
+**File(s) touched:**
+- **New:** `appscript_hr_targets.gs`, `targets_admin.html` (full rewrite, same filename), `hr_targets_wiring_patch.md`.
+- **Retired (left in place, not deleted):** `appscript_employee_targets.gs`, old `employee_targets` sheet (data preserved, rows flippable to `inactive` via the new migration helper).
+- **Docs:** `PRD.md`, `phases.md`, `README.md`, `architecture.md`, `memory.md` (this entry).
+- **Not touched, needs follow-up:** live `appscript_main.gs` (patch not yet applied — see `hr_targets_wiring_patch.md`), live `appscript_generateid_fix.gs` (prefix swap not yet applied), `admissions.html` (Assigned-To field not yet checked/fixed), `appscript_reports.gs` (target-performance report type not yet re-checked against the new schema).
+
+**Currently being worked on / left mid-flight:**
+- The new HR-targets code exists but hasn't been wired into the live Apps Script project yet — `hr_targets_wiring_patch.md`'s edits are pending application.
+- `admissions.html`'s "Assigned To" field is the real blocker for `achieved_target` ever showing a non-zero number — needs to be uploaded/checked next.
+
+**Next suggested step:**
+1. Apply `hr_targets_wiring_patch.md` to the live `appscript_main.gs` + `appscript_generateid_fix.gs`, then run `setupHrTargetsSheet()` from the Apps Script editor.
+2. Upload `admissions.html` so its "Assigned To" field can be checked and, if needed, changed to list HR users (`getAdminUsers`, `role === 'hr'`) instead of employees — this closes the blocking dependency flagged above.
+3. Once both of those are done, click-test: assign a target to an HR, mark a lead `Admission Completed` with `assigned_to` set to that HR, confirm `achieved_target` picks it up live.
+4. Separately: `appscript_reports.gs`'s target-performance report type needs a quick re-check against the new `hr_targets` column names (`hr_id`/`hr_name` instead of `employee_id`).
+
+---
+
 ### [2026-08-08] — Admission Leads (§7.10/§7.11) real click-test done and passed — module fully closed
 **What was done:**
 - User performed the outstanding real click-test through the live `admissions.html` UI (the one soft item flagged as open since the 2026-08-03 session): added a test lead, confirmed it landed correctly in the live Sheet with a valid `LD001`-style ID, then archived it and confirmed the soft-delete fields (`is_archived`/`archived_at`/`archived_by`) populated correctly.
