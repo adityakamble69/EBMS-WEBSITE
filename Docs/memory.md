@@ -394,6 +394,35 @@ Purpose: a running log so any contributor (human or AI) picking up this project 
 
 ---
 
+### [2026-08-08] — Admin dashboard: salary privacy toggle + quick-add buttons (ad-hoc UI request, not from PRD)
+
+**What was done:**
+- User shared a hand-annotated screenshot of `dashboard.html` marking two changes and confirmed the ambiguous one via a clarifying question before building:
+  1. **Monthly Salary Expense card**: added a 👁️/🙈 eye-toggle button (top-right of the card) that masks/unmasks the ₹ figure as `••••••`. Preference persists via `localStorage` (`ebms_salary_hidden`) — client-side UI convenience only, not an access-control change; the real number is still in every `getDashboard` API response regardless of toggle state.
+  2. **"+ Add" buttons** on all three bottom panels (Present Employees, Work List, Pending Leave Requests) — user confirmed these should open a quick-add form modal rather than just linking to the full page. Built a shared `quickAddModalOverlay` shell (reuses the existing `.modal-overlay`/`.modal-box` CSS) with three distinct forms:
+     - **Mark Attendance** → posts `markAttendance` (employee dropdown scoped to the selected branch, date, in-time, optional out-time).
+     - **New Task** → posts `addTask` (title, assign-to dropdown incl. "Unassigned", due date, priority).
+     - **Apply Leave (On Behalf)** → posts `applyLeave` with an explicit `emp_id` (the admin-on-behalf-of path already supported in `handleApplyLeave()`) — deliberately does NOT ask for a day count in the form, since this session's earlier Phase 10 change made the server compute `days` itself from the holiday-aware `calculateLeaveDays()`.
+- New CSS added (scoped, reuses existing design tokens): `.stat-eye-btn`, `.panel-header-actions`, `.panel-add-btn`, `.qform-*` (form group/label/input/select/actions/buttons).
+- `renderStats()` and `loadDemoData()` both rewired so the salary figure always routes through `updateSalaryDisplay()` (respects the toggle) instead of writing directly to `#stat-salary`.
+
+**File(s) touched:**
+- `dashboard.html` — all changes (CSS + HTML + JS, no backend `.gs` files touched this session).
+- `phases.md` — new "Phase 11.5 — Admin Dashboard UX tweaks (ad-hoc)" section, both items marked `[~]` (built, not live-click-tested).
+- `memory.md` (this entry).
+- `README.md` — pages table entry for `dashboard.html` updated to mention the new UI.
+
+**Currently being worked on / left mid-flight:**
+- Not click-tested against the live Apps Script project yet.
+- ⚠️ **Real gap to flag**: `markAttendance`'s param names (`emp_id`, `date`, `in_time`, `out_time`) used in the new quick-add form are inferred from how `getAttendance` responses are consumed elsewhere on this same page (`a.emp_id`, `a.in_time`, `a.out_time`) — `appscript_attendance.gs` itself was never uploaded/reviewed this session, so the actual `handleMarkAttendance()` signature is unconfirmed. `addTask` and `applyLeave` param names ARE confirmed against real reviewed backend code (README's Tasks module row; this session's own `appscript_leaves.gs` review).
+
+**Next suggested step:**
+- Upload `appscript_attendance.gs` so the Mark Attendance quick-add form's field names can be confirmed/fixed against the real `handleMarkAttendance()` handler.
+- Click-test all three quick-add flows (mark attendance, add task, apply leave-on-behalf) and the salary eye-toggle against the live Sheet/Apps Script project.
+- Then resume Phase 10: birthday notifications, setup-script confirmation, or automated test coverage (whichever the user picks next).
+
+---
+
 ## Template for future entries
 
 ```

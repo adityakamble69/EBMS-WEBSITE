@@ -160,6 +160,12 @@ HR Dashboard month-wise reports (§7.9) — ✅ **fully closed 2026-08-08** (use
 
 **Phase 11 status: fully closed 2026-08-08 (user-confirmed).** All high- and medium-priority items above are shipped and live-verified.
 
+Phase 11.5 — Admin Dashboard UX tweaks (ad-hoc, requested 2026-08-08, not from PRD.md §7)
+
+[~] Monthly Salary Expense card — privacy eye-toggle. Built 2026-08-08 in `dashboard.html`: a 👁️/🙈 button masks/unmasks the ₹ figure (`••••••` when hidden); preference persists client-side via `localStorage` across page loads. Purely a display toggle — the real number is always present in the API response, this doesn't restrict who can see it server-side. Not click-tested live yet.
+
+[~] "+ Add" quick-add buttons on Present Employees / Work List / Pending Leave Requests panels. Built 2026-08-08 in `dashboard.html` — each opens a small form modal posting straight to existing backend actions (no new routes): `markAttendance` (mark an employee's in/out time for a date), `addTask` (Kanban task, optionally unassigned), `applyLeave` (admin/hr/branch_manager filing leave on an employee's behalf — reuses the Phase 10 holiday-aware day-count calc, so `days` isn't asked for in the form). ⚠️ `markAttendance`'s exact param names (`emp_id`/`date`/`in_time`/`out_time`) are an inferred guess — `appscript_attendance.gs` wasn't available this session to confirm `handleMarkAttendance()`'s real signature; verify/adjust once that file is reviewed. Not click-tested live yet.
+
 How to add a new phase
 
 Confirm the feature's role/branch access rules first (goes in PRD.md §2/§3 if it changes user journeys).

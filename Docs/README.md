@@ -180,7 +180,7 @@ A full-featured HR/Ops platform built entirely on **Google Sheets + Google Apps 
 | Page | Audience | Purpose |
 |---|---|---|
 | `index.html` | Everyone | Login page. |
-| `dashboard.html` | super_admin / hr / branch_manager | Admin overview — employee counts, attendance, pending leaves, payroll expense. |
+| `dashboard.html` | super_admin / hr / branch_manager | Admin overview — employee counts, attendance, pending leaves, payroll expense. **(2026-08-08)** Monthly Salary Expense card has a 👁️/🙈 privacy eye-toggle (masks the ₹ figure, `localStorage`-persisted, display-only). Present Employees / Work List / Pending Leave Requests panels each have a "+ Add" quick-add button opening a form modal (posts to `markAttendance` / `addTask` / `applyLeave` respectively — no new backend routes). |
 | `employee_dashboard.html` | employee | Personal dashboard — attendance calendar, tasks, leaves, salary slips, ID card, bank/docs, weekly-off. |
 | `hr_dashboard.html` | hr | Recruitment pipeline overview. |
 | `hr_recruitment.html` | hr | Full candidate/job-opening management (Kanban-style stage pipeline, Hire modal → converts candidate to employee). |
