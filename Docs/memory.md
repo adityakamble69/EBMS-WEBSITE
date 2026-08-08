@@ -8,6 +8,24 @@ Purpose: a running log so any contributor (human or AI) picking up this project 
 
 ## Session log
 
+### [2026-08-08] — Admission Leads (§7.10/§7.11) real click-test done and passed — module fully closed
+**What was done:**
+- User performed the outstanding real click-test through the live `admissions.html` UI (the one soft item flagged as open since the 2026-08-03 session): added a test lead, confirmed it landed correctly in the live Sheet with a valid `LD001`-style ID, then archived it and confirmed the soft-delete fields (`is_archived`/`archived_at`/`archived_by`) populated correctly.
+- **Result: pass.** This closes the last open item on §7.10/§7.11 — the module was already code-verified (2026-08-03) and is now also live-verified end-to-end.
+- Updated `PRD.md` (§7.10/§7.11 status note + priority summary line) and `phases.md` (Phase 11 admission leads bullet + removed the item from the "remaining work" list) to reflect this.
+
+**File(s) touched:**
+- **Docs only:** `PRD.md`, `phases.md`, `memory.md` (this entry). No application code changed — this was a live-verification session, not a code session.
+
+**Currently being worked on / left mid-flight:**
+- Nothing new. Remaining open items, all from earlier sessions: Employee Targets live-sheet setup-function confirmation + click-test, Reports live click-test (all 7 report types), Daily Tasks setup-function confirmation.
+
+**Next suggested step:**
+1. Pick up one of the remaining live click-tests next — Employee Targets (`targets_admin.html`, confirm `setupEmployeeTargetsSheet()` has run, then assign → verify live-recompute-on-admission-completion) or Reports (`reports.html`, run all 7 report types against real data, spot-check numbers, confirm CSV export opens cleanly).
+2. With Admission Leads now fully closed, `employee_targets`'s dependency on `admission_leads` (status=`Admission Completed` as the "Achieved" signal) can be click-tested with full confidence that the upstream data source is solid.
+
+---
+
 ### [2026-08-08] — §7.1 fully closed: getEmployees bulk name-resolve confirmed via direct code review
 **What was done:**
 - User uploaded the live `appscript_employees.gs` (previously the file wasn't available this session, so the prior session's ⚠️ caveat on §7.1 couldn't be checked).

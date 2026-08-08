@@ -130,7 +130,7 @@ Distinct from the existing `appscript_recruitment.gs` / `candidates` sheet used 
 >
 > **Frontend wiring confirmed complete:** `hr_dashboard.html` (navbar link + quick-action card), `app.js` (`HR_ALLOWED_PAGES` includes `'admissions.html'`), `sidebar.html` (nav item present under Management), and `admissions.html`'s HR-standalone/admin-sidebar dual-mode block (`hr-standalone-mode` class toggle + `AppSession.protect()`) all verified against the real live files.
 >
-> **Remaining before fully closing this out:** an actual click-test hasn't been done yet — add one real test lead through the `admissions.html` UI and confirm the row lands correctly in the live Sheet, then this can be considered fully closed.
+> ✅ **Real click-test done 2026-08-08:** a test lead was added through the live `admissions.html` UI, landed correctly in the Sheet with a valid `LD001`-style ID, and archiving worked correctly (soft-delete fields populated as expected). §7.10/§7.11 is now fully closed end-to-end — code-verified **and** live-verified.
 
 HR can add/view/update/search/filter admission leads.
 
@@ -150,5 +150,5 @@ HR has no delete button/action for admission leads (or job candidates). Status-b
 | Update settings | No | No | Yes |
 
 ### Development priority (as given)
-**High:** 7.1 (readable names) ✅ **fully confirmed 2026-08-08** — employee_dashboard.html shipped 2026-08-02, employees.html admin-panel bug fixed 2026-08-08, and `getEmployees` backend confirmed by direct code review to attach `department_name`/`designation_name`/`branch_name` via `resolveEmployeeDisplayNamesBulk()` (no remaining open question on this item). 7.2 (leave summary) ✅, 7.3 (settings sheet) ✅, 7.4 (30-day lock) ✅, 7.5+7.6+7.7 (daily tasks, fully shipped end-to-end ✅ 2026-08-02, re-verified by direct file review 2026-08-08), 7.10+7.11 (admission leads module — fully shipped, backend+frontend+sheet all confirmed live ✅ 2026-08-03; only a real click-test through the UI is still outstanding).
+**High:** 7.1 (readable names) ✅ **fully confirmed 2026-08-08** — employee_dashboard.html shipped 2026-08-02, employees.html admin-panel bug fixed 2026-08-08, and `getEmployees` backend confirmed by direct code review to attach `department_name`/`designation_name`/`branch_name` via `resolveEmployeeDisplayNamesBulk()` (no remaining open question on this item). 7.2 (leave summary) ✅, 7.3 (settings sheet) ✅, 7.4 (30-day lock) ✅, 7.5+7.6+7.7 (daily tasks, fully shipped end-to-end ✅ 2026-08-02, re-verified by direct file review 2026-08-08), 7.10+7.11 (admission leads module — fully shipped, backend+frontend+sheet all confirmed live ✅ 2026-08-03, real UI click-test done + passed ✅ 2026-08-08 — fully closed end-to-end).
 **Medium:** 7.8 (targets) ✅ shipped 2026-08-08 — frontend `targets_admin.html` built, backend pre-existing. 7.9 (month-wise reports) ✅ shipped 2026-08-08 — frontend `reports.html` built (incl. CSV export + print), backend pre-existing. Both ⚠️ pending a live click-test.
