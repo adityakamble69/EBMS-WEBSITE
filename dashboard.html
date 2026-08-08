@@ -1310,8 +1310,10 @@
     }
 
     function findEmployeeName(empId) {
-      const emp = ALL_EMPLOYEES.find(e => e.emp_id === empId);
-      return emp ? emp.name : empId;
+      if (!empId) return empId;
+      const target = String(empId).trim().toLowerCase();
+      const emp = ALL_EMPLOYEES.find(e => String(e.emp_id || '').trim().toLowerCase() === target);
+      return (emp && emp.name) ? emp.name : empId;
     }
 
     function initials(name) {

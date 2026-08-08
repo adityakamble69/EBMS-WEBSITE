@@ -255,6 +255,34 @@
       text-align: center;
     }
 
+    .col-header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .col-header-add {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.07);
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .col-header-add:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: var(--text-primary);
+    }
+
     /* Per-column accent */
     .col-todo .col-header {
       background: var(--col-todo);
@@ -963,7 +991,10 @@
               <span class="col-dot"></span>
               <span class="col-title">TO DO</span>
             </div>
-            <span class="col-count" id="cntTodo">0</span>
+            <div class="col-header-right">
+              <span class="col-count" id="cntTodo">0</span>
+              <button class="col-header-add" title="Add task" onclick="openCreateModal()">+</button>
+            </div>
           </div>
           <div class="col-body" id="colTodo">
             <div class="skeleton"></div>
@@ -977,7 +1008,10 @@
               <span class="col-dot"></span>
               <span class="col-title">IN PROGRESS</span>
             </div>
-            <span class="col-count" id="cntProg">0</span>
+            <div class="col-header-right">
+              <span class="col-count" id="cntProg">0</span>
+              <button class="col-header-add" title="Add task" onclick="openCreateModal()">+</button>
+            </div>
           </div>
           <div class="col-body" id="colProg">
             <div class="skeleton"></div>
@@ -991,7 +1025,10 @@
               <span class="col-dot"></span>
               <span class="col-title">VERIFY</span>
             </div>
-            <span class="col-count" id="cntVerify">0</span>
+            <div class="col-header-right">
+              <span class="col-count" id="cntVerify">0</span>
+              <button class="col-header-add" title="Add task" onclick="openCreateModal()">+</button>
+            </div>
           </div>
           <div class="col-body" id="colVerify">
             <div class="skeleton"></div>
