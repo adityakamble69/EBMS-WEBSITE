@@ -349,6 +349,51 @@ Purpose: a running log so any contributor (human or AI) picking up this project 
 
 ---
 
+### [2026-08-08] — Phase 11 closed out (user-confirmed); moving to Phase 10
+
+**What was done:**
+- Documentation-only session. User confirmed in chat that everything scheduled before Phase 10 is now complete — no new code reviewed/changed this entry.
+- Updated `phases.md`: marked §7.8 (HR Targets) and §7.9 (Reports) as fully closed — wiring patch applied live, `setupHrTargetsSheet()` run, `admissions.html` "Assigned To" fixed to list HR users, and all click-tests (HR Targets assign/recompute/edit, Daily Tasks live flow, all 7 report types) done. Folded the now-redundant "live-sheet verification" bullets into their parent items. Marked Phase 11 as fully closed overall.
+- Left a flag rather than silently closing: the §7.2 (calendar-year leave cycle) and §7.4 (self-service-only leave-lock scope) stakeholder-confirmation caveats were not individually re-confirmed line-by-line — treating them as accepted-as-built per the user's blanket confirmation, but noted in `phases.md` in case that assumption is wrong.
+
+**File(s) touched:**
+- `phases.md` — status updates only.
+- `memory.md` (this entry).
+- No `.gs`/frontend files touched — nothing was actually built this session.
+
+**Currently being worked on / left mid-flight:**
+- Nothing mid-flight. Ready to start Phase 10.
+
+**Next suggested step:**
+- Pick a Phase 10 item to start: (a) leave day-count integration with the holidays sheet, (b) birthday notifications (needs a `dob` column added to `employees` first), (c) confirm/recreate `appscript_setup.gs` / `appscript_rebuild_candidates.gs`, or (d) automated test coverage for core routes/roles/branch-scoping.
+
+---
+
+### [2026-08-08] — Phase 10: leave day-count now integrated with holidays sheet
+
+**What was done:**
+- **`appscript_leaves.gs`**: added `calculateLeaveDays(fromDateStr, toDateStr, branchId)` — walks every calendar date from `from_date` to `to_date` inclusive and excludes any date that matches an applicable `holidays` row (blank `branch_id` = company-wide, else must match the employee's branch; `recurring === 'true'` rows match on month+day only, others on the exact date). Returns `{ok, days, excludedHolidays}` or `{ok:false, message}` for an invalid/reversed date range.
+- **`handleApplyLeave()` rewired**: `body.days` is no longer trusted or required in the validation — the server now computes `days` itself via `calculateLeaveDays()` (rules.md #15: time-based business math must be server-side, not frontend-computed). If the computed count is 0 (whole range is holidays), the request is rejected with a 400 instead of creating a 0-day leave row. The success response now also includes `excluded_holidays` (optional, for the frontend to show *why* the count differs from a naive date-diff — safe to ignore if the UI doesn't use it).
+- **`appscript_holidays.gs`**: header comment updated — it previously claimed the sheet was "informational only for now" and didn't affect leave math; that's now false, so the comment was corrected to point at `calculateLeaveDays()`. No functional/route changes needed in this file — the existing `getHolidays`/`addHoliday`/`deleteHoliday` shape already has everything `calculateLeaveDays()` needs.
+- Updated `phases.md` (Phase 10 item marked `[~]` — built, not yet live-click-tested) and this `memory.md` entry.
+
+**File(s) touched:**
+- `appscript_leaves.gs` — functional change (new helper + `handleApplyLeave()` rewired).
+- `appscript_holidays.gs` — comment-only change.
+- `phases.md`, `memory.md` — docs.
+- `README.md` — no schema/API shape change (still `leave_requests.days` as an int, still the same `applyLeave` action/params from the frontend's point of view — frontend can keep sending `days` if it wants, it's just ignored now), so no edit needed there this session.
+
+**Currently being worked on / left mid-flight:**
+- Not click-tested against the live Apps Script project / live Sheet yet. Needs: apply a leave that spans a real holiday row and confirm the returned `days` (and the stored sheet row) correctly excludes it; also re-check `getLeaveSummary` totals still look right with the new counts.
+- Not retroactive — pre-existing `leave_requests` rows keep their original day counts.
+- Weekend/weekly-off exclusion deliberately out of scope for this change (see `appscript_leaves.gs`'s Phase 10 comment block for why).
+
+**Next suggested step:**
+- Click-test the holiday-aware day count live (add a test holiday if needed, apply a leave spanning it, confirm the count).
+- Then move to the next Phase 10 item: birthday notifications, setup-script confirmation, or automated test coverage.
+
+---
+
 ## Template for future entries
 
 ```

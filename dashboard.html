@@ -691,6 +691,153 @@
       flex: 1;
     }
 
+    /* ============================================================
+       🆕 [2026-08-08] Admin Dashboard additions:
+       1. Salary-amount privacy eye-toggle (Monthly Salary Expense card)
+       2. "+ Add" quick-add buttons on Present Employees / Work List /
+          Pending Leave Requests panels, opening a lightweight form
+          modal (reuses .modal-overlay/.modal-box from the stat-card
+          modal, new .qform-* classes for the actual form fields).
+       ============================================================ */
+    .stat-eye-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .stat-eye-btn:hover {
+      background: var(--glass-strong);
+      color: var(--text-primary);
+    }
+
+    .panel-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-add-btn {
+      font-size: 12px;
+      color: var(--accent-glow);
+      cursor: pointer;
+      padding: 3px 10px;
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      background: var(--glass);
+      white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .panel-add-btn:hover {
+      background: var(--glass-strong);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .qform-group {
+      margin-bottom: 14px;
+    }
+
+    .qform-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .qform-row .qform-group {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .qform-label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .qform-input,
+    .qform-select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .qform-input:focus,
+    .qform-select:focus {
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .qform-select option {
+      background: #18181B;
+      color: var(--text-primary);
+    }
+
+    .qform-note {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    .qform-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .qform-btn {
+      flex: 1;
+      padding: 11px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-size: 13.5px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      transition: opacity 0.15s, background 0.15s, color 0.15s;
+    }
+
+    .qform-btn-primary {
+      background: var(--accent-glow);
+      color: #0A0A0B;
+    }
+
+    .qform-btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .qform-btn-secondary {
+      background: var(--glass);
+      color: var(--text-muted);
+      border: 1px solid var(--glass-border);
+    }
+
+    .qform-btn-secondary:hover {
+      background: var(--glass-strong);
+      color: var(--text-primary);
+    }
+
     #loadingOverlay {
       position: fixed;
       inset: 0;
@@ -818,6 +965,8 @@
           </div>
         </div>
         <div class="stat-card purple" onclick="goToSalaryPage()">
+          <button class="stat-eye-btn" id="salaryEyeBtn" onclick="toggleSalaryVisibility(event)"
+            title="Toggle amount visibility">👁️</button>
           <div class="stat-label">Monthly Salary Expense</div>
           <div class="stat-row">
             <div>
@@ -840,11 +989,25 @@
         </div>
       </div>
 
+      <!-- 🆕 Quick-add modal — shared shell for Mark Attendance / New Task / Apply Leave forms -->
+      <div class="modal-overlay" id="quickAddModalOverlay" onclick="if(event.target===this) closeQuickAddModal()">
+        <div class="modal-box">
+          <div class="modal-header">
+            <div class="modal-title" id="quickAddModalTitle">Quick Add</div>
+            <div class="modal-close" onclick="closeQuickAddModal()">✕</div>
+          </div>
+          <div class="modal-body" id="quickAddModalBody" style="padding:20px;"></div>
+        </div>
+      </div>
+
       <div class="bottom-grid">
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">✅ Present Employees</div><a class="panel-link" href="attendance.html">View All
-              →</a>
+            <div class="panel-title">✅ Present Employees</div>
+            <div class="panel-header-actions">
+              <span class="panel-add-btn" onclick="openQuickMarkAttendance()">+ Add</span>
+              <a class="panel-link" href="attendance.html">View All →</a>
+            </div>
           </div>
           <div class="panel-body" id="presentEmployees">
             <div style="padding:20px; text-align:center; color:var(--text-dim);">Loading...</div>
@@ -852,7 +1015,11 @@
         </div>
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">📝 Work List</div><a class="panel-link" href="tasks.html">View All →</a>
+            <div class="panel-title">📝 Work List</div>
+            <div class="panel-header-actions">
+              <span class="panel-add-btn" onclick="openQuickAddTask()">+ Add</span>
+              <a class="panel-link" href="tasks.html">View All →</a>
+            </div>
           </div>
           <div class="panel-body" id="workList">
             <div style="padding:20px; text-align:center; color:var(--text-dim);">Loading...</div>
@@ -860,8 +1027,11 @@
         </div>
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">📅 Pending Leave Requests</div><a class="panel-link" href="leaves.html">View All
-              →</a>
+            <div class="panel-title">📅 Pending Leave Requests</div>
+            <div class="panel-header-actions">
+              <span class="panel-add-btn" onclick="openQuickApplyLeave()">+ Add</span>
+              <a class="panel-link" href="leaves.html">View All →</a>
+            </div>
           </div>
           <div class="panel-body" id="pendingLeaves">
             <div style="padding:20px; text-align:center; color:var(--text-dim);">Loading...</div>
@@ -1076,7 +1246,12 @@
       setStatCard('employees', activeEmps.length, selectedBranchId === 'all' ? 'Active employees' : 'In selected branch');
       setStatCard('leaves', leaves.length, 'Awaiting approval');
       renderBestPerformer();
-      setStatCard('salary', '₹' + formatNumber(META.monthly_salary_expense), 'This month (company-wide)');
+
+      // 🆕 [2026-08-08] Salary amount routed through the privacy toggle —
+      // subtitle stays visible (not sensitive), only the ₹ figure masks.
+      currentSalaryDisplay = '₹' + formatNumber(META.monthly_salary_expense);
+      document.getElementById('stat-salary-sub').textContent = 'This month (company-wide)';
+      updateSalaryDisplay();
     }
 
     function renderBestPerformer() {
@@ -1106,7 +1281,32 @@
       setStatCard('employees', '8', 'Active employees');
       setStatCard('leaves', '2', 'Pending review');
       setStatCard('performer', 'Aditi Sharma', 'Score: 92');
-      setStatCard('salary', '₹1.8L', 'Current billing cycle');
+      currentSalaryDisplay = '₹1.8L';
+      document.getElementById('stat-salary-sub').textContent = 'Current billing cycle';
+      updateSalaryDisplay();
+    }
+
+    // ============================================================
+    // 🆕 [2026-08-08] SALARY PRIVACY TOGGLE — eye button on the
+    // Monthly Salary Expense card. Preference persists across page
+    // loads via localStorage (client-side UI preference only, not a
+    // permission — the real number is always in the API response).
+    // ============================================================
+    let salaryHidden = localStorage.getItem('ebms_salary_hidden') === '1';
+    let currentSalaryDisplay = '₹0';
+
+    function updateSalaryDisplay() {
+      const valueEl = document.getElementById('stat-salary');
+      const eyeBtn = document.getElementById('salaryEyeBtn');
+      if (valueEl) valueEl.textContent = salaryHidden ? '••••••' : currentSalaryDisplay;
+      if (eyeBtn) eyeBtn.textContent = salaryHidden ? '🙈' : '👁️';
+    }
+
+    function toggleSalaryVisibility(event) {
+      event.stopPropagation(); // don't trigger the card's goToSalaryPage() click
+      salaryHidden = !salaryHidden;
+      localStorage.setItem('ebms_salary_hidden', salaryHidden ? '1' : '0');
+      updateSalaryDisplay();
     }
 
     function findEmployeeName(empId) {
@@ -1316,6 +1516,260 @@
         }
       } catch (err) {
         showToast('Network error — could not update leave.');
+      } finally {
+        hidePageLoader();
+      }
+    }
+
+    // ============================================================
+    // 🆕 [2026-08-08] QUICK-ADD MODALS — the "+ Add" buttons on
+    // Present Employees / Work List / Pending Leave Requests panels.
+    // Each opens the shared quickAddModalOverlay with a form specific
+    // to that panel, posting straight to the existing backend actions
+    // (markAttendance / addTask / applyLeave) — no new routes needed.
+    //
+    // ⚠️ ASSUMPTION TO VERIFY: markAttendance's exact param names
+    // (emp_id/date/in_time/out_time below) are inferred from the
+    // getAttendance response shape used elsewhere on this page
+    // (a.emp_id, a.in_time, a.out_time) — appscript_attendance.gs
+    // itself wasn't available to confirm handleMarkAttendance()'s
+    // signature. addTask and applyLeave param names ARE confirmed
+    // (addTask per README's Tasks module row; applyLeave per the
+    // actual appscript_leaves.gs handleApplyLeave() reviewed this
+    // session — admin/hr/branch_manager passing body.emp_id is the
+    // documented on-behalf-of path, and body.days is now ignored
+    // server-side since the Phase 10 holiday-aware day-count change).
+    // ============================================================
+    function openQuickAddModal(title, bodyHtml) {
+      document.getElementById('quickAddModalTitle').textContent = title;
+      document.getElementById('quickAddModalBody').innerHTML = bodyHtml;
+      document.getElementById('quickAddModalOverlay').classList.add('show');
+    }
+
+    function closeQuickAddModal() {
+      document.getElementById('quickAddModalOverlay').classList.remove('show');
+    }
+
+    function activeEmpOptions() {
+      const emps = filterByBranch(ALL_EMPLOYEES.filter(e => e.status === 'active'));
+      return { emps, optionsHtml: emps.map(e => `<option value="${e.emp_id}">${e.name}</option>`).join('') };
+    }
+
+    // ---- 1) Mark Attendance (Present Employees panel) ----
+    function openQuickMarkAttendance() {
+      const { emps, optionsHtml } = activeEmpOptions();
+      if (!emps.length) { showToast('No active employees found for this branch.'); return; }
+
+      const html = `
+        <div class="qform-group">
+          <label class="qform-label">Employee</label>
+          <select class="qform-select" id="qaEmpId">${optionsHtml}</select>
+        </div>
+        <div class="qform-row">
+          <div class="qform-group">
+            <label class="qform-label">Date</label>
+            <input type="date" class="qform-input" id="qaDate" value="${getTodayIST()}">
+          </div>
+          <div class="qform-group">
+            <label class="qform-label">In Time</label>
+            <input type="time" class="qform-input" id="qaInTime">
+          </div>
+        </div>
+        <div class="qform-group">
+          <label class="qform-label">Out Time (optional)</label>
+          <input type="time" class="qform-input" id="qaOutTime">
+        </div>
+        <div class="qform-actions">
+          <button class="qform-btn qform-btn-secondary" onclick="closeQuickAddModal()">Cancel</button>
+          <button class="qform-btn qform-btn-primary" onclick="submitQuickAttendance()">Mark Attendance</button>
+        </div>
+      `;
+      openQuickAddModal('✅ Mark Attendance', html);
+    }
+
+    async function submitQuickAttendance() {
+      const empId = document.getElementById('qaEmpId').value;
+      const date = document.getElementById('qaDate').value;
+      const inTime = document.getElementById('qaInTime').value;
+      const outTime = document.getElementById('qaOutTime').value;
+
+      if (!empId || !date || !inTime) {
+        showToast('Employee, Date aur In Time zaroori hain.');
+        return;
+      }
+
+      closeQuickAddModal();
+      showPageLoader('Saving...');
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            token: AppSession.getToken(), action: 'markAttendance',
+            emp_id: empId, date: date, in_time: inTime, out_time: outTime || ''
+          })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('✅ ' + (out.message || 'Attendance marked'));
+          await fetchAttendanceToday();
+          renderEverything();
+        } else {
+          showToast('❌ ' + (out.message || 'Could not mark attendance'));
+        }
+      } catch (err) {
+        showToast('Network error — could not mark attendance.');
+      } finally {
+        hidePageLoader();
+      }
+    }
+
+    // ---- 2) Add Task (Work List panel) ----
+    function openQuickAddTask() {
+      const { optionsHtml } = activeEmpOptions();
+      const html = `
+        <div class="qform-group">
+          <label class="qform-label">Task Title</label>
+          <input type="text" class="qform-input" id="qtTitle" placeholder="e.g. Prepare monthly report">
+        </div>
+        <div class="qform-group">
+          <label class="qform-label">Assign To</label>
+          <select class="qform-select" id="qtAssignedTo">
+            <option value="">Unassigned</option>
+            ${optionsHtml}
+          </select>
+        </div>
+        <div class="qform-row">
+          <div class="qform-group">
+            <label class="qform-label">Due Date</label>
+            <input type="date" class="qform-input" id="qtDueDate">
+          </div>
+          <div class="qform-group">
+            <label class="qform-label">Priority</label>
+            <select class="qform-select" id="qtPriority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+        <div class="qform-actions">
+          <button class="qform-btn qform-btn-secondary" onclick="closeQuickAddModal()">Cancel</button>
+          <button class="qform-btn qform-btn-primary" onclick="submitQuickTask()">Add Task</button>
+        </div>
+      `;
+      openQuickAddModal('📝 New Task', html);
+    }
+
+    async function submitQuickTask() {
+      const title = document.getElementById('qtTitle').value.trim();
+      const assignedTo = document.getElementById('qtAssignedTo').value;
+      const dueDate = document.getElementById('qtDueDate').value;
+      const priority = document.getElementById('qtPriority').value;
+
+      if (!title) {
+        showToast('Task title zaroori hai.');
+        return;
+      }
+
+      closeQuickAddModal();
+      showPageLoader('Saving...');
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            token: AppSession.getToken(), action: 'addTask',
+            title: title, assigned_to: assignedTo, due_date: dueDate, priority: priority
+          })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('✅ ' + (out.message || 'Task added'));
+          await fetchTasks();
+          renderEverything();
+        } else {
+          showToast('❌ ' + (out.message || 'Could not add task'));
+        }
+      } catch (err) {
+        showToast('Network error — could not add task.');
+      } finally {
+        hidePageLoader();
+      }
+    }
+
+    // ---- 3) Apply Leave on behalf of an employee (Pending Leave Requests panel) ----
+    function openQuickApplyLeave() {
+      const { emps, optionsHtml } = activeEmpOptions();
+      if (!emps.length) { showToast('No active employees found for this branch.'); return; }
+
+      const html = `
+        <div class="qform-group">
+          <label class="qform-label">Employee</label>
+          <select class="qform-select" id="qlEmpId">${optionsHtml}</select>
+        </div>
+        <div class="qform-group">
+          <label class="qform-label">Leave Type</label>
+          <select class="qform-select" id="qlLeaveType">
+            <option value="Casual Leave">Casual Leave</option>
+            <option value="Sick Leave">Sick Leave</option>
+            <option value="Earned Leave">Earned Leave</option>
+            <option value="Unpaid Leave">Unpaid Leave</option>
+          </select>
+        </div>
+        <div class="qform-row">
+          <div class="qform-group">
+            <label class="qform-label">From Date</label>
+            <input type="date" class="qform-input" id="qlFromDate">
+          </div>
+          <div class="qform-group">
+            <label class="qform-label">To Date</label>
+            <input type="date" class="qform-input" id="qlToDate">
+          </div>
+        </div>
+        <div class="qform-group">
+          <label class="qform-label">Reason (optional)</label>
+          <input type="text" class="qform-input" id="qlReason" placeholder="e.g. Personal work">
+        </div>
+        <div class="qform-note">📌 Days apne aap calculate honge — company holidays automatically exclude ho jaayenge (Phase 10).</div>
+        <div class="qform-actions">
+          <button class="qform-btn qform-btn-secondary" onclick="closeQuickAddModal()">Cancel</button>
+          <button class="qform-btn qform-btn-primary" onclick="submitQuickLeave()">Apply Leave</button>
+        </div>
+      `;
+      openQuickAddModal('📅 Apply Leave (On Behalf)', html);
+    }
+
+    async function submitQuickLeave() {
+      const empId = document.getElementById('qlEmpId').value;
+      const leaveType = document.getElementById('qlLeaveType').value;
+      const fromDate = document.getElementById('qlFromDate').value;
+      const toDate = document.getElementById('qlToDate').value;
+      const reason = document.getElementById('qlReason').value.trim();
+
+      if (!empId || !fromDate || !toDate) {
+        showToast('Employee, From Date aur To Date zaroori hain.');
+        return;
+      }
+
+      closeQuickAddModal();
+      showPageLoader('Saving...');
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            token: AppSession.getToken(), action: 'applyLeave',
+            emp_id: empId, leave_type: leaveType, from_date: fromDate, to_date: toDate, reason: reason
+          })
+        });
+        const out = await res.json();
+        if (out.status === 'success') {
+          showToast('✅ ' + (out.message || 'Leave applied'));
+          await fetchLeavesPending();
+          renderEverything();
+        } else {
+          showToast('❌ ' + (out.message || 'Could not apply leave'));
+        }
+      } catch (err) {
+        showToast('Network error — could not apply leave.');
       } finally {
         hidePageLoader();
       }

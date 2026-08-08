@@ -4,7 +4,6 @@
 // ============================================================
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbwElBXn3ImQ3EjmvyY6WZ-QGublPpc_flE5FxjKrPn-oQ5tBmg-RMHGY6YtLUia6VWNkg/exec';
-
 // ============================================================
 // GLOBAL PAGE LOADER — full-screen overlay
 //
