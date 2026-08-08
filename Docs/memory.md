@@ -8,6 +8,26 @@ Purpose: a running log so any contributor (human or AI) picking up this project 
 
 ## Session log
 
+### [2026-08-08] — §7.1 fully closed: getEmployees bulk name-resolve confirmed via direct code review
+**What was done:**
+- User uploaded the live `appscript_employees.gs` (previously the file wasn't available this session, so the prior session's ⚠️ caveat on §7.1 couldn't be checked).
+- Direct code review confirms `handleGetEmployees()` (the list route) **does** call `resolveEmployeeDisplayNamesBulk(employees)` — right after the password-strip/date-format `.map()` and *before* pagination — so every row in the paginated response carries `department_name`/`designation_name`/`branch_name`. `resolveEmployeeDisplayNamesBulk()` itself builds the `departments`/`designations`/`branches` lookup maps once (not per-row, avoiding an O(n×m) scan) and falls back safely to the raw code (or `'—'`/`'Staff'`) if no match is found — never throws.
+- Same pattern (`resolveEmployeeDisplayNames`, singular) also confirmed wired into `handleGetEmployee()` (both session and self-punch paths), `handleGetProfile()`, and `handleAddEmployee()`'s response echo.
+- **Net result:** the previously-open question from the 2026-08-08 (earlier same-day) session entry — "not yet confirmed whether `getEmployees` actually attaches these fields" — is now closed. `employees.html`'s frontend fix (from that same earlier session) will correctly display real names, not fall back to raw codes.
+- Updated `PRD.md` (§7.1 status header + priority summary line) and `phases.md` (Phase 11 bullet + removed the item from the "remaining work" list) to reflect this. Updated `README.md` (§3 backend files table row for `appscript_employees.gs`, footer date-stamp) this session too.
+
+**File(s) touched:**
+- **Docs only:** `PRD.md`, `phases.md`, `README.md`, `memory.md` (this entry). No application code changed — this was a verification-only session (code was reviewed, not edited, since it was already correct).
+
+**Currently being worked on / left mid-flight:**
+- Nothing new. Pre-existing open items are unchanged: Admission Leads real click-test, Daily Tasks / Employee Targets live-sheet setup-function confirmation, Reports live click-test (all still outstanding from earlier sessions).
+
+**Next suggested step:**
+1. Pick up one of the still-outstanding live click-tests (Admission Leads, Employee Targets, Reports, Daily Tasks setup-function) since all remaining Phase 11 backend-wiring code questions are now resolved — what's left is verification against the live Spreadsheet, not more code review.
+2. `architecture.md` §4 could also get a one-line confirmation note added next to its `employee_targets`/`admission_leads` table if useful, though it's not strictly required since `README.md` is the canonical schema source.
+
+---
+
 ### [2026-08-03] — README.md sync gap fixed (Admission Leads module was missing from docs)
 **What was done:**
 - Audited `memory.md`, `phases.md`, and `README.md` together and found `README.md` had **not** been updated after the previous session's Admission Leads (§7.10/§7.11) work landed — a `rules.md` #9 / `PRD.md` §5 violation (module was `[x]` in `phases.md` but absent from README's schema table, backend file list, frontend page list, and API table).
