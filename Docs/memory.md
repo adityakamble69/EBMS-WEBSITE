@@ -253,6 +253,33 @@ Purpose: a running log so any contributor (human or AI) picking up this project 
 
 ---
 
+### [2026-08-08] — holidays.html NaN date fix; Daily Tasks module verified; employees.html §7.1 bug fixed; Employee Targets + Reports frontends built
+
+**What was done:**
+- **`holidays.html` "NaN / Invalid Date" bug fixed.** Root cause: `appscript_holidays.gs`'s `handleGetHolidaysRoute()` sends `date` formatted as `dd-MM-yyyy` (per its own header comment), but the frontend did `new Date(h.date)` in two places (the "Upcoming" stat count and the row date-chip render) — the native `Date` constructor doesn't reliably parse `dd-MM-yyyy`, silently producing `Invalid Date`. Fixed frontend-only: added `parseHolidayDate(str)` (manual `dd-MM-yyyy` split/parse) and swapped it into both call sites. No backend change needed/made.
+- **Daily Tasks module (§7.5–§7.7) re-verified by direct file review**, not just trusted from prior session notes — read `daily_tasks_admin.html` (1004 lines) and the daily-tasks portions of `employee_dashboard.html` in full. Confirmed: stats/filters/review-modal/approve-reject-correction-request flow all correctly wired to the matching `appscript_daily_tasks.gs` routes; both files correctly parse `task_date` (`dd-MM-yyyy`) via regex/string-split, never `new Date(str)` — so this module does **not** have the same bug class as the holidays one. `phases.md`'s "frontend not yet built" note (from an earlier, stale session) has been corrected.
+- **`employees.html` §7.1 bug fixed**: the main employee table row rendered raw `emp.branch_id`/`emp.designation_id` codes instead of resolved names (the profile-drawer side panel already did client-side resolution via a separate departments/designations lookup — only the main table listing had the bug). Changed to `emp.branch_name || emp.branch_id` and `emp.designation_name || emp.designation_id`. ⚠️ **Not fully closed** — `appscript_employees.gs` (not reviewed this session) needs to actually attach `branch_name`/`designation_name` to each row from `getEmployees` (the same way `resolveEmployeeDisplayNamesBulk()` does in `appscript_reports.gs`) for this to show real names instead of falling back to the raw code again.
+- **Built `targets_admin.html`** (Phase 11 §7.8) — the backend (`appscript_employee_targets.gs`: `getEmployeeTargets`/`assignTarget`/`updateTarget`) already existed going into this session; only the frontend was missing. New page matches `daily_tasks_admin.html`'s visual language: stats row, employee/month/year/status filters, assign+edit modal, per-row progress bar. Wired to the pre-existing `sidebar.html` nav link and `hr_dashboard.html` navbar/quick-action (both already referenced `targets_admin.html` before the page existed).
+- **Built `reports.html`** (Phase 11 §7.9) — same situation: backend (`appscript_reports.gs`, 7 report builders) pre-existed, frontend didn't. New page: report-type selector, month(optional)/year/department/employee filters, dynamic summary cards + table (column config per report type matched exactly to each backend builder's row shape), CSV export (client-side Blob download) + browser print (dedicated `@media print` stylesheet). No server-side PDF, matching the backend's documented design decision.
+- Updated `README.md` (schema table: `employee_targets` row; backend files table: `appscript_employee_targets.gs`/`appscript_reports.gs` rows; API table: Employee Targets + Reports rows; pages table: `targets_admin.html`/`reports.html` rows; footer date-stamp), `phases.md` (§7.1/§7.5/§7.6/§7.8/§7.9 status lines, Phase 10 open-items list), `PRD.md` (§7.1/§7.8/§7.9 status headers + Development priority summary).
+
+**File(s) touched:**
+- `holidays.html`, `employees.html` — direct fixes.
+- `targets_admin.html`, `reports.html` — new files.
+- `README.md`, `phases.md`, `PRD.md`, `memory.md` (this entry) — docs.
+- **No `.gs`/backend files or live Sheet touched this session** — `appscript_employees.gs`'s `getEmployees` handler was NOT reviewed/edited (see the §7.1 caveat above); `setupEmployeeTargetsSheet()` has not been confirmed run on the live Spreadsheet.
+
+**Currently being worked on / left mid-flight:**
+- `employees.html` fix is frontend-only and may not display real names until `appscript_employees.gs` is reviewed/updated to match.
+- None of today's new/changed pages (`holidays.html`, `employees.html`, `targets_admin.html`, `reports.html`) have been click-tested against the live Sheet/API yet.
+
+**Next suggested step:**
+1. Upload `appscript_employees.gs` so the `getEmployees` route can be confirmed/fixed to actually return `branch_name`/`designation_name` (closes §7.1 for real).
+2. Click-test `targets_admin.html` (assign a target, confirm `achieved_target` live-recomputes correctly against a completed admission lead) and `reports.html` (run all 7 report types against real data, spot-check summary numbers, confirm CSV opens cleanly) — both currently unverified against the live Spreadsheet.
+3. Still outstanding from earlier sessions, unrelated to today's work: Admission Leads real click-test, Daily Tasks / Employee Targets live-sheet setup-function confirmation.
+
+---
+
 ## Template for future entries
 
 ```

@@ -109,12 +109,14 @@ Employee must see the resulting approval status + admin remark on their own dash
 ### 7.7 Calendar-based daily task view
 Employee dashboard's existing calendar: clicking a date must show that date's daily tasks (status + approval status + admin remark). Empty state: *"No tasks were added for this date."*
 
-### 7.8 Employee target tracking
+### 7.8 Employee target tracking — ✅ SHIPPED 2026-08-08
 Targets (e.g. monthly admission count) are assigned per employee, value sourced from Settings/target sheet — never hardcoded. Dashboard shows Assigned / Achieved / Remaining / Progress %.
 `Remaining = Assigned − Achieved`, `Progress % = Achieved / Assigned × 100`.
+> Backend (`appscript_employee_targets.gs`) predates this session. Frontend `targets_admin.html` built 2026-08-08: assign/edit modal, filters, per-row progress bar. `achieved_target` is always live-recomputed, never trusts the sheet's cached value. ⚠️ Not yet click-tested against the live Sheet.
 
-### 7.9 HR Dashboard — month-wise reports
+### 7.9 HR Dashboard — month-wise reports — ✅ SHIPPED 2026-08-08
 Filters: Month, Year, Department, Employee, Report Type. Report types: attendance, leave, daily task, target performance, candidate, admission, joining. Optional: PDF/CSV export, print, date-range filter.
+> Backend (`appscript_reports.gs`) predates this session. Frontend `reports.html` built 2026-08-08: report-type selector, filters, dynamic summary + table per report type, CSV export + browser print (no server-side PDF, per the backend's documented decision). ⚠️ Not yet click-tested against live data for every report type.
 
 ### 7.10 Candidate Management module (HR Dashboard) — ✅ FULLY SHIPPED + VERIFIED 2026-08-03
 Distinct from the existing `appscript_recruitment.gs` / `candidates` sheet used by `register.html` + `recruitment.html`.
@@ -147,5 +149,5 @@ HR has no delete button/action for admission leads (or job candidates). Status-b
 | Update settings | No | No | Yes |
 
 ### Development priority (as given)
-**High:** 7.1 (readable names) ✅, 7.2 (leave summary) ✅, 7.3 (settings sheet) ✅, 7.4 (30-day lock) ✅, 7.5+7.6+7.7 (daily tasks, fully shipped end-to-end ✅ 2026-08-02), 7.10+7.11 (admission leads module — fully shipped, backend+frontend+sheet all confirmed live ✅ 2026-08-03; only a real click-test through the UI is still outstanding).
-**Medium:** 7.8 (targets — note: will likely link to `admission_leads` with `status='Admission Completed'`, see `architecture.md`), 7.9 (month-wise reports), report export.
+**High:** 7.1 (readable names) ✅ — employee_dashboard.html shipped 2026-08-02, employees.html admin-panel bug fixed 2026-08-08 (⚠️ pending confirmation that `getEmployees` backend actually returns the resolved name fields). 7.2 (leave summary) ✅, 7.3 (settings sheet) ✅, 7.4 (30-day lock) ✅, 7.5+7.6+7.7 (daily tasks, fully shipped end-to-end ✅ 2026-08-02, re-verified by direct file review 2026-08-08), 7.10+7.11 (admission leads module — fully shipped, backend+frontend+sheet all confirmed live ✅ 2026-08-03; only a real click-test through the UI is still outstanding).
+**Medium:** 7.8 (targets) ✅ shipped 2026-08-08 — frontend `targets_admin.html` built, backend pre-existing. 7.9 (month-wise reports) ✅ shipped 2026-08-08 — frontend `reports.html` built (incl. CSV export + print), backend pre-existing. Both ⚠️ pending a live click-test.
