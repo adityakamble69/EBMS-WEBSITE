@@ -1139,10 +1139,21 @@
             flex-shrink: 0;
         }
 
-        .pd-cal-legend-dot.present { background: var(--success); }
-        .pd-cal-legend-dot.irregular { background: #C084FC; }
-        .pd-cal-legend-dot.absent { background: var(--error); }
-        .pd-cal-legend-dot.weeklyoff { background: var(--accent-glow); }
+        .pd-cal-legend-dot.present {
+            background: var(--success);
+        }
+
+        .pd-cal-legend-dot.irregular {
+            background: #C084FC;
+        }
+
+        .pd-cal-legend-dot.absent {
+            background: var(--error);
+        }
+
+        .pd-cal-legend-dot.weeklyoff {
+            background: var(--accent-glow);
+        }
 
         .pd-day-modal-overlay {
             position: fixed;
@@ -1267,7 +1278,9 @@
             background: var(--accent-glow);
         }
 
-        .pd-cal-legend-dot.hasshift { background: var(--accent-glow); }
+        .pd-cal-legend-dot.hasshift {
+            background: var(--accent-glow);
+        }
     </style>
 </head>
 
@@ -1631,7 +1644,7 @@
         async function openAddEmployeeModal() {
             toggleModal(true);
 
-            const deptSelect  = document.getElementById('formDept');
+            const deptSelect = document.getElementById('formDept');
             const desigSelect = document.getElementById('formDesignation');
 
             if (addEmpLookupsCache) {
@@ -1642,7 +1655,7 @@
                 return;
             }
 
-            deptSelect.innerHTML  = '<option value="">Loading departments…</option>';
+            deptSelect.innerHTML = '<option value="">Loading departments…</option>';
             desigSelect.innerHTML = '<option value="">Loading designations…</option>';
 
             try {
@@ -1652,7 +1665,7 @@
                 ]);
                 const [deptPayload, desigPayload] = await Promise.all([deptRes.json(), desigRes.json()]);
 
-                const departments  = deptPayload.status === 'success'  ? (deptPayload.data || [])  : [];
+                const departments = deptPayload.status === 'success' ? (deptPayload.data || []) : [];
                 const designations = desigPayload.status === 'success' ? (desigPayload.data || []) : [];
 
                 addEmpLookupsCache = { departments, designations };
@@ -1662,7 +1675,7 @@
                 fillPlainSelect(desigSelect, designations, 'designation_id',
                     d => d.name || d.designation_name || d.designation_id, 'Select designation…');
             } catch (e) {
-                deptSelect.innerHTML  = '<option value="">Could not load — try again</option>';
+                deptSelect.innerHTML = '<option value="">Could not load — try again</option>';
                 desigSelect.innerHTML = '<option value="">Could not load — try again</option>';
             }
         }
@@ -1747,8 +1760,8 @@
             </div>
           </td>
           <td><code style="color:var(--accent-glow);">${emp.emp_id}</code></td>
-          <td>${emp.branch_id || '—'}</td>
-          <td>${emp.designation_id || 'Staff Regular'}</td>
+          <td>${emp.branch_name || emp.branch_id || '—'}</td>
+          <td>${emp.designation_name || emp.designation_id || 'Staff Regular'}</td>
           <td>${emp.mobile || '—'}</td>
           <td><span class="status-pill ${emp.status === 'active' ? 'pill-active' : 'pill-inactive'}">${emp.status === 'active' ? 'Active' : 'Inactive'}</span></td>
           <td><a class="link-profile" href="javascript:void(0)" onclick="openProfileDrawer('${emp.emp_id}')">View Profile →</a>

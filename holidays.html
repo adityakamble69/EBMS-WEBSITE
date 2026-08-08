@@ -642,12 +642,28 @@
       }
     }
 
+    // Backend sends holiday dates as "dd-MM-yyyy" (formatDateOnly()) — the native
+    // Date constructor can't reliably parse that (it expects ISO/US formats), which
+    // is what was causing "NaN / Invalid Date" chips. Parse it manually instead.
+    function parseHolidayDate(str) {
+      if (!str) return null;
+      const parts = String(str).split('-');
+      if (parts.length !== 3) return null;
+      const [dd, mm, yyyy] = parts.map(Number);
+      if (!dd || !mm || !yyyy) return null;
+      const d = new Date(yyyy, mm - 1, dd);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
     function updateStats(data) {
       const now = new Date();
       now.setHours(0, 0, 0, 0);
 
       document.getElementById('statTotal').textContent = data.length;
-      document.getElementById('statUpcoming').textContent = data.filter(h => new Date(h.date) >= now).length;
+      document.getElementById('statUpcoming').textContent = data.filter(h => {
+        const d = parseHolidayDate(h.date);
+        return d && d >= now;
+      }).length;
       document.getElementById('statNational').textContent = data.filter(h => h.type === 'national').length;
       document.getElementById('statCompany').textContent = data.filter(h => h.type === 'company').length;
     }
@@ -677,7 +693,7 @@
       const isSuperAdmin = USER.role === 'super_admin';
 
       tbody.innerHTML = data.map(h => {
-        const d = h.date ? new Date(h.date) : null;
+        const d = parseHolidayDate(h.date);
         const isPast = d && d < now;
         const dayNum = d ? d.getDate() : '—';
         const monthName = d ? d.toLocaleDateString('en-IN', { month: 'short' }) : '';
