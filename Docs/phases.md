@@ -122,7 +122,7 @@ Full detail in PRD.md §7. Nothing in this phase is built yet — do not check a
 
 High priority
 
-Resolve department_id/designation_id/branch_id → readable names server-side on every employee-profile-facing response (PRD.md §7.1) — shipped 2026-08-02: appscript_employees.gs (resolveEmployeeDisplayNames/Bulk) + employee_dashboard.html (profile card + ID card). ✅ employees.html (admin panel) bug fixed 2026-08-08: the main employee table row now renders `emp.branch_name || emp.branch_id` and `emp.designation_name || emp.designation_id` instead of the raw code, matching the resolved-name pattern used everywhere else. ⚠️ Not yet confirmed whether `appscript_employees.gs`'s `getEmployees` (list) handler actually attaches `branch_name`/`designation_name` to each row the way `resolveEmployeeDisplayNamesBulk()` does elsewhere (e.g. `appscript_reports.gs`) — if raw codes still show live, that backend wiring is the remaining piece.
+Resolve department_id/designation_id/branch_id → readable names server-side on every employee-profile-facing response (PRD.md §7.1) — shipped 2026-08-02: appscript_employees.gs (resolveEmployeeDisplayNames/Bulk) + employee_dashboard.html (profile card + ID card). ✅ employees.html (admin panel) bug fixed 2026-08-08: the main employee table row now renders `emp.branch_name || emp.branch_id` and `emp.designation_name || emp.designation_id` instead of the raw code, matching the resolved-name pattern used everywhere else. ✅ **CONFIRMED 2026-08-08** by direct code review of the live `appscript_employees.gs`: `handleGetEmployees()` (list route) calls `resolveEmployeeDisplayNamesBulk(employees)` right after the password-strip/date-format map and before pagination, so every row in the paginated response does carry `department_name`/`designation_name`/`branch_name`. The prior open question is closed — no remaining backend wiring gap on this item.
 
 Employee leave summary block (Total/Used/Remaining/Pending/Approved/Rejected) on employee_dashboard.html (§7.2) — shipped 2026-08-02: getLeaveSummary GET action (appscript_leaves.gs), computed entirely server-side. ⚠️ Assumes calendar-year leave cycle (by from_date's year) — not stakeholder-confirmed against a possible joining-anniversary cycle.
 
@@ -154,7 +154,7 @@ Employee Targets live-sheet verification — confirm setupEmployeeTargetsSheet()
 
 Reports live click-test — run all 7 report types against real data at least once, spot-check summary numbers against the source sheets, confirm CSV export opens cleanly
 
-Confirm appscript_employees.gs's getEmployees (list) route actually attaches branch_name/designation_name to each row (see §7.1 note above) — if not, employees.html's fix will silently fall back to raw codes again
+~~Confirm appscript_employees.gs's getEmployees (list) route actually attaches branch_name/designation_name to each row~~ — ✅ confirmed 2026-08-08 by direct code review, see §7.1 note above. No further action needed.
 
 How to add a new phase
 
