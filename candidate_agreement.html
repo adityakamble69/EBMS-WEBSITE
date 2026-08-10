@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Round 2 Agreement — Codeline.AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Page-local layout only — colors/radius/shadow all pull from style.css :root tokens (design.md) */
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg-base);
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    padding: 40px 16px 80px;
+  }
+
+  .agr-shell {
+    width: 100%;
+    max-width: 640px;
+  }
+
+  .agr-header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .agr-header h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    margin: 0 0 6px;
+    color: var(--text-primary);
+  }
+
+  .agr-header p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .agr-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 28px;
+    backdrop-filter: blur(10px);
+  }
+
+  .agr-candidate {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-layer2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 24px;
+  }
+
+  .agr-candidate .name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .agr-candidate .role {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .agr-candidate .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--accent-dim);
+    color: var(--accent-hi);
+    padding: 4px 10px;
+    border-radius: var(--radius-xs);
+  }
+
+  .agr-terms h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 14px;
+    color: var(--text-primary);
+  }
+
+  .term-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .term-item {
+    display: flex;
+    gap: 12px;
+    background: var(--bg-layer2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+
+  .term-num {
+    flex: 0 0 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    color: var(--accent-hi);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .term-text {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+  }
+
+  .agr-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 22px 0;
+  }
+
+  .agr-confirm label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+
+  .agr-confirm input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--bg-layer4);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .15s ease;
+  }
+
+  .agr-confirm input[type="text"]:focus {
+    border-color: var(--border-focus);
+  }
+
+  .agr-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 18px 0 24px;
+    cursor: pointer;
+  }
+
+  .agr-checkbox input {
+    margin-top: 3px;
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .agr-checkbox span {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .agr-submit {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: #0C0C0E;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: box-shadow .15s ease, opacity .15s ease;
+  }
+
+  .agr-submit:hover:not(:disabled) {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .agr-submit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .agr-error {
+    background: var(--danger-dim);
+    color: var(--danger);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 13.5px;
+    margin-bottom: 18px;
+    display: none;
+  }
+
+  .agr-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .agr-state .icon {
+    font-size: 42px;
+    margin-bottom: 14px;
+  }
+
+  .agr-state h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    margin: 0 0 8px;
+  }
+
+  .agr-state p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    max-width: 420px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .spinner-ring {
+    width: 34px;
+    height: 34px;
+    border: 3px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    animation: agr-spin .8s linear infinite;
+  }
+
+  @keyframes agr-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="agr-shell">
+  <div class="agr-header">
+    <h1>Round 2 — Terms &amp; Conditions</h1>
+    <p>Please review the points below carefully before proceeding.</p>
+  </div>
+
+  <div class="agr-card">
+
+    <!-- Loading state -->
+    <div id="loadingState" class="agr-state">
+      <div class="spinner-ring"></div>
+      <p>Loading your details…</p>
+    </div>
+
+    <!-- Invalid / expired link -->
+    <div id="invalidState" class="agr-state hidden">
+      <div class="icon">⚠️</div>
+      <h2>Link not valid</h2>
+      <p>This agreement link is invalid or has expired. Please contact HR for a new link.</p>
+    </div>
+
+    <!-- Already submitted -->
+    <div id="alreadyState" class="agr-state hidden">
+      <div class="icon">✅</div>
+      <h2>Already submitted</h2>
+      <p id="alreadyMsg">You've already agreed to these terms. No further action is needed — our team will be in touch.</p>
+    </div>
+
+    <!-- Main form -->
+    <div id="formState" class="hidden">
+      <div class="agr-candidate">
+        <div>
+          <div class="name" id="candName">—</div>
+          <div class="role" id="candRole">—</div>
+        </div>
+        <div class="badge" id="candId">—</div>
+      </div>
+
+      <div class="agr-terms">
+        <h2>Important Information</h2>
+        <div class="term-list" id="termList"></div>
+      </div>
+
+      <hr class="agr-divider">
+
+      <div id="errorBox" class="agr-error"></div>
+
+      <div class="agr-confirm">
+        <label for="signedName">Type your full name to confirm agreement</label>
+        <input type="text" id="signedName" placeholder="Your full name" autocomplete="name">
+      </div>
+
+      <label class="agr-checkbox">
+        <input type="checkbox" id="agreeCheck">
+        <span>I have read and understood all the points above, and I agree to these terms and conditions.</span>
+      </label>
+
+      <button class="agr-submit" id="submitBtn" disabled>Submit Agreement</button>
+    </div>
+
+    <!-- Success -->
+    <div id="successState" class="agr-state hidden">
+      <div class="icon">🎉</div>
+      <h2>Thank you!</h2>
+      <p>Your agreement has been recorded. Our HR team will reach out to you with the next steps shortly.</p>
+    </div>
+
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  // API_URL comes from app.js (shared constant, per rules.md frontend-specific rules).
+  // This page is intentionally PUBLIC/tokenless — token here is the candidate's
+  // unique agreement_token, resolved server-side, not a session token.
+
+  const params = new URLSearchParams(window.location.search);
+  const agreementToken = params.get('token');
+
+  const loadingState  = document.getElementById('loadingState');
+  const invalidState  = document.getElementById('invalidState');
+  const alreadyState  = document.getElementById('alreadyState');
+  const formState     = document.getElementById('formState');
+  const successState  = document.getElementById('successState');
+
+  const candName  = document.getElementById('candName');
+  const candRole  = document.getElementById('candRole');
+  const candId    = document.getElementById('candId');
+  const termList  = document.getElementById('termList');
+  const errorBox  = document.getElementById('errorBox');
+  const signedName = document.getElementById('signedName');
+  const agreeCheck = document.getElementById('agreeCheck');
+  const submitBtn   = document.getElementById('submitBtn');
+
+  function showOnly(el) {
+    [loadingState, invalidState, alreadyState, formState, successState].forEach(s => s.classList.add('hidden'));
+    el.classList.remove('hidden');
+  }
+
+  function renderTerms(items) {
+    termList.innerHTML = '';
+    items.forEach((text, i) => {
+      const row = document.createElement('div');
+      row.className = 'term-item';
+      row.innerHTML =
+        '<div class="term-num">' + (i + 1) + '</div>' +
+        '<div class="term-text"></div>';
+      row.querySelector('.term-text').textContent = text;
+      termList.appendChild(row);
+    });
+  }
+
+  function updateSubmitState() {
+    submitBtn.disabled = !(agreeCheck.checked && signedName.value.trim().length > 1);
+  }
+  signedName.addEventListener('input', updateSubmitState);
+  agreeCheck.addEventListener('change', updateSubmitState);
+
+  async function loadAgreement() {
+    if (!agreementToken) {
+      showOnly(invalidState);
+      return;
+    }
+    try {
+      const res = await fetch(API_URL + '?action=getCandidateAgreement&token=' + encodeURIComponent(agreementToken));
+      const json = await res.json();
+
+      if (json.status !== 'success') {
+        showOnly(invalidState);
+        return;
+      }
+
+      const d = json.data;
+
+      if (d.agreement_status === 'agreed') {
+        showOnly(alreadyState);
+        return;
+      }
+
+      candName.textContent = d.candidate_name || '—';
+      candRole.textContent = d.role || '—';
+      candId.textContent   = d.candidate_id || '—';
+      renderTerms(d.terms || []);
+
+      showOnly(formState);
+    } catch (err) {
+      showOnly(invalidState);
+    }
+  }
+
+  async function submitAgreement() {
+    errorBox.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting…';
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'submitCandidateAgreement',
+          token: agreementToken,
+          signed_name: signedName.value.trim()
+        })
+      });
+      const json = await res.json();
+
+      if (json.status !== 'success') {
+        errorBox.textContent = json.message || 'Something went wrong. Please try again.';
+        errorBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Agreement';
+        return;
+      }
+
+      showOnly(successState);
+    } catch (err) {
+      errorBox.textContent = 'Network error — please check your connection and try again.';
+      errorBox.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Agreement';
+    }
+  }
+
+  submitBtn.addEventListener('click', submitAgreement);
+
+  showOnly(loadingState);
+  loadAgreement();
+})();
+</script>
+
+</body>
+</html>
