@@ -553,12 +553,12 @@
           // other dropdown still loads fine.
           fetchHireLookup('getAdminUsers')
         ]);
-        hireBranches      = branchData.filter(b => b.status === 'active');
-        hireDepartments   = deptData;
-        hireDesignations  = desigData;
-        hireShifts        = shiftData;
-        hireEmployees     = (empData && empData.data) ? empData.data : [];
-        hireAdmins        = adminData;
+        hireBranches = branchData.filter(b => b.status === 'active');
+        hireDepartments = deptData;
+        hireDesignations = desigData;
+        hireShifts = shiftData;
+        hireEmployees = (empData && empData.data) ? empData.data : [];
+        hireAdmins = adminData;
         hireLookupsLoaded = true;
 
         if (!hireDepartments.length && !hireDesignations.length && !hireBranches.length) {
@@ -595,10 +595,10 @@
 
       fillSelect(document.getElementById('hireBranch'), hireBranches, 'branch_id',
         b => `${b.branch_id} — ${b.branch_name || b.name || b.branch_id}`, 'Select branch…');
-      fillSelect(document.getElementById('hireDepartment'), hireDepartments, 'department_id',
-        d => d.name || d.department_name || d.department_id, 'Select department…');
-      fillSelect(document.getElementById('hireDesignation'), hireDesignations, 'designation_id',
-        d => d.name || d.designation_name || d.designation_id, 'Select designation…');
+      fillSelect(document.getElementById('hireDepartment'), hireDepartments, 'dept_id',
+        d => d.dept_name || d.dept_id, 'Select department…');
+      fillSelect(document.getElementById('hireDesignation'), hireDesignations, 'desig_id',
+        d => d.desig_name || d.desig_id, 'Select designation…');
 
       onHireBranchChange(); // populates shift + manager lists scoped to (initially empty) branch
 
@@ -850,13 +850,20 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     /* ── Skeleton shimmer (stats + kanban placeholders) ── */
     @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
     }
 
     .rec-stat-num.skeleton {

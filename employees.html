@@ -1650,13 +1650,12 @@
             const desigSelect = document.getElementById('formDesignation');
 
             if (addEmpLookupsCache) {
-                fillPlainSelect(deptSelect, addEmpLookupsCache.departments, 'department_id',
-                    d => d.name || d.department_name || d.department_id, 'Select department…');
-                fillPlainSelect(desigSelect, addEmpLookupsCache.designations, 'designation_id',
-                    d => d.name || d.designation_name || d.designation_id, 'Select designation…');
+                fillPlainSelect(deptSelect, addEmpLookupsCache.departments, 'dept_id',
+                    d => d.dept_name || d.dept_id, 'Select department…');
+                fillPlainSelect(desigSelect, addEmpLookupsCache.designations, 'desig_id',
+                    d => d.desig_name || d.desig_id, 'Select designation…');
                 return;
             }
-
             deptSelect.innerHTML = '<option value="">Loading departments…</option>';
             desigSelect.innerHTML = '<option value="">Loading designations…</option>';
 
@@ -1672,10 +1671,10 @@
 
                 addEmpLookupsCache = { departments, designations };
 
-                fillPlainSelect(deptSelect, departments, 'department_id',
-                    d => d.name || d.department_name || d.department_id, 'Select department…');
-                fillPlainSelect(desigSelect, designations, 'designation_id',
-                    d => d.name || d.designation_name || d.designation_id, 'Select designation…');
+                fillPlainSelect(deptSelect, departments, 'dept_id',
+                    d => d.dept_name || d.dept_id, 'Select department…');
+                fillPlainSelect(desigSelect, designations, 'desig_id',
+                    d => d.desig_name || d.desig_id, 'Select designation…');
             } catch (e) {
                 deptSelect.innerHTML = '<option value="">Could not load — try again</option>';
                 desigSelect.innerHTML = '<option value="">Could not load — try again</option>';

@@ -643,10 +643,10 @@
 
       fillSelect(document.getElementById('hireBranch'), hireBranches, 'branch_id',
         b => `${b.branch_id} — ${b.branch_name || b.name || b.branch_id}`, 'Select branch…');
-      fillSelect(document.getElementById('hireDepartment'), hireDepartments, 'department_id',
-        d => d.name || d.department_name || d.department_id, 'Select department…');
-      fillSelect(document.getElementById('hireDesignation'), hireDesignations, 'designation_id',
-        d => d.name || d.designation_name || d.designation_id, 'Select designation…');
+      fillSelect(document.getElementById('hireDepartment'), hireDepartments, 'dept_id',
+        d => d.dept_name || d.dept_id, 'Select department…');
+      fillSelect(document.getElementById('hireDesignation'), hireDesignations, 'desig_id',
+        d => d.desig_name || d.desig_id, 'Select designation…');
 
       onHireBranchChange(); // populates shift + manager lists scoped to (initially empty) branch
 
