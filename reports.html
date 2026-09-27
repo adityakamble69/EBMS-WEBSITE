@@ -448,6 +448,14 @@
     const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     // Column configs per report type — [ {key, label}, ... ]
+    //
+    // 🆕 A3-tiny FIX [2026-09-27]: `target` config was pointing at the
+    // retired per-employee schema (emp_id / name / department_name /
+    // target_type). Phase 11 §7.8's scope correction moved targets to
+    // HR-level (hr_id / hr_name). Backend (`buildTargetReport()` in
+    // appscript_reports.gs) now returns rows shaped for HR, so the
+    // column keys here must match that shape — otherwise every cell
+    // renders as "—".
     const REPORT_COLUMNS = {
       attendance: [
         { key: 'emp_id', label: 'Emp ID' }, { key: 'name', label: 'Name' },
@@ -467,9 +475,9 @@
         { key: 'task_date', label: 'Date' }, { key: 'task_status', label: 'Task Status' },
         { key: 'approval_status', label: 'Approval' }
       ],
+      // 🆕 A3-tiny: HR-level target columns (was: emp_id/name/department_name/target_type)
       target: [
-        { key: 'emp_id', label: 'Emp ID' }, { key: 'name', label: 'Name' },
-        { key: 'department_name', label: 'Department' }, { key: 'target_type', label: 'Type' },
+        { key: 'hr_id', label: 'HR ID' }, { key: 'hr_name', label: 'HR Name' },
         { key: 'month', label: 'Month' }, { key: 'year', label: 'Year' },
         { key: 'assigned_target', label: 'Assigned' }, { key: 'achieved_target', label: 'Achieved' },
         { key: 'remaining_target', label: 'Remaining' }, { key: 'progress_percent', label: 'Progress %' }
@@ -533,11 +541,19 @@
       } catch (e) { /* fallback: emp_id filter still works without name dropdown */ }
     }
 
+    // 🆕 A3-tiny FIX [2026-09-27]: Employee dropdown hidden for `target`
+    // report type too — HR targets are keyed by hr_id (admin_users.user_id),
+    // not emp_id, so passing an emp_id filter returns zero rows in every
+    // case (server intentionally ignores it). Department filter also hidden
+    // for `target` — HR users have no department attribute.
     function onReportTypeChange() {
       const type = document.getElementById('fReportType').value;
-      // candidate report has no emp_id filter server-side; admission has no department filter.
-      document.getElementById('fEmployee').style.display = (type === 'candidate') ? 'none' : '';
-      document.getElementById('fDepartment').style.display = (type === 'admission' || type === 'candidate') ? 'none' : '';
+      // Employee filter hidden for: candidate (no emp_id), target (HR-keyed, not emp-keyed)
+      document.getElementById('fEmployee').style.display =
+        (type === 'candidate' || type === 'target') ? 'none' : '';
+      // Department filter hidden for: admission, candidate (no dept), target (HR has no dept)
+      document.getElementById('fDepartment').style.display =
+        (type === 'admission' || type === 'candidate' || type === 'target') ? 'none' : '';
     }
 
     async function generateReport() {

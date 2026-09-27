@@ -1382,6 +1382,8 @@
                                 required /></div>
                         <div class="form-group"><label>Mobile Number *</label><input type="tel" id="formMobile"
                                 required /></div>
+                        <!-- 🎂 DOB [2026-09-27]: used by birthday notifications + ID card -->
+                        <div class="form-group"><label>Date of Birth</label><input type="date" id="formDob" /></div>
                         <div class="form-group">
                             <label>Branch Assignment *</label>
                             <select id="formBranch" required>
@@ -1809,6 +1811,7 @@
                 name: document.getElementById('formName').value,
                 email: document.getElementById('formEmail').value,
                 mobile: document.getElementById('formMobile').value,
+                dob: document.getElementById('formDob').value,   // 🎂 NEW
                 branch_id: document.getElementById('formBranch').value,
                 department_id: document.getElementById('formDept').value,
                 designation_id: document.getElementById('formDesignation').value,
@@ -1947,6 +1950,19 @@
             return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
         }
 
+        // 🎂 NEW [2026-09-27]: Converts a "dd-MM-yyyy" string (backend's
+        // formatDateOnly output) to "yyyy-MM-dd" — what <input type="date">
+        // needs for its value. Already-ISO values pass through unchanged;
+        // unparseable values return '' (blank input rather than "Invalid Date").
+        function pdToIsoDate(value) {
+            if (!value) return '';
+            const s = String(value).trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s; // already ISO
+            const m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+            if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+            return '';
+        }
+
         // Human-readable label for an employee's standard/default shift —
         // this is the one "proper" shift assigned to them (Morning/
         // Afternoon/Evening etc., from shifts.html templates), not a
@@ -2057,6 +2073,12 @@
                                         ${pdShiftTemplatesList.map(s => `<option value="${s.shift_id}" ${String(node.default_shift_id) === String(s.shift_id) ? 'selected' : ''}>${s.shift_name} (${s.start_time || '—'}–${s.end_time || '—'})</option>`).join('')}
                                     </select>
                                 </div>
+                                <!-- 🎂 DOB [2026-09-27]: editable from the profile drawer -->
+                                <div class="pd-field">
+                                    <label>Date of Birth</label>
+                                    <div class="pd-value" id="pdLblDob">${node.dob ? pdFormatJoiningDate(node.dob) : '—'}</div>
+                                    <input type="date" id="pdInputDob" class="pd-input" value="${node.dob ? pdToIsoDate(node.dob) : ''}" />
+                                </div>
                                 <div class="pd-field full">
                                     <label>Mobile</label>
                                     <div class="pd-value" id="pdLblMobile">${node.mobile || '—'}</div>
@@ -2114,6 +2136,7 @@
                 designation_id: document.getElementById('pdInputDesignation').value,
                 employment_type: document.getElementById('pdInputEmploymentType').value,
                 default_shift_id: document.getElementById('pdInputShift').value,
+                dob: document.getElementById('pdInputDob').value,          // 🎂 NEW
                 mobile: document.getElementById('pdInputMobile').value,
                 address: document.getElementById('pdInputAddress').value
             };
